@@ -172,9 +172,11 @@ function RecommandationPage() {
       for (let p = 1; p <= totalPages; p++) {
         pdf.setPage(p);
         // Filigrane diagonal centré
-        pdf.saveGraphicsState();
-        // @ts-expect-error jsPDF GState typing
-        pdf.setGState(new (pdf as any).GState({ opacity: 0.08 }));
+        const anyPdf = pdf as any;
+        anyPdf.saveGraphicsState?.();
+        if (anyPdf.GState && anyPdf.setGState) {
+          anyPdf.setGState(new anyPdf.GState({ opacity: 0.08 }));
+        }
         pdf.setFont("helvetica", "bold");
         pdf.setFontSize(72);
         pdf.setTextColor(37, 99, 235);
@@ -182,7 +184,7 @@ function RecommandationPage() {
           align: "center",
           angle: 45,
         });
-        pdf.restoreGraphicsState();
+        anyPdf.restoreGraphicsState?.();
         // Pied de page : date + version + pagination
         pdf.setFont("helvetica", "normal");
         pdf.setFontSize(8);
