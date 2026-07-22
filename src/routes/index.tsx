@@ -228,26 +228,9 @@ function Home() {
                           type="button"
                           aria-label={`Ouvrir la fiche ${c.name}`}
                           onClick={() => setSelected(c)}
-                          className="relative grid h-8 w-8 place-items-center overflow-hidden rounded-full border-2 border-card bg-white text-[10px] font-semibold text-white shadow-sm outline-none transition-transform duration-200 hover:z-10 hover:scale-110 focus-visible:z-10 focus-visible:scale-110 focus-visible:ring-2 focus-visible:ring-primary/60"
-                          style={
-                            c.domain
-                              ? undefined
-                              : { background: `linear-gradient(135deg, oklch(0.62 0.16 ${c.hue}), oklch(0.45 0.2 ${c.hue + 30}))` }
-                          }
+                          className="relative grid h-8 w-8 place-items-center overflow-hidden rounded-full border-2 border-card bg-white text-[10px] shadow-sm outline-none transition-transform duration-200 hover:z-10 hover:scale-110 focus-visible:z-10 focus-visible:scale-110 focus-visible:ring-2 focus-visible:ring-primary/60"
                         >
-                          {c.domain ? (
-                            <img
-                              src={`https://www.google.com/s2/favicons?domain=${c.domain}&sz=64`}
-                              alt=""
-                              loading="lazy"
-                              className="h-full w-full object-cover"
-                              onError={(e) => {
-                                (e.currentTarget as HTMLImageElement).style.display = "none";
-                              }}
-                            />
-                          ) : (
-                            c.initials
-                          )}
+                          <CompanyLogo domain={c.domain} initials={c.initials} hue={c.hue} size={64} />
                         </button>
                       </TooltipTrigger>
                       <TooltipContent
