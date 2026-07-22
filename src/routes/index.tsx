@@ -271,6 +271,78 @@ function Home() {
         })}
       </section>
       <StepNav current="/" />
+
+      <Sheet open={selected !== null} onOpenChange={(open) => !open && setSelected(null)}>
+        <SheetContent side="right" className="w-full sm:max-w-md overflow-y-auto">
+          {selected && (
+            <>
+              <SheetHeader className="text-left">
+                <div className="flex items-center gap-3">
+                  <div
+                    className="relative grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-2xl border border-border bg-white text-sm font-semibold text-white shadow-sm"
+                    style={
+                      selected.domain
+                        ? undefined
+                        : { background: `linear-gradient(135deg, oklch(0.62 0.16 ${selected.hue}), oklch(0.45 0.2 ${selected.hue + 30}))` }
+                    }
+                  >
+                    {selected.domain ? (
+                      <img
+                        src={`https://www.google.com/s2/favicons?domain=${selected.domain}&sz=128`}
+                        alt=""
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      selected.initials
+                    )}
+                  </div>
+                  <div className="min-w-0">
+                    <SheetTitle className="text-base leading-tight">{selected.name}</SheetTitle>
+                    <SheetDescription className="mt-0.5 text-xs">Fiche entreprise</SheetDescription>
+                  </div>
+                </div>
+              </SheetHeader>
+
+              <div className="mt-6 space-y-4">
+                <div className="rounded-2xl border border-border bg-card p-4">
+                  <div className="flex items-center gap-2 text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
+                    <Building2 className="h-3.5 w-3.5" aria-hidden="true" />
+                    Secteur
+                  </div>
+                  <div className="mt-1 text-sm font-medium text-foreground">{selected.sector}</div>
+                </div>
+
+                <div className="rounded-2xl border border-border bg-card p-4">
+                  <div className="flex items-center gap-2 text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
+                    <MapPin className="h-3.5 w-3.5" aria-hidden="true" />
+                    Localisation
+                  </div>
+                  <div className="mt-1 text-sm font-medium text-foreground">{selected.city}</div>
+                </div>
+
+                <div className="rounded-2xl border border-border bg-card p-4">
+                  <div className="text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
+                    Résumé
+                  </div>
+                  <p className="mt-2 text-sm leading-relaxed text-foreground/85">{selected.summary}</p>
+                </div>
+
+                {selected.domain && (
+                  <a
+                    href={`https://${selected.domain}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 text-xs font-medium text-primary underline-offset-4 hover:underline"
+                  >
+                    Voir le site
+                    <ExternalLink className="h-3 w-3" aria-hidden="true" />
+                  </a>
+                )}
+              </div>
+            </>
+          )}
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }
