@@ -13,6 +13,7 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { LucieProvider } from "@/lib/lucie-store";
+import { BookingProvider } from "@/lib/booking-store";
 import { AppShell } from "@/components/app-shell";
 
 function NotFoundComponent() {
@@ -151,13 +152,15 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <LucieProvider>
-        {isStandalone ? (
-          <Outlet />
-        ) : (
-          <AppShell>
+        <BookingProvider>
+          {isStandalone ? (
             <Outlet />
-          </AppShell>
-        )}
+          ) : (
+            <AppShell>
+              <Outlet />
+            </AppShell>
+          )}
+        </BookingProvider>
       </LucieProvider>
     </QueryClientProvider>
   );
