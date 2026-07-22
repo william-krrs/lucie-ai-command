@@ -8,6 +8,64 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { SOCIAL_PROOF_COMPANY_COUNT } from "@/lib/config";
 
+type LogoStatus = "loading" | "loaded" | "error";
+
+function CompanyLogo({
+  domain,
+  initials,
+  hue,
+  size = 64,
+  className = "",
+}: {
+  domain: string | null;
+  initials: string;
+  hue: number;
+  size?: number;
+  className?: string;
+}) {
+  const [status, setStatus] = useState<LogoStatus>(domain ? "loading" : "error");
+  const showFallback = !domain || status === "error";
+  const fallbackStyle = showFallback
+    ? { background: `linear-gradient(135deg, oklch(0.62 0.16 ${hue}), oklch(0.45 0.2 ${hue + 30}))` }
+    : undefined;
+
+  return (
+    <span
+      className={`relative block h-full w-full ${showFallback ? "text-white" : "bg-white"}`}
+      style={fallbackStyle}
+    >
+      {domain && status !== "error" && (
+        <>
+          {status === "loading" && (
+            <span
+              aria-hidden="true"
+              className="absolute inset-0 animate-pulse bg-gradient-to-br from-muted via-muted/60 to-muted"
+            />
+          )}
+          <img
+            src={`https://www.google.com/s2/favicons?domain=${domain}&sz=${size}`}
+            alt=""
+            loading="lazy"
+            decoding="async"
+            width={size}
+            height={size}
+            onLoad={() => setStatus("loaded")}
+            onError={() => setStatus("error")}
+            className={`relative h-full w-full object-cover transition-opacity duration-300 ${
+              status === "loaded" ? "opacity-100" : "opacity-0"
+            } ${className}`}
+          />
+        </>
+      )}
+      {showFallback && (
+        <span className="absolute inset-0 grid place-items-center font-semibold">
+          {initials}
+        </span>
+      )}
+    </span>
+  );
+}
+
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
@@ -170,26 +228,9 @@ function Home() {
                           type="button"
                           aria-label={`Ouvrir la fiche ${c.name}`}
                           onClick={() => setSelected(c)}
-                          className="relative grid h-8 w-8 place-items-center overflow-hidden rounded-full border-2 border-card bg-white text-[10px] font-semibold text-white shadow-sm outline-none transition-transform duration-200 hover:z-10 hover:scale-110 focus-visible:z-10 focus-visible:scale-110 focus-visible:ring-2 focus-visible:ring-primary/60"
-                          style={
-                            c.domain
-                              ? undefined
-                              : { background: `linear-gradient(135deg, oklch(0.62 0.16 ${c.hue}), oklch(0.45 0.2 ${c.hue + 30}))` }
-                          }
+                          className="relative grid h-8 w-8 place-items-center overflow-hidden rounded-full border-2 border-card bg-white text-[10px] shadow-sm outline-none transition-transform duration-200 hover:z-10 hover:scale-110 focus-visible:z-10 focus-visible:scale-110 focus-visible:ring-2 focus-visible:ring-primary/60"
                         >
-                          {c.domain ? (
-                            <img
-                              src={`https://www.google.com/s2/favicons?domain=${c.domain}&sz=64`}
-                              alt=""
-                              loading="lazy"
-                              className="h-full w-full object-cover"
-                              onError={(e) => {
-                                (e.currentTarget as HTMLImageElement).style.display = "none";
-                              }}
-                            />
-                          ) : (
-                            c.initials
-                          )}
+                          <CompanyLogo domain={c.domain} initials={c.initials} hue={c.hue} size={64} />
                         </button>
                       </TooltipTrigger>
                       <TooltipContent
@@ -279,22 +320,14 @@ function Home() {
               <SheetHeader className="text-left">
                 <div className="flex items-center gap-3">
                   <div
-                    className="relative grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-2xl border border-border bg-white text-sm font-semibold text-white shadow-sm"
-                    style={
-                      selected.domain
-                        ? undefined
-                        : { background: `linear-gradient(135deg, oklch(0.62 0.16 ${selected.hue}), oklch(0.45 0.2 ${selected.hue + 30}))` }
-                    }
+                    className="relative grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-2xl border border-border bg-white text-sm shadow-sm"
                   >
-                    {selected.domain ? (
-                      <img
-                        src={`https://www.google.com/s2/favicons?domain=${selected.domain}&sz=128`}
-                        alt=""
-                        className="h-full w-full object-cover"
-                      />
-                    ) : (
-                      selected.initials
-                    )}
+                    <CompanyLogo
+                      domain={selected.domain}
+                      initials={selected.initials}
+                      hue={selected.hue}
+                      size={128}
+                    />
                   </div>
                   <div className="min-w-0">
                     <SheetTitle className="text-base leading-tight">{selected.name}</SheetTitle>
