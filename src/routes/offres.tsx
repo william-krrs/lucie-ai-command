@@ -15,7 +15,9 @@ export const Route = createFileRoute("/offres")({
       },
       { property: "og:title", content: "Offres & tarifs — Lucie" },
       { property: "og:description", content: "Essential, Pro, Premium — 3 formules pour Lucie." },
+      { property: "og:url", content: "https://lucie-ai-command.lovable.app/offres" },
     ],
+    links: [{ rel: "canonical", href: "https://lucie-ai-command.lovable.app/offres" }],
   }),
   component: Offres,
 });

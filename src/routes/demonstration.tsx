@@ -12,7 +12,9 @@ export const Route = createFileRoute("/demonstration")({
       },
       { property: "og:title", content: "Démonstration — Lucie" },
       { property: "og:description", content: "Avant / après Lucie : la différence en une image." },
+      { property: "og:url", content: "https://lucie-ai-command.lovable.app/demonstration" },
     ],
+    links: [{ rel: "canonical", href: "https://lucie-ai-command.lovable.app/demonstration" }],
   }),
   component: Demonstration,
 });

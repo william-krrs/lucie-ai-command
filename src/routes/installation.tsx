@@ -21,7 +21,9 @@ export const Route = createFileRoute("/installation")({
       },
       { property: "og:title", content: "Installation — Lucie" },
       { property: "og:description", content: "Le parcours de mise en production de Lucie." },
+      { property: "og:url", content: "https://lucie-ai-command.lovable.app/installation" },
     ],
+    links: [{ rel: "canonical", href: "https://lucie-ai-command.lovable.app/installation" }],
   }),
   component: Installation,
 });
