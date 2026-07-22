@@ -10,7 +10,7 @@ const STEPS = [
   { to: "/demonstration", label: "Démonstration" },
   { to: "/offres", label: "Offres" },
   { to: "/installation", label: "Installation" },
-  { to: "/suivi", label: "Suivi" },
+  { to: "/preparation", label: "Questionnaire" },
   { to: "/faq", label: "Questions fréquentes" },
 ] as const;
 
