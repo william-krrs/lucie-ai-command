@@ -124,6 +124,8 @@ type Company = {
   hue: number;
 };
 
+// Pour utiliser un logo officiel personnalisé, ajoutez `logoUrl: "https://..."` dans l'objet entreprise.
+// Si logoUrl est absent, le logo est récupéré automatiquement via le favicon du domaine.
 const COMPANIES: Company[] = [
   {
     name: "Basic Fit",
