@@ -8,6 +8,7 @@ import {
   Clock,
   Wrench,
   Package,
+  AlertCircle,
 } from "lucide-react";
 import { PageHeader } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
@@ -45,6 +46,7 @@ export const Route = createFileRoute("/merci")({
 function Merci() {
   const { plan } = Route.useSearch();
   const planLabel = plan ? PLAN_LABELS[plan] : "votre formule Lucie";
+  const planMissing = !plan;
 
   return (
     <div className="space-y-10">
@@ -53,6 +55,55 @@ function Merci() {
         title="Merci — bienvenue chez Lucie"
         description="Votre paiement a bien été reçu. Notre équipe prend le relais pour lancer votre installation."
       />
+
+      {planMissing && (
+        <section
+          role="status"
+          className="rounded-2xl border border-amber-500/30 bg-amber-500/[0.06] p-5 sm:p-6"
+        >
+          <div className="flex items-start gap-3">
+            <AlertCircle
+              className="mt-0.5 h-5 w-5 shrink-0 text-amber-600"
+              aria-hidden="true"
+            />
+            <div className="space-y-2 text-sm">
+              <p className="font-semibold text-foreground">
+                Paiement bien reçu — formule non détectée automatiquement
+              </p>
+              <p className="text-muted-foreground">
+                Si vous venez de régler mais que la page n'a pas retenu votre
+                formule (redirection Stripe incomplète, retour arrière du
+                navigateur, lien ouvert dans un autre onglet), aucun souci :
+                votre paiement est enregistré côté Stripe. Sélectionnez
+                ci-dessous la formule payée pour retrouver le bon récapitulatif,
+                ou écrivez-nous à{" "}
+                <a
+                  href="mailto:contact@lucie.ai?subject=Confirmation%20paiement%20Lucie"
+                  className="font-medium text-primary underline underline-offset-2"
+                >
+                  contact@lucie.ai
+                </a>
+                {" "}avec votre reçu Stripe, on prend le relais sous 24 h.
+              </p>
+              <div className="flex flex-wrap gap-2 pt-1">
+                {(["essential", "pro", "premium"] as const).map((p) => (
+                  <Button
+                    key={p}
+                    asChild
+                    size="sm"
+                    variant="outline"
+                    className="h-8 rounded-lg text-xs"
+                  >
+                    <Link to="/merci" search={{ plan: p }}>
+                      {PLAN_LABELS[p]}
+                    </Link>
+                  </Button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
 
       <section className="rounded-3xl border border-primary/20 bg-primary/[0.04] p-8 shadow-[var(--shadow-elevated)] sm:p-10">
         <div className="flex flex-col items-center text-center">
