@@ -39,10 +39,15 @@ function fmtEUR(n: number) {
 
 function SharedDiagnosticPage() {
   const data = Route.useLoaderData();
+  const [shareUrl, setShareUrl] = useState("");
   if (!data.found) return null;
   const snap = data.snapshot;
   const ref = useRef<HTMLDivElement>(null);
   const [exporting, setExporting] = useState(false);
+
+  useEffect(() => {
+    setShareUrl(window.location.href);
+  }, []);
 
   const handleExport = async () => {
     if (!ref.current || exporting) return;
