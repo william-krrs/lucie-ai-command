@@ -383,6 +383,106 @@ function RecommandationPage() {
         </div>
       )}
 
+      {shareHistory.length > 0 && (
+        <section
+          aria-labelledby="share-history-title"
+          className="rounded-2xl border border-border bg-card/50 p-4"
+        >
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <History className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+              <h2
+                id="share-history-title"
+                className="text-sm font-semibold text-foreground"
+              >
+                Historique des liens ({shareHistory.length})
+              </h2>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 rounded-lg text-xs text-muted-foreground hover:text-destructive"
+              onClick={() => {
+                clearShareHistory();
+                setShareHistory([]);
+                toast.success("Historique vidé");
+              }}
+            >
+              Tout effacer
+            </Button>
+          </div>
+          <ul className="mt-3 divide-y divide-border">
+            {shareHistory.map((entry) => {
+              const date = new Date(entry.createdAt);
+              const dateLabel = date.toLocaleString("fr-FR", {
+                day: "2-digit",
+                month: "short",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+              });
+              return (
+                <li
+                  key={entry.url}
+                  className="flex flex-col gap-2 py-2.5 sm:flex-row sm:items-center sm:justify-between"
+                >
+                  <div className="min-w-0">
+                    <div className="truncate text-sm font-medium text-foreground">
+                      {entry.companyName || "Diagnostic partagé"}
+                    </div>
+                    <div className="mt-0.5 flex items-center gap-2 text-xs text-muted-foreground">
+                      <time dateTime={entry.createdAt}>{dateLabel}</time>
+                      <span aria-hidden="true">•</span>
+                      <span className="truncate font-mono">{entry.url}</span>
+                    </div>
+                  </div>
+                  <div className="flex shrink-0 items-center gap-1">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-8 rounded-lg"
+                      onClick={async () => {
+                        try {
+                          await navigator.clipboard.writeText(entry.url);
+                          toast.success("Lien copié");
+                        } catch {
+                          toast.error("Copie impossible");
+                        }
+                      }}
+                    >
+                      <Copy className="h-3.5 w-3.5" />
+                      <span className="sr-only">Copier</span>
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-8 rounded-lg"
+                      asChild
+                    >
+                      <a href={entry.url} target="_blank" rel="noopener noreferrer">
+                        <ExternalLink className="h-3.5 w-3.5" />
+                        <span className="sr-only">Ouvrir</span>
+                      </a>
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 rounded-lg text-muted-foreground hover:text-destructive"
+                      onClick={() => {
+                        setShareHistory(removeShareHistoryEntry(entry.url));
+                      }}
+                      aria-label="Supprimer de l’historique"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      )}
+
       <div ref={exportRef} className="space-y-6 bg-background">
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
         <section
