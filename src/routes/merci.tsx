@@ -28,6 +28,116 @@ const PLAN_LABELS: Record<string, string> = {
   premium: "Lucie Premium",
 };
 
+const JOURNEY_STEPS = [
+  {
+    id: "paiement",
+    label: "Paiement",
+    description: "Abonnement + installation",
+    icon: CreditCard,
+  },
+  {
+    id: "questionnaire",
+    label: "Questionnaire",
+    description: "Configuration Lucie",
+    icon: ClipboardList,
+  },
+  {
+    id: "timeline",
+    label: "Timeline",
+    description: "Suivi d'installation",
+    icon: ListChecks,
+  },
+] as const;
+
+function JourneyProgress({ activeIndex }: { activeIndex: number }) {
+  return (
+    <nav aria-label="Progression de votre onboarding" className="w-full">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <div className="text-[11px] font-medium uppercase tracking-widest text-primary">
+            Votre parcours
+          </div>
+          <h2 className="mt-0.5 text-lg font-semibold tracking-tight text-foreground">
+            Où en êtes-vous ?
+          </h2>
+        </div>
+        <p className="max-w-sm text-sm text-muted-foreground">
+          Terminez le questionnaire ci-dessous pour lancer la mise en production de Lucie.
+        </p>
+      </div>
+
+      <ol className="mt-6 grid gap-3 sm:grid-cols-3">
+        {JOURNEY_STEPS.map((step, index) => {
+          const Icon = step.icon;
+          const completed = index < activeIndex;
+          const current = index === activeIndex;
+          const upcoming = index > activeIndex;
+
+          return (
+            <li key={step.id} className="relative">
+              <div
+                className={cn(
+                  "flex items-center gap-3 rounded-2xl border p-4 transition-colors sm:block",
+                  completed && "border-primary/20 bg-primary/[0.04]",
+                  current && "border-primary bg-primary/[0.06] ring-1 ring-primary/30",
+                  upcoming && "border-border bg-card opacity-80",
+                )}
+              >
+                <div className="flex items-center gap-3 sm:mb-3">
+                  <div
+                    className={cn(
+                      "grid h-9 w-9 shrink-0 place-items-center rounded-xl text-sm font-semibold",
+                      completed && "bg-primary text-primary-foreground",
+                      current && "bg-primary text-primary-foreground shadow-[var(--shadow-elevated)]",
+                      upcoming && "bg-muted text-muted-foreground",
+                    )}
+                    aria-hidden={!current}
+                  >
+                    {completed ? (
+                      <CheckCircle2 className="h-5 w-5" />
+                    ) : (
+                      <Icon className="h-4 w-4" />
+                    )}
+                  </div>
+                  <div className="sm:hidden">
+                    <div className="text-sm font-semibold text-foreground">{step.label}</div>
+                    <div className="text-xs text-muted-foreground">{step.description}</div>
+                  </div>
+                </div>
+                <div className="hidden sm:block">
+                  <div className="text-sm font-semibold text-foreground">{step.label}</div>
+                  <div className="text-xs text-muted-foreground">{step.description}</div>
+                </div>
+                {current && (
+                  <span className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-primary sm:mt-3">
+                    Étape en cours <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
+                  </span>
+                )}
+                {completed && (
+                  <span className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-primary sm:mt-3">
+                    Terminé <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" />
+                  </span>
+                )}
+              </div>
+            </li>
+          );
+        })}
+      </ol>
+
+      <div className="mt-6 h-2 w-full overflow-hidden rounded-full bg-border">
+        <div
+          className="h-full rounded-full bg-primary transition-all duration-500"
+          style={{ width: `${((activeIndex + 1) / JOURNEY_STEPS.length) * 100}%` }}
+          aria-hidden="true"
+        />
+      </div>
+      <p className="mt-2 text-right text-xs font-medium text-muted-foreground">
+        Étape {activeIndex + 1} sur {JOURNEY_STEPS.length}
+      </p>
+    </nav>
+  );
+}
+
 export const Route = createFileRoute("/merci")({
   validateSearch: planSearchSchema,
   head: () => ({
