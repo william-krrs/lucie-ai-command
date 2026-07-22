@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import {
   ArrowRight,
@@ -16,6 +16,9 @@ import {
   Check,
   Copy,
   Mail,
+  History,
+  Trash2,
+  ExternalLink,
 } from "lucide-react";
 import { PageHeader } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
@@ -28,6 +31,13 @@ import { formatEUR, useLucie, useMetrics, useRecommendation } from "@/lib/lucie-
 import { PLAN_LABELS, PLAN_TAGLINES, PRIORITY_CTA } from "@/lib/recommendation";
 import { createSharedDiagnostic } from "@/lib/share.functions";
 import { addPdfHistoryEntry } from "@/lib/pdf-history";
+import {
+  addShareHistoryEntry,
+  clearShareHistory,
+  getShareHistory,
+  removeShareHistoryEntry,
+  type ShareHistoryEntry,
+} from "@/lib/share-history";
 
 export const Route = createFileRoute("/recommandation")({
   head: () => ({
@@ -70,7 +80,12 @@ function RecommandationPage() {
   const [isSharing, setIsSharing] = useState(false);
   const [shareError, setShareError] = useState<string | null>(null);
   const [prospectEmail, setProspectEmail] = useState("");
+  const [shareHistory, setShareHistory] = useState<ShareHistoryEntry[]>([]);
   const createShare = useServerFn(createSharedDiagnostic);
+
+  useEffect(() => {
+    setShareHistory(getShareHistory());
+  }, []);
 
   const handleShare = async () => {
     if (isSharing) return;
@@ -111,6 +126,9 @@ function RecommandationPage() {
       });
       const url = `${window.location.origin}/d/${token}`;
       setShareUrl(url);
+      setShareHistory(
+        addShareHistoryEntry({ url, token, companyName: state.companyName || undefined }),
+      );
       try {
         await navigator.clipboard.writeText(url);
         setShareCopied(true);
@@ -363,6 +381,106 @@ function RecommandationPage() {
             </div>
           )}
         </div>
+      )}
+
+      {shareHistory.length > 0 && (
+        <section
+          aria-labelledby="share-history-title"
+          className="rounded-2xl border border-border bg-card/50 p-4"
+        >
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <History className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+              <h2
+                id="share-history-title"
+                className="text-sm font-semibold text-foreground"
+              >
+                Historique des liens ({shareHistory.length})
+              </h2>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 rounded-lg text-xs text-muted-foreground hover:text-destructive"
+              onClick={() => {
+                clearShareHistory();
+                setShareHistory([]);
+                toast.success("Historique vidé");
+              }}
+            >
+              Tout effacer
+            </Button>
+          </div>
+          <ul className="mt-3 divide-y divide-border">
+            {shareHistory.map((entry) => {
+              const date = new Date(entry.createdAt);
+              const dateLabel = date.toLocaleString("fr-FR", {
+                day: "2-digit",
+                month: "short",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+              });
+              return (
+                <li
+                  key={entry.url}
+                  className="flex flex-col gap-2 py-2.5 sm:flex-row sm:items-center sm:justify-between"
+                >
+                  <div className="min-w-0">
+                    <div className="truncate text-sm font-medium text-foreground">
+                      {entry.companyName || "Diagnostic partagé"}
+                    </div>
+                    <div className="mt-0.5 flex items-center gap-2 text-xs text-muted-foreground">
+                      <time dateTime={entry.createdAt}>{dateLabel}</time>
+                      <span aria-hidden="true">•</span>
+                      <span className="truncate font-mono">{entry.url}</span>
+                    </div>
+                  </div>
+                  <div className="flex shrink-0 items-center gap-1">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-8 rounded-lg"
+                      onClick={async () => {
+                        try {
+                          await navigator.clipboard.writeText(entry.url);
+                          toast.success("Lien copié");
+                        } catch {
+                          toast.error("Copie impossible");
+                        }
+                      }}
+                    >
+                      <Copy className="h-3.5 w-3.5" />
+                      <span className="sr-only">Copier</span>
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-8 rounded-lg"
+                      asChild
+                    >
+                      <a href={entry.url} target="_blank" rel="noopener noreferrer">
+                        <ExternalLink className="h-3.5 w-3.5" />
+                        <span className="sr-only">Ouvrir</span>
+                      </a>
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 rounded-lg text-muted-foreground hover:text-destructive"
+                      onClick={() => {
+                        setShareHistory(removeShareHistoryEntry(entry.url));
+                      }}
+                      aria-label="Supprimer de l’historique"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
       )}
 
       <div ref={exportRef} className="space-y-6 bg-background">
