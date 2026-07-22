@@ -242,15 +242,38 @@ function Home() {
 
             <div className="mt-8 flex items-center gap-6 text-xs text-muted-foreground">
               <TooltipProvider delayDuration={150}>
-                <div className="flex -space-x-2">
+                <ul
+                  role="list"
+                  aria-label={`Aperçu de ${COMPANIES.length} entreprises clientes de Lucie`}
+                  className="flex -space-x-2"
+                  onKeyDown={(e: KeyboardEvent<HTMLUListElement>) => {
+                    const keys = ["ArrowRight", "ArrowLeft", "Home", "End"];
+                    if (!keys.includes(e.key)) return;
+                    const buttons = Array.from(
+                      e.currentTarget.querySelectorAll<HTMLButtonElement>('button[data-badge="1"]')
+                    );
+                    const idx = buttons.indexOf(document.activeElement as HTMLButtonElement);
+                    if (idx === -1) return;
+                    e.preventDefault();
+                    let next = idx;
+                    if (e.key === "ArrowRight") next = (idx + 1) % buttons.length;
+                    else if (e.key === "ArrowLeft") next = (idx - 1 + buttons.length) % buttons.length;
+                    else if (e.key === "Home") next = 0;
+                    else if (e.key === "End") next = buttons.length - 1;
+                    buttons[next]?.focus();
+                  }}
+                >
                   {COMPANIES.map((c) => (
-                    <Tooltip key={c.name}>
+                    <li key={c.name} className="contents">
+                    <Tooltip>
                       <TooltipTrigger asChild>
                         <button
                           type="button"
-                          aria-label={`Ouvrir la fiche ${c.name}`}
+                          data-badge="1"
+                          aria-label={`${c.name} — ${c.sector}. Ouvrir la fiche entreprise`}
+                          aria-haspopup="dialog"
                           onClick={() => setSelected(c)}
-                          className="relative grid h-8 w-8 place-items-center overflow-hidden rounded-full border-2 border-card bg-white text-[10px] shadow-sm outline-none transition-transform duration-200 hover:z-10 hover:scale-110 focus-visible:z-10 focus-visible:scale-110 focus-visible:ring-2 focus-visible:ring-primary/60"
+                          className="relative grid h-11 w-11 sm:h-8 sm:w-8 place-items-center overflow-hidden rounded-full border-2 border-card bg-white text-[10px] shadow-sm outline-none transition-transform duration-200 hover:z-10 hover:scale-110 focus-visible:z-10 focus-visible:scale-110 focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                         >
                           <CompanyLogo
                             domain={c.domain}
@@ -266,6 +289,7 @@ function Home() {
                         side="top"
                         align="center"
                         sideOffset={8}
+                        role="tooltip"
                         className="max-w-[240px] rounded-xl border border-border/60 bg-popover/95 px-3 py-2 text-left shadow-lg backdrop-blur data-[state=delayed-open]:animate-fade-in"
                       >
                         <div className="text-[13px] font-semibold leading-tight text-foreground">
@@ -282,17 +306,22 @@ function Home() {
                         )}
                       </TooltipContent>
                     </Tooltip>
+                    </li>
                   ))}
-                </div>
+                </ul>
                 <div className="flex flex-col gap-1">
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <span className="inline-flex cursor-help items-center gap-1 underline-offset-4 hover:underline focus-visible:rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring" tabIndex={0}>
+                      <button
+                        type="button"
+                        aria-label={`+${SOCIAL_PROOF_COMPANY_COUNT} entreprises utilisent Lucie au quotidien. Plus d'informations`}
+                        className="inline-flex cursor-help items-center gap-1 rounded text-left underline-offset-4 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+                      >
                         +{SOCIAL_PROOF_COMPANY_COUNT} entreprises utilisent Lucie au quotidien
                         <Info className="h-3 w-3 text-muted-foreground/80" aria-hidden="true" />
-                      </span>
+                      </button>
                     </TooltipTrigger>
-                    <TooltipContent side="top" align="start" className="max-w-[260px] text-xs leading-relaxed">
+                    <TooltipContent role="tooltip" side="top" align="start" className="max-w-[260px] text-xs leading-relaxed">
                       Chiffre basé sur les entreprises actives utilisant Lucie pour répondre à leurs appels entrants et qualifier leurs prospects en direct.
                     </TooltipContent>
                   </Tooltip>
