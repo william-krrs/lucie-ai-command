@@ -166,28 +166,47 @@ function Info({
 }
 
 function NextStep() {
+  const rec = useRecommendation();
+  const cta = PRIORITY_CTA[rec.priority];
+  const tone =
+    rec.priority === "high"
+      ? {
+          wrap: "border-destructive/30 bg-gradient-to-br from-destructive/[0.08] to-transparent",
+          eyebrow: "text-destructive",
+        }
+      : rec.priority === "medium"
+        ? {
+            wrap: "border-[oklch(0.75_0.15_60)]/35 bg-gradient-to-br from-[oklch(0.75_0.15_60)]/[0.08] to-transparent",
+            eyebrow: "text-[oklch(0.5_0.15_60)]",
+          }
+        : {
+            wrap: "border-border bg-gradient-to-br from-muted/60 to-transparent",
+            eyebrow: "text-muted-foreground",
+          };
+
   return (
-    <section className="rounded-3xl border border-primary/20 bg-gradient-to-br from-primary/[0.07] to-transparent p-6 shadow-[var(--shadow-card)] sm:p-8">
+    <section
+      className={`rounded-3xl border p-6 shadow-[var(--shadow-card)] sm:p-8 ${tone.wrap}`}
+    >
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <div className="text-[11px] font-medium uppercase tracking-widest text-primary">
-            Prochaine étape
+          <div
+            className={`text-[11px] font-medium uppercase tracking-widest ${tone.eyebrow}`}
+          >
+            <span aria-hidden="true">{cta.emoji}</span> {cta.eyebrow}
           </div>
           <h2 className="mt-1 text-lg font-semibold tracking-tight text-foreground sm:text-xl">
-            Passer à la démonstration et aux offres
+            {cta.title}
           </h2>
-          <p className="mt-1 max-w-xl text-sm text-muted-foreground">
-            Poursuivez le parcours pour visualiser Lucie en action puis retrouver
-            votre formule recommandée déjà sélectionnée dans le comparateur.
-          </p>
+          <p className="mt-1 max-w-xl text-sm text-muted-foreground">{cta.description}</p>
         </div>
         <div className="flex flex-wrap gap-2">
           <Button asChild variant="outline" className="rounded-xl">
-            <Link to="/demonstration">Voir la démonstration</Link>
+            <Link to="/demonstration">{cta.secondaryLabel}</Link>
           </Button>
           <Button asChild className="rounded-xl">
             <Link to="/offres">
-              Voir la formule recommandée <ArrowRight className="ml-1 h-4 w-4" />
+              {cta.primaryLabel} <ArrowRight className="ml-1 h-4 w-4" />
             </Link>
           </Button>
         </div>
