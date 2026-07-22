@@ -6,16 +6,16 @@ import { Button } from "@/components/ui/button";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Accueil — Lucie Command Center" },
+      { title: "Accueil — Lucie" },
       {
         name: "description",
         content:
           "L'assistante IA qui répond à vos appels, qualifie vos prospects et vous aide à générer plus de chiffre d'affaires.",
       },
-      { property: "og:title", content: "Lucie Command Center — Accueil" },
+      { property: "og:title", content: "Accueil — Lucie" },
       {
         property: "og:description",
-        content: "Le tableau de bord de votre assistante IA commerciale.",
+        content: "L'assistante IA qui répond à vos appels, qualifie vos prospects et vous aide à générer plus de chiffre d'affaires.",
       },
     ],
   }),
