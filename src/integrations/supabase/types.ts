@@ -19,6 +19,8 @@ export type Database = {
           call_volume: string
           company_name: string
           company_phone: string
+          compatibility_score: number | null
+          compatibility_tier: string | null
           contact_email: string
           contact_name: string
           created_at: string
@@ -32,7 +34,9 @@ export type Database = {
           location: string
           opening_hours: string
           plan: string | null
+          priority: string | null
           rdv_link: string
+          recommended_plan: string | null
           required_info: string
           services: string
           summary: string
@@ -44,6 +48,8 @@ export type Database = {
           call_volume: string
           company_name: string
           company_phone: string
+          compatibility_score?: number | null
+          compatibility_tier?: string | null
           contact_email: string
           contact_name: string
           created_at?: string
@@ -57,7 +63,9 @@ export type Database = {
           location: string
           opening_hours: string
           plan?: string | null
+          priority?: string | null
           rdv_link: string
+          recommended_plan?: string | null
           required_info: string
           services: string
           summary: string
@@ -69,6 +77,8 @@ export type Database = {
           call_volume?: string
           company_name?: string
           company_phone?: string
+          compatibility_score?: number | null
+          compatibility_tier?: string | null
           contact_email?: string
           contact_name?: string
           created_at?: string
@@ -82,7 +92,9 @@ export type Database = {
           location?: string
           opening_hours?: string
           plan?: string | null
+          priority?: string | null
           rdv_link?: string
+          recommended_plan?: string | null
           required_info?: string
           services?: string
           summary?: string

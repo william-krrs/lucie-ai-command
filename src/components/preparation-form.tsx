@@ -21,6 +21,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from "sonner";
 import { submitPreparation } from "@/lib/preparation.functions";
+import { useRecommendation } from "@/lib/lucie-store";
+import {
+  PLAN_LABELS as REC_PLAN_LABELS,
+  PRIORITY_EMOJI,
+  PRIORITY_LABELS,
+  TIER_LABELS,
+} from "@/lib/recommendation";
 
 const CONTACT_EMAIL = "contact@lucieassistant.fr";
 const STORAGE_KEY = "lucie:preparation";
@@ -103,6 +110,7 @@ export function PreparationForm({
   } | null>(null);
   const hydrated = useRef(false);
   const submit = useServerFn(submitPreparation);
+  const rec = useRecommendation();
 
   // Auto-hydrate from localStorage if the prospect comes back later.
   useEffect(() => {
@@ -207,6 +215,11 @@ export function PreparationForm({
     return [
       `Nouvelle préparation Lucie — Formule : ${planLabel}`,
       "",
+      "== 0. Diagnostic ==",
+      `Score de compatibilité : ${rec.score}/100 (${TIER_LABELS[rec.tier]})`,
+      `Formule recommandée : ${rec.plan ? REC_PLAN_LABELS[rec.plan] : "Aucune"}`,
+      `Priorité commerciale : ${PRIORITY_EMOJI[rec.priority]} ${PRIORITY_LABELS[rec.priority]}`,
+      "",
       "== 1. Informations générales ==",
       `Contact : ${form.contactName} <${form.contactEmail}>`,
       `Entreprise : ${form.companyName}`,
@@ -252,6 +265,10 @@ export function PreparationForm({
       const res = await submit({
         data: {
           plan: plan ?? null,
+          compatibilityScore: rec.score,
+          compatibilityTier: rec.tier,
+          recommendedPlan: rec.plan,
+          priority: rec.priority,
           contactName: form.contactName,
           contactEmail: form.contactEmail,
           companyName: form.companyName,
@@ -335,6 +352,13 @@ export function PreparationForm({
           confirmation={confirmation}
           planLabel={planLabel}
           plan={plan}
+          diagnostic={{
+            score: rec.score,
+            tierLabel: TIER_LABELS[rec.tier],
+            recommendedPlanLabel: rec.plan ? REC_PLAN_LABELS[rec.plan] : "—",
+            priorityLabel: PRIORITY_LABELS[rec.priority],
+            priorityEmoji: PRIORITY_EMOJI[rec.priority],
+          }}
           onReset={() => {
             setSubmitted(false);
             setConfirmation(null);
@@ -696,11 +720,19 @@ function SubmittedConfirmation({
   confirmation,
   planLabel,
   plan,
+  diagnostic,
   onReset,
 }: {
   confirmation: { id: string; emailStatus: "sent" | "skipped" | "failed" };
   planLabel: string;
   plan?: "essential" | "pro" | "premium";
+  diagnostic: {
+    score: number;
+    tierLabel: string;
+    recommendedPlanLabel: string;
+    priorityLabel: string;
+    priorityEmoji: string;
+  };
   onReset: () => void;
 }) {
   const reference = confirmation.id.slice(0, 8).toUpperCase();
@@ -725,6 +757,36 @@ function SubmittedConfirmation({
         <p className="mt-2 text-xs text-muted-foreground">
           Référence : <span className="font-mono font-medium text-foreground">#{reference}</span>
         </p>
+      </div>
+
+      <div className="mt-6 grid gap-3 rounded-2xl border border-border bg-card p-4 sm:grid-cols-3 sm:p-5">
+        <div>
+          <div className="text-[11px] uppercase tracking-widest text-muted-foreground">
+            Score de compatibilité
+          </div>
+          <div className="mt-1 text-lg font-semibold tabular-nums text-foreground">
+            {diagnostic.score}
+            <span className="text-sm font-normal text-muted-foreground"> / 100</span>
+          </div>
+          <div className="text-xs text-muted-foreground">{diagnostic.tierLabel}</div>
+        </div>
+        <div>
+          <div className="text-[11px] uppercase tracking-widest text-muted-foreground">
+            Formule recommandée
+          </div>
+          <div className="mt-1 text-lg font-semibold text-foreground">
+            {diagnostic.recommendedPlanLabel}
+          </div>
+        </div>
+        <div>
+          <div className="text-[11px] uppercase tracking-widest text-muted-foreground">
+            Priorité commerciale
+          </div>
+          <div className="mt-1 text-lg font-semibold text-foreground">
+            <span aria-hidden="true">{diagnostic.priorityEmoji}</span>{" "}
+            {diagnostic.priorityLabel}
+          </div>
+        </div>
       </div>
 
       <div className="mt-8 grid gap-4 sm:grid-cols-2">

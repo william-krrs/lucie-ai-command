@@ -3,6 +3,10 @@ import { z } from "zod";
 
 const submissionSchema = z.object({
   plan: z.string().max(50).optional().nullable(),
+  compatibilityScore: z.number().int().min(0).max(100).optional().nullable(),
+  compatibilityTier: z.enum(["excellent", "compatible", "limited", "refuse"]).optional().nullable(),
+  recommendedPlan: z.enum(["essential", "pro", "premium"]).optional().nullable(),
+  priority: z.enum(["high", "medium", "low"]).optional().nullable(),
   contactName: z.string().trim().min(1).max(200),
   contactEmail: z.string().trim().email().max(200),
   companyName: z.string().trim().min(1).max(200),
@@ -35,6 +39,10 @@ export const submitPreparation = createServerFn({ method: "POST" })
       .from("preparation_submissions")
       .insert({
         plan: data.plan ?? null,
+        compatibility_score: data.compatibilityScore ?? null,
+        compatibility_tier: data.compatibilityTier ?? null,
+        recommended_plan: data.recommendedPlan ?? null,
+        priority: data.priority ?? null,
         contact_name: data.contactName,
         contact_email: data.contactEmail,
         company_name: data.companyName,
