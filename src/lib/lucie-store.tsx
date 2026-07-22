@@ -1,4 +1,5 @@
 import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
+import { computeRecommendation, type Recommendation } from "@/lib/recommendation";
 
 export type AcquisitionChannel =
   | "seo"
@@ -85,6 +86,16 @@ export function useMetrics() {
     timeSavedHours,
     goalProgress,
   };
+}
+
+/** Reactive recommendation derived from the current diagnostic state. */
+export function useRecommendation(): Recommendation {
+  const { state } = useLucie();
+  const m = useMetrics();
+  return useMemo(
+    () => computeRecommendation(state, m.monthlyLostRevenue),
+    [state, m.monthlyLostRevenue],
+  );
 }
 
 export const CHANNEL_OPTIONS: { value: AcquisitionChannel; label: string }[] = [
