@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
-import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 
 const NAV = [
   { to: "/", label: "Accueil", icon: Home },
@@ -31,7 +31,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   useEffect(() => setMobileOpen(false), [pathname]);
 
   const navList = (
-    <ul className="space-y-1">
+    <ul className="space-y-1" role="list">
       {NAV.map((item, i) => {
         const active = pathname === item.to;
         const Icon = item.icon;
@@ -39,16 +39,18 @@ export function AppShell({ children }: { children: ReactNode }) {
           <li key={item.to}>
             <Link
               to={item.to}
+              aria-current={active ? "page" : undefined}
               className={cn(
-                "group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-all duration-200",
+                "group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
                 active
                   ? "bg-primary text-primary-foreground shadow-[var(--shadow-elevated)]"
                   : "text-foreground/70 hover:bg-accent hover:text-accent-foreground",
               )}
             >
-              <Icon className="h-4 w-4 shrink-0" strokeWidth={2} />
+              <Icon className="h-4 w-4 shrink-0" strokeWidth={2} aria-hidden="true" />
               <span className="truncate">{item.label}</span>
               <span
+                aria-hidden="true"
                 className={cn(
                   "ml-auto text-[10px] font-mono tabular-nums",
                   active ? "text-primary-foreground/70" : "text-muted-foreground/50",
@@ -65,10 +67,16 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   return (
     <div className="flex min-h-screen w-full bg-background text-foreground">
-      <aside className="hidden md:flex sticky top-0 h-screen w-72 shrink-0 flex-col border-r border-border bg-sidebar">
+      <a href="#main-content" className="skip-link">
+        Aller au contenu principal
+      </a>
+      <aside
+        aria-label="Navigation principale"
+        className="hidden md:flex sticky top-0 h-screen w-72 shrink-0 flex-col border-r border-border bg-sidebar"
+      >
         <div className="flex items-center gap-3 px-6 pt-8 pb-6">
           <div className="grid h-10 w-10 place-items-center rounded-xl bg-primary text-primary-foreground shadow-[var(--shadow-elevated)]">
-            <Sparkles className="h-5 w-5" />
+            <Sparkles className="h-5 w-5" aria-hidden="true" />
           </div>
           <div className="min-w-0">
             <div className="text-sm font-semibold leading-tight tracking-tight">Lucie</div>
@@ -78,7 +86,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           </div>
         </div>
 
-        <nav className="flex-1 px-3">
+        <nav className="flex-1 px-3" aria-label="Étapes du parcours">
           <div className="px-3 pb-2 pt-4 text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
             Navigation
           </div>
@@ -106,22 +114,33 @@ export function AppShell({ children }: { children: ReactNode }) {
       <main className="flex-1 min-w-0">
         <div className="sticky top-0 z-40 flex items-center justify-between gap-3 border-b border-border bg-background/85 px-4 py-3 backdrop-blur md:hidden">
           <Link to="/" className="flex items-center gap-2 min-w-0">
-            <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-primary text-primary-foreground">
+            <span aria-hidden="true" className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-primary text-primary-foreground">
               <Sparkles className="h-4 w-4" />
             </span>
             <span className="truncate text-sm font-semibold tracking-tight">Lucie</span>
           </Link>
           <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
             <SheetTrigger
-              aria-label="Ouvrir le menu"
-              className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-card text-foreground"
+              aria-label={mobileOpen ? "Fermer le menu de navigation" : "Ouvrir le menu de navigation"}
+              aria-haspopup="dialog"
+              aria-expanded={mobileOpen}
+              aria-controls="mobile-nav-panel"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-card text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             >
-              <Menu className="h-4 w-4" />
+              <Menu className="h-4 w-4" aria-hidden="true" />
             </SheetTrigger>
-            <SheetContent side="right" className="w-[85%] max-w-sm bg-sidebar p-0">
-              <SheetTitle className="sr-only">Navigation</SheetTitle>
+            <SheetContent
+              id="mobile-nav-panel"
+              side="right"
+              aria-label="Menu de navigation"
+              className="w-[85%] max-w-sm bg-sidebar p-0"
+            >
+              <SheetTitle className="sr-only">Menu de navigation</SheetTitle>
+              <SheetDescription className="sr-only">
+                Accédez aux différentes étapes du parcours Lucie Command Center.
+              </SheetDescription>
               <div className="flex items-center gap-3 px-6 pt-8 pb-6">
-                <div className="grid h-10 w-10 place-items-center rounded-xl bg-primary text-primary-foreground">
+                <div aria-hidden="true" className="grid h-10 w-10 place-items-center rounded-xl bg-primary text-primary-foreground">
                   <Sparkles className="h-5 w-5" />
                 </div>
                 <div className="min-w-0">
@@ -131,7 +150,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                   </div>
                 </div>
               </div>
-              <nav className="px-3 pb-6">
+              <nav className="px-3 pb-6" aria-label="Étapes du parcours (mobile)">
                 <div className="px-3 pb-2 pt-2 text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
                   Navigation
                 </div>
@@ -140,7 +159,12 @@ export function AppShell({ children }: { children: ReactNode }) {
             </SheetContent>
           </Sheet>
         </div>
-        <div key={pathname} className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10 md:px-10 md:py-12 animate-fade-in">
+        <div
+          id="main-content"
+          tabIndex={-1}
+          key={pathname}
+          className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10 md:px-10 md:py-12 animate-fade-in focus:outline-none"
+        >
           {children}
         </div>
       </main>
