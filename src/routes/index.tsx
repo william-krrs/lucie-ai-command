@@ -341,6 +341,7 @@ function Home() {
                       domain={selected.domain}
                       initials={selected.initials}
                       hue={selected.hue}
+                      alt={`Logo ${selected.name}`}
                       size={128}
                     />
                   </div>
