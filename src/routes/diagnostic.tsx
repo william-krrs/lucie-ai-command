@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { StepNav } from "@/components/step-nav";
+import { RecommendationCard } from "@/components/recommendation-card";
 import {
   CHANNEL_OPTIONS,
   formatEUR,
@@ -225,6 +226,8 @@ function Diagnostic() {
               par an.
             </p>
           </div>
+
+            <RecommendationCard />
         </div>
       </div>
       <StepNav current="/diagnostic" />
