@@ -118,6 +118,8 @@ type Company = {
   city: string;
   summary: string;
   domain: string | null;
+  /** URL directe vers le logo officiel (png/jpg/svg). Si absent, on tente le favicon via Google. */
+  logoUrl?: string | null;
   initials: string;
   hue: number;
 };
