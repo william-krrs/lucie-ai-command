@@ -1,8 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, PhoneCall, Sparkles, Zap, Clock, Users, LineChart } from "lucide-react";
+import { ArrowRight, PhoneCall, Sparkles, Zap, Clock, Users, LineChart, Info } from "lucide-react";
 import { PageHeader } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
 import { StepNav } from "@/components/step-nav";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 export const Route = createFileRoute("/")({
   head: () => ({
