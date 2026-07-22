@@ -362,6 +362,7 @@ function Home() {
                   >
                     <CompanyLogo
                       domain={selected.domain}
+                      logoUrl={selected.logoUrl}
                       initials={selected.initials}
                       hue={selected.hue}
                       alt={`Logo ${selected.name}`}
