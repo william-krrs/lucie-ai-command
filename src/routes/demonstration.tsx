@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { X, Check } from "lucide-react";
 import { PageHeader } from "@/components/app-shell";
+import { StepNav } from "@/components/step-nav";
 
 export const Route = createFileRoute("/demonstration")({
   head: () => ({
@@ -92,6 +93,7 @@ function Demonstration() {
           </ul>
         </div>
       </div>
+      <StepNav current="/demonstration" />
     </div>
   );
 }
