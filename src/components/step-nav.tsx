@@ -6,6 +6,7 @@ const STEPS = [
   { to: "/", label: "Accueil" },
   { to: "/diagnostic", label: "Diagnostic" },
   { to: "/roi", label: "ROI" },
+  { to: "/recommandation", label: "Recommandation" },
   { to: "/demonstration", label: "Démonstration" },
   { to: "/offres", label: "Offres" },
   { to: "/installation", label: "Installation" },
