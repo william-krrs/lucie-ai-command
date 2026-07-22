@@ -10,6 +10,7 @@ import {
   ArrowDown,
 } from "lucide-react";
 import { PageHeader } from "@/components/app-shell";
+import { StepNav } from "@/components/step-nav";
 
 export const Route = createFileRoute("/installation")({
   head: () => ({
@@ -106,6 +107,7 @@ function Installation() {
           })}
         </ol>
       </div>
+      <StepNav current="/installation" />
     </div>
   );
 }

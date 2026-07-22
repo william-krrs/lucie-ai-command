@@ -4,6 +4,7 @@ import { Check, Star, Sparkles, Crown } from "lucide-react";
 import { PageHeader } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { StepNav } from "@/components/step-nav";
 
 export const Route = createFileRoute("/offres")({
   head: () => ({
@@ -289,6 +290,7 @@ function Offres() {
           </table>
         </div>
       </section>
+      <StepNav current="/offres" />
     </div>
   );
 }

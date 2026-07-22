@@ -227,6 +227,7 @@ function Diagnostic() {
           </div>
         </div>
       </div>
+      <StepNav current="/diagnostic" />
     </div>
   );
 }
