@@ -1,7 +1,8 @@
 import { createFileRoute, notFound } from "@tanstack/react-router";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Download, Loader2, Lock, ShieldCheck, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { QrCodeCard } from "@/components/qr-code";
 import { getSharedDiagnostic, type DiagnosticSnapshot } from "@/lib/share.functions";
 import { PLAN_LABELS, PRIORITY_LABELS, TIER_LABELS } from "@/lib/recommendation";
 
@@ -38,10 +39,16 @@ function fmtEUR(n: number) {
 
 function SharedDiagnosticPage() {
   const data = Route.useLoaderData();
-  if (!data.found) return null;
-  const snap = data.snapshot;
+  const [shareUrl, setShareUrl] = useState("");
   const ref = useRef<HTMLDivElement>(null);
   const [exporting, setExporting] = useState(false);
+
+  useEffect(() => {
+    setShareUrl(window.location.href);
+  }, []);
+
+  if (!data.found) return null;
+  const snap = data.snapshot;
 
   const handleExport = async () => {
     if (!ref.current || exporting) return;
@@ -155,6 +162,14 @@ function SharedDiagnosticPage() {
             fondée sur les données déclarées.
           </p>
         </div>
+
+        {shareUrl && (
+          <QrCodeCard
+            url={shareUrl}
+            label={`QR code du diagnostic de ${snap.companyName || "Lucie"}`}
+            companyName={snap.companyName || "diagnostic"}
+          />
+        )}
       </main>
     </div>
   );
