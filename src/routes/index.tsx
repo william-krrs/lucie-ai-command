@@ -84,7 +84,7 @@ function Home() {
                   />
                 ))}
               </div>
-              <span>+120 entreprises utilisent Lucie au quotidien</span>
+              <span>+ 25 entreprises utilisent Lucie au quotidien</span>
             </div>
           </div>
 
