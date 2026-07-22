@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as RoiRouteImport } from './routes/roi'
 import { Route as DiagnosticRouteImport } from './routes/diagnostic'
+import { Route as DemonstrationRouteImport } from './routes/demonstration'
 import { Route as IndexRouteImport } from './routes/index'
 
 const RoiRoute = RoiRouteImport.update({
@@ -23,6 +24,11 @@ const DiagnosticRoute = DiagnosticRouteImport.update({
   path: '/diagnostic',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DemonstrationRoute = DemonstrationRouteImport.update({
+  id: '/demonstration',
+  path: '/demonstration',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -31,30 +37,34 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/demonstration': typeof DemonstrationRoute
   '/diagnostic': typeof DiagnosticRoute
   '/roi': typeof RoiRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/demonstration': typeof DemonstrationRoute
   '/diagnostic': typeof DiagnosticRoute
   '/roi': typeof RoiRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/demonstration': typeof DemonstrationRoute
   '/diagnostic': typeof DiagnosticRoute
   '/roi': typeof RoiRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/diagnostic' | '/roi'
+  fullPaths: '/' | '/demonstration' | '/diagnostic' | '/roi'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/diagnostic' | '/roi'
-  id: '__root__' | '/' | '/diagnostic' | '/roi'
+  to: '/' | '/demonstration' | '/diagnostic' | '/roi'
+  id: '__root__' | '/' | '/demonstration' | '/diagnostic' | '/roi'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  DemonstrationRoute: typeof DemonstrationRoute
   DiagnosticRoute: typeof DiagnosticRoute
   RoiRoute: typeof RoiRoute
 }
@@ -75,6 +85,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DiagnosticRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/demonstration': {
+      id: '/demonstration'
+      path: '/demonstration'
+      fullPath: '/demonstration'
+      preLoaderRoute: typeof DemonstrationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -87,6 +104,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  DemonstrationRoute: DemonstrationRoute,
   DiagnosticRoute: DiagnosticRoute,
   RoiRoute: RoiRoute,
 }
