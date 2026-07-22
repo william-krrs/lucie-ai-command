@@ -133,9 +133,17 @@ function Offres() {
           const Icon = p.icon;
           const featured = p.featured;
           return (
-            <button
+            <div
               key={p.key}
               onClick={() => setSelected(p.key)}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  setSelected(p.key);
+                }
+              }}
               className={cn(
                 "group relative flex flex-col rounded-3xl border p-7 text-left transition-all duration-300",
                 "shadow-[var(--shadow-card)] hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)]",
@@ -202,6 +210,7 @@ function Offres() {
               </ul>
 
               <Button
+                asChild
                 className={cn(
                   "mt-7 h-11 rounded-xl transition-all",
                   featured
@@ -209,9 +218,16 @@ function Offres() {
                     : "bg-foreground text-background hover:bg-foreground/90",
                 )}
               >
-                {p.cta}
+                <a
+                  href={STRIPE_LINKS[p.key]}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {p.cta}
+                </a>
               </Button>
-            </button>
+            </div>
           );
         })}
       </div>
