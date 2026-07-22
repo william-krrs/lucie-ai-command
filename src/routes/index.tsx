@@ -320,22 +320,14 @@ function Home() {
               <SheetHeader className="text-left">
                 <div className="flex items-center gap-3">
                   <div
-                    className="relative grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-2xl border border-border bg-white text-sm font-semibold text-white shadow-sm"
-                    style={
-                      selected.domain
-                        ? undefined
-                        : { background: `linear-gradient(135deg, oklch(0.62 0.16 ${selected.hue}), oklch(0.45 0.2 ${selected.hue + 30}))` }
-                    }
+                    className="relative grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-2xl border border-border bg-white text-sm shadow-sm"
                   >
-                    {selected.domain ? (
-                      <img
-                        src={`https://www.google.com/s2/favicons?domain=${selected.domain}&sz=128`}
-                        alt=""
-                        className="h-full w-full object-cover"
-                      />
-                    ) : (
-                      selected.initials
-                    )}
+                    <CompanyLogo
+                      domain={selected.domain}
+                      initials={selected.initials}
+                      hue={selected.hue}
+                      size={128}
+                    />
                   </div>
                   <div className="min-w-0">
                     <SheetTitle className="text-base leading-tight">{selected.name}</SheetTitle>
