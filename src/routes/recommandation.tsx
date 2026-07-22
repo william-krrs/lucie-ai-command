@@ -284,31 +284,41 @@ function RecommandationPage() {
           {shareError ? (
             <p className="text-sm text-destructive">{shareError}</p>
           ) : (
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-              <div className="min-w-0">
-                <div className="text-[11px] font-medium uppercase tracking-widest text-primary">
-                  Lien de partage sécurisé — expire dans 30 jours
+            <div className="space-y-4">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <div className="min-w-0">
+                  <div className="text-[11px] font-medium uppercase tracking-widest text-primary">
+                    Lien de partage sécurisé — expire dans 30 jours
+                  </div>
+                  <p className="mt-1 truncate font-mono text-xs text-foreground sm:text-sm">
+                    {shareUrl}
+                  </p>
                 </div>
-                <p className="mt-1 truncate font-mono text-xs text-foreground sm:text-sm">
-                  {shareUrl}
-                </p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="rounded-xl"
+                  onClick={handleCopyAgain}
+                >
+                  {shareCopied ? (
+                    <>
+                      <Check className="mr-1.5 h-4 w-4 text-primary" /> Copié
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="mr-1.5 h-4 w-4" /> Copier
+                    </>
+                  )}
+                </Button>
               </div>
-              <Button
-                variant="outline"
-                size="sm"
-                className="rounded-xl"
-                onClick={handleCopyAgain}
-              >
-                {shareCopied ? (
-                  <>
-                    <Check className="mr-1.5 h-4 w-4 text-primary" /> Copié
-                  </>
-                ) : (
-                  <>
-                    <Copy className="mr-1.5 h-4 w-4" /> Copier
-                  </>
-                )}
-              </Button>
+
+              <div className="border-t border-primary/20 pt-4">
+                <QrCodeCard
+                  url={shareUrl}
+                  label={`QR code du diagnostic de ${state.companyName || "Lucie"}`}
+                  companyName={state.companyName || "diagnostic"}
+                />
+              </div>
             </div>
           )}
         </div>
