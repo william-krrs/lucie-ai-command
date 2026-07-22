@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import {
@@ -11,6 +11,8 @@ import {
   Loader2,
   Mail,
   Database,
+  RotateCcw,
+  History,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,6 +23,7 @@ import { toast } from "sonner";
 import { submitPreparation } from "@/lib/preparation.functions";
 
 const CONTACT_EMAIL = "contact@lucieassistant.fr";
+const STORAGE_KEY = "lucie:preparation";
 
 const PLAN_LABELS: Record<string, string> = {
   essential: "Lucie Essential",
@@ -84,7 +87,79 @@ export function PreparationForm({
     id: string;
     emailStatus: "sent" | "skipped" | "failed";
   } | null>(null);
+  const [resumed, setResumed] = useState<{
+    at: string;
+    submissionId?: string;
+  } | null>(null);
+  const hydrated = useRef(false);
   const submit = useServerFn(submitPreparation);
+
+  // Auto-hydrate from localStorage if the prospect comes back later.
+  useEffect(() => {
+    if (hydrated.current) return;
+    hydrated.current = true;
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return;
+      const saved = JSON.parse(raw) as Partial<FormState> & {
+        plan?: string | null;
+        sentAt?: string;
+        submissionId?: string;
+      };
+      // Only prefill when it matches the current plan (or when no plan filter applies).
+      if (plan && saved.plan && saved.plan !== plan) return;
+      const next: FormState = { ...EMPTY };
+      let hasValue = false;
+      (Object.keys(EMPTY) as (keyof FormState)[]).forEach((k) => {
+        const v = saved[k];
+        if (typeof v === "string" && v.length > 0) {
+          (next[k] as string) = v;
+          hasValue = true;
+        }
+      });
+      if (!hasValue) return;
+      setForm(next);
+      setResumed({ at: saved.sentAt ?? "", submissionId: saved.submissionId });
+    } catch {
+      /* ignore malformed storage */
+    }
+  }, [plan]);
+
+  // Persist every change so a full-page reload keeps the prospect's answers.
+  useEffect(() => {
+    if (!hydrated.current || submitted) return;
+    const anyValue = Object.values(form).some(
+      (v) => typeof v === "string" && v.trim().length > 0,
+    );
+    try {
+      if (anyValue) {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        const previous = raw ? (JSON.parse(raw) as Record<string, unknown>) : {};
+        localStorage.setItem(
+          STORAGE_KEY,
+          JSON.stringify({
+            ...previous,
+            ...form,
+            plan: plan ?? previous.plan ?? null,
+            updatedAt: new Date().toISOString(),
+          }),
+        );
+      }
+    } catch {
+      /* ignore */
+    }
+  }, [form, plan, submitted]);
+
+  const handleReset = () => {
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+    } catch {
+      /* ignore */
+    }
+    setForm(EMPTY);
+    setResumed(null);
+    toast.success("Formulaire réinitialisé.");
+  };
 
   const planLabel = plan ? PLAN_LABELS[plan] : "Non précisée";
 
@@ -257,6 +332,45 @@ export function PreparationForm({
         />
       ) : (
       <form onSubmit={handleSubmit} className="space-y-8" noValidate>
+        {resumed && (
+          <div
+            role="status"
+            className="flex flex-col gap-3 rounded-2xl border border-primary/25 bg-primary/[0.05] p-4 text-sm sm:flex-row sm:items-center sm:justify-between"
+          >
+            <div className="flex items-start gap-3">
+              <History
+                className="mt-0.5 h-5 w-5 shrink-0 text-primary"
+                aria-hidden="true"
+              />
+              <div>
+                <p className="font-semibold text-foreground">
+                  Reprise automatique de votre questionnaire
+                </p>
+                <p className="mt-0.5 text-xs text-muted-foreground">
+                  {resumed.submissionId
+                    ? "Vous aviez déjà envoyé un premier questionnaire. Ajustez vos réponses et renvoyez si besoin."
+                    : "Vos réponses précédentes ont été rechargées. Continuez là où vous vous étiez arrêté."}
+                  {resumed.at && (
+                    <>
+                      {" "}Dernière sauvegarde&nbsp;: {formatWhen(resumed.at)}.
+                    </>
+                  )}
+                </p>
+              </div>
+            </div>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="h-9 self-start rounded-lg text-xs sm:self-auto"
+              onClick={handleReset}
+            >
+              <RotateCcw className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
+              Repartir de zéro
+            </Button>
+          </div>
+        )}
+
         <Section n="1" title="Informations générales">
           <Grid>
             <Field label="Votre nom et prénom" required>
