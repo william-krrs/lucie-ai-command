@@ -36,6 +36,89 @@ const STATS = [
   { icon: LineChart, label: "Taux de conversion", value: "42%", trend: "vs 18% humain" },
 ];
 
+type Company = {
+  name: string;
+  sector: string;
+  city: string;
+  summary: string;
+  domain: string | null;
+  initials: string;
+  hue: number;
+};
+
+const COMPANIES: Company[] = [
+  {
+    name: "Basic Fit",
+    sector: "Salles de sport · Fitness",
+    city: "Réseau national",
+    summary:
+      "Enseigne leader du fitness low-cost en Europe. Lucie prend le relais sur les appels entrants des clubs pour orienter les prospects vers l'inscription en ligne et désengorger l'accueil.",
+    domain: "basic-fit.com",
+    initials: "BF",
+    hue: 12,
+  },
+  {
+    name: "Bruselec — Yohann Brusseau",
+    sector: "Électricité · Photovoltaïque",
+    city: "Fonsorbes / Toulouse (31)",
+    summary:
+      "Artisan électricien spécialisé en panneaux photovoltaïques et bornes de recharge. Lucie qualifie les demandes de devis pendant les chantiers et bloque les rendez-vous d'audit directement dans l'agenda.",
+    domain: "electricien-31.fr",
+    initials: "BR",
+    hue: 220,
+  },
+  {
+    name: "Christine Mintz",
+    sector: "Coaching & accompagnement",
+    city: "France",
+    summary:
+      "Coach indépendante. Lucie assure la permanence téléphonique, filtre les demandes et propose des créneaux de découverte sans rompre la posture professionnelle.",
+    domain: null,
+    initials: "CM",
+    hue: 300,
+  },
+  {
+    name: "Edclim — Wendy Dewolf",
+    sector: "Climatisation & réfrigération",
+    city: "Magny-le-Hongre (77)",
+    summary:
+      "Installation, maintenance et dépannage de systèmes de climatisation. Lucie répond aux urgences en 1,2 s, qualifie les pannes et priorise les interventions selon le type d'équipement.",
+    domain: "ed-clim.fr",
+    initials: "ED",
+    hue: 170,
+  },
+  {
+    name: "Scalisi Bâti Rénov — Mickaël Angelo Scalisi",
+    sector: "Maçonnerie & rénovation",
+    city: "Vidauban (83)",
+    summary:
+      "Entreprise de maçonnerie, gros œuvre et rénovation immobilière dans le Var. Lucie prend les demandes de devis en journée pendant que les équipes sont sur les chantiers.",
+    domain: "scalisi-batirenov.fr",
+    initials: "SB",
+    hue: 30,
+  },
+  {
+    name: "Ligonde Désiré — Désir Vert Paysagiste",
+    sector: "Paysagisme & entretien de jardins",
+    city: "Savigny-sur-Orge (91)",
+    summary:
+      "Création et entretien d'espaces verts pour particuliers et copropriétés. Lucie qualifie la nature du projet (création, entretien, élagage) avant de proposer un rendez-vous sur place.",
+    domain: null,
+    initials: "DV",
+    hue: 140,
+  },
+  {
+    name: "AMS Rénovation — Mehdi Aloui",
+    sector: "Rénovation & multi-services",
+    city: "La Motte-Servolex (73)",
+    summary:
+      "Multi-services de dépannage et rénovation intérieure/extérieure en Savoie. Lucie centralise les demandes urgentes et convertit les appels manqués en rendez-vous confirmés.",
+    domain: "ams-renovation73.fr",
+    initials: "AM",
+    hue: 260,
+  },
+];
+
 function Home() {
   return (
     <div className="space-y-14">
