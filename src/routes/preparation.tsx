@@ -1,23 +1,7 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
-import { useMemo, useState } from "react";
-import {
-  ClipboardCheck,
-  Send,
-  CheckCircle2,
-  AlertCircle,
-  Copy,
-  ArrowRight,
-} from "lucide-react";
 import { PageHeader } from "@/components/app-shell";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { toast } from "sonner";
-
-const CONTACT_EMAIL = "contact@lucieassistant.fr";
+import { PreparationForm } from "@/components/preparation-form";
 
 const searchSchema = z.object({
   plan: z.enum(["essential", "pro", "premium"]).optional(),
