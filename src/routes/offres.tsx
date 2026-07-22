@@ -1,10 +1,21 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
-import { Check, Star, Sparkles, Crown, Wrench, Clock, ShieldCheck } from "lucide-react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import {
+  Check,
+  Star,
+  Sparkles,
+  Crown,
+  Wrench,
+  Clock,
+  ShieldCheck,
+  ArrowRight,
+} from "lucide-react";
 import { PageHeader } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { StepNav } from "@/components/step-nav";
+import { useRecommendation } from "@/lib/lucie-store";
+import { PLAN_LABELS, PLAN_TAGLINES, TIER_LABELS } from "@/lib/recommendation";
 
 export const Route = createFileRoute("/offres")({
   head: () => ({
@@ -38,9 +49,9 @@ const PLANS: {
   badge: string;
   badgeTone: "neutral" | "brand" | "dark";
   icon: React.ComponentType<{ className?: string }>;
+  tagline: string;
   features: string[];
   cta: string;
-  featured?: boolean;
 }[] = [
   {
     key: "essential",
@@ -49,6 +60,7 @@ const PLANS: {
     badge: "Entrée de gamme",
     badgeTone: "neutral",
     icon: Sparkles,
+    tagline: PLAN_TAGLINES.essential,
     features: [
       "Réponse aux appels",
       "Qualification",
@@ -56,7 +68,6 @@ const PLANS: {
       "Agenda",
       "Résumé par mail",
       "Historique des appels",
-      "≈ 3h30 de conversation incluses",
       "Support standard",
     ],
     cta: "Choisir Essential",
@@ -68,6 +79,7 @@ const PLANS: {
     badge: "⭐ La plus choisie",
     badgeTone: "brand",
     icon: Star,
+    tagline: PLAN_TAGLINES.pro,
     features: [
       "Tout Essential",
       "Personnalisation avancée",
@@ -79,7 +91,6 @@ const PLANS: {
       "Support prioritaire",
     ],
     cta: "Choisir Pro",
-    featured: true,
   },
   {
     key: "premium",
@@ -88,6 +99,7 @@ const PLANS: {
     badge: "Grandes entreprises",
     badgeTone: "dark",
     icon: Crown,
+    tagline: PLAN_TAGLINES.premium,
     features: [
       "Tout Pro",
       "CRM",
@@ -112,25 +124,74 @@ const COMPARISON: { label: string; values: Record<PlanKey, string | boolean> }[]
   { label: "Voix personnalisée", values: { essential: false, pro: true, premium: true } },
   { label: "Multilingue", values: { essential: "1", pro: "6", premium: "12+" } },
   { label: "Support", values: { essential: "Standard", pro: "Prioritaire", premium: "Premium 24/7" } },
-  { label: "Minutes incluses", values: { essential: "≈ 3h30", pro: "≈ 12h", premium: "Illimité" } },
 ];
 
 function Offres() {
-  const [selected, setSelected] = useState<PlanKey>("pro");
+  const rec = useRecommendation();
+  const recommendedPlan: PlanKey = rec.plan ?? "pro";
+  const [selected, setSelected] = useState<PlanKey>(recommendedPlan);
+
+  // Keep the highlighted card in sync when the diagnostic changes.
+  useEffect(() => {
+    setSelected(recommendedPlan);
+  }, [recommendedPlan]);
+
+  const isRefusal = rec.tier === "refuse";
 
   return (
     <div className="space-y-14">
       <PageHeader
         eyebrow="Étape 05 · Offres"
-        title="Choisissez votre formule"
-        description="Trois formules, une même exigence. Vous pouvez changer à tout moment."
+        title="Notre recommandation"
+        description="Trois formules, une même exigence. La formule mise en avant est déterminée automatiquement par votre diagnostic."
       />
+
+      <section
+        aria-labelledby="reco-inline-title"
+        className={cn(
+          "rounded-3xl border p-5 shadow-[var(--shadow-card)] sm:p-6",
+          isRefusal
+            ? "border-destructive/30 bg-destructive/[0.05]"
+            : "border-primary/25 bg-primary/[0.05]",
+        )}
+      >
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="min-w-0">
+            <div
+              className={cn(
+                "text-[11px] font-medium uppercase tracking-widest",
+                isRefusal ? "text-destructive" : "text-primary",
+              )}
+            >
+              Score {rec.score}/100 · {TIER_LABELS[rec.tier]}
+            </div>
+            <h2
+              id="reco-inline-title"
+              className="mt-1 text-base font-semibold tracking-tight text-foreground sm:text-lg"
+            >
+              {isRefusal
+                ? "Nous ne recommandons pas de formule pour l'instant."
+                : `Formule recommandée : ${PLAN_LABELS[recommendedPlan]}`}
+            </h2>
+            <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
+              {isRefusal
+                ? "Après analyse, Lucie n'apporterait pas suffisamment de valeur aujourd'hui. Nous préférons être transparents plutôt que de vendre une solution inadaptée."
+                : rec.planReason}
+            </p>
+          </div>
+          <Button asChild variant="outline" className="rounded-xl">
+            <Link to="/recommandation">
+              Voir le diagnostic complet <ArrowRight className="ml-1 h-4 w-4" />
+            </Link>
+          </Button>
+        </div>
+      </section>
 
       <div className="grid items-stretch gap-6 lg:grid-cols-3">
         {PLANS.map((p) => {
           const active = selected === p.key;
           const Icon = p.icon;
-          const featured = p.featured;
+          const featured = p.key === recommendedPlan && !isRefusal;
           return (
             <div
               key={p.key}
@@ -153,8 +214,8 @@ function Offres() {
               )}
             >
               {featured && (
-                <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-primary px-3 py-1 text-[11px] font-medium uppercase tracking-widest text-primary-foreground shadow-[var(--shadow-elevated)]">
-                  Recommandé
+                <span className="absolute -top-3 left-1/2 -translate-x-1/2 inline-flex items-center gap-1.5 rounded-full bg-primary px-3 py-1 text-[11px] font-medium uppercase tracking-widest text-primary-foreground shadow-[var(--shadow-elevated)] animate-fade-in">
+                  <Sparkles className="h-3 w-3" aria-hidden="true" /> Notre recommandation
                 </span>
               )}
 
@@ -196,6 +257,7 @@ function Offres() {
                 </span>
                 <span className="text-sm text-muted-foreground">/mois TTC</span>
               </div>
+              <p className="mt-1.5 text-xs text-muted-foreground">{p.tagline}</p>
 
               <ul className="mt-6 flex-1 space-y-2.5">
                 {p.features.map((f) => (

@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as SuiviRouteImport } from './routes/suivi'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as RoiRouteImport } from './routes/roi'
+import { Route as RecommandationRouteImport } from './routes/recommandation'
 import { Route as PreparationRouteImport } from './routes/preparation'
 import { Route as OffresRouteImport } from './routes/offres'
 import { Route as MerciRouteImport } from './routes/merci'
@@ -34,6 +35,11 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
 const RoiRoute = RoiRouteImport.update({
   id: '/roi',
   path: '/roi',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RecommandationRoute = RecommandationRouteImport.update({
+  id: '/recommandation',
+  path: '/recommandation',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PreparationRoute = PreparationRouteImport.update({
@@ -86,6 +92,7 @@ export interface FileRoutesByFullPath {
   '/merci': typeof MerciRoute
   '/offres': typeof OffresRoute
   '/preparation': typeof PreparationRoute
+  '/recommandation': typeof RecommandationRoute
   '/roi': typeof RoiRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/suivi': typeof SuiviRoute
@@ -99,6 +106,7 @@ export interface FileRoutesByTo {
   '/merci': typeof MerciRoute
   '/offres': typeof OffresRoute
   '/preparation': typeof PreparationRoute
+  '/recommandation': typeof RecommandationRoute
   '/roi': typeof RoiRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/suivi': typeof SuiviRoute
@@ -113,6 +121,7 @@ export interface FileRoutesById {
   '/merci': typeof MerciRoute
   '/offres': typeof OffresRoute
   '/preparation': typeof PreparationRoute
+  '/recommandation': typeof RecommandationRoute
   '/roi': typeof RoiRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/suivi': typeof SuiviRoute
@@ -128,6 +137,7 @@ export interface FileRouteTypes {
     | '/merci'
     | '/offres'
     | '/preparation'
+    | '/recommandation'
     | '/roi'
     | '/sitemap.xml'
     | '/suivi'
@@ -141,6 +151,7 @@ export interface FileRouteTypes {
     | '/merci'
     | '/offres'
     | '/preparation'
+    | '/recommandation'
     | '/roi'
     | '/sitemap.xml'
     | '/suivi'
@@ -154,6 +165,7 @@ export interface FileRouteTypes {
     | '/merci'
     | '/offres'
     | '/preparation'
+    | '/recommandation'
     | '/roi'
     | '/sitemap.xml'
     | '/suivi'
@@ -168,6 +180,7 @@ export interface RootRouteChildren {
   MerciRoute: typeof MerciRoute
   OffresRoute: typeof OffresRoute
   PreparationRoute: typeof PreparationRoute
+  RecommandationRoute: typeof RecommandationRoute
   RoiRoute: typeof RoiRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   SuiviRoute: typeof SuiviRoute
@@ -194,6 +207,13 @@ declare module '@tanstack/react-router' {
       path: '/roi'
       fullPath: '/roi'
       preLoaderRoute: typeof RoiRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/recommandation': {
+      id: '/recommandation'
+      path: '/recommandation'
+      fullPath: '/recommandation'
+      preLoaderRoute: typeof RecommandationRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/preparation': {
@@ -264,6 +284,7 @@ const rootRouteChildren: RootRouteChildren = {
   MerciRoute: MerciRoute,
   OffresRoute: OffresRoute,
   PreparationRoute: PreparationRoute,
+  RecommandationRoute: RecommandationRoute,
   RoiRoute: RoiRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   SuiviRoute: SuiviRoute,

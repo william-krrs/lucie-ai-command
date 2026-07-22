@@ -7,6 +7,7 @@ const PATHS: { path: string; priority: string; changefreq: string }[] = [
   { path: "/", priority: "1.0", changefreq: "weekly" },
   { path: "/diagnostic", priority: "0.9", changefreq: "monthly" },
   { path: "/roi", priority: "0.9", changefreq: "monthly" },
+  { path: "/recommandation", priority: "0.85", changefreq: "monthly" },
   { path: "/demonstration", priority: "0.8", changefreq: "monthly" },
   { path: "/offres", priority: "0.9", changefreq: "monthly" },
   { path: "/installation", priority: "0.7", changefreq: "monthly" },

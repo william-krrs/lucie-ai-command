@@ -11,6 +11,7 @@ import {
   Circle,
   Menu,
   CalendarDays,
+  Gauge,
 } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
@@ -20,6 +21,7 @@ const NAV = [
   { to: "/", label: "Accueil", icon: Home },
   { to: "/diagnostic", label: "Diagnostic", icon: ClipboardList },
   { to: "/roi", label: "ROI", icon: TrendingUp },
+  { to: "/recommandation", label: "Recommandation", icon: Gauge },
   { to: "/demonstration", label: "Démonstration", icon: PlayCircle },
   { to: "/offres", label: "Offres", icon: Package },
   { to: "/installation", label: "Installation", icon: Rocket },
