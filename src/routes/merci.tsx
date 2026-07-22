@@ -10,10 +10,13 @@ import {
   AlertCircle,
   ClipboardList,
   ListChecks,
+  CreditCard,
+  ChevronRight,
 } from "lucide-react";
 import { PageHeader } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
 import { PreparationForm } from "@/components/preparation-form";
+import { cn } from "@/lib/utils";
 
 const planSearchSchema = z.object({
   plan: z.enum(["essential", "pro", "premium"]).optional(),
