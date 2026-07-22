@@ -1,6 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   Outlet,
+  useMatches,
   Link,
   createRootRouteWithContext,
   useRouter,
@@ -144,13 +145,19 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const matches = useMatches();
+  const isStandalone = matches.some((m) => m.routeId?.startsWith("/d/"));
 
   return (
     <QueryClientProvider client={queryClient}>
       <LucieProvider>
-        <AppShell>
+        {isStandalone ? (
           <Outlet />
-        </AppShell>
+        ) : (
+          <AppShell>
+            <Outlet />
+          </AppShell>
+        )}
       </LucieProvider>
     </QueryClientProvider>
   );
