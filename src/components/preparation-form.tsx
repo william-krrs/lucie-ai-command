@@ -21,6 +21,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from "sonner";
 import { submitPreparation } from "@/lib/preparation.functions";
+import { useRecommendation } from "@/lib/lucie-store";
+import {
+  PLAN_LABELS as REC_PLAN_LABELS,
+  PRIORITY_EMOJI,
+  PRIORITY_LABELS,
+  TIER_LABELS,
+} from "@/lib/recommendation";
 
 const CONTACT_EMAIL = "contact@lucieassistant.fr";
 const STORAGE_KEY = "lucie:preparation";
@@ -103,6 +110,7 @@ export function PreparationForm({
   } | null>(null);
   const hydrated = useRef(false);
   const submit = useServerFn(submitPreparation);
+  const rec = useRecommendation();
 
   // Auto-hydrate from localStorage if the prospect comes back later.
   useEffect(() => {
@@ -252,6 +260,10 @@ export function PreparationForm({
       const res = await submit({
         data: {
           plan: plan ?? null,
+          compatibilityScore: rec.score,
+          compatibilityTier: rec.tier,
+          recommendedPlan: rec.plan,
+          priority: rec.priority,
           contactName: form.contactName,
           contactEmail: form.contactEmail,
           companyName: form.companyName,
