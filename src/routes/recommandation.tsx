@@ -14,7 +14,8 @@ import { Button } from "@/components/ui/button";
 import { StepNav } from "@/components/step-nav";
 import { RecommendationCard } from "@/components/recommendation-card";
 import { formatEUR, useLucie, useMetrics } from "@/lib/lucie-store";
-import { PLAN_LABELS, PLAN_TAGLINES } from "@/lib/recommendation";
+import { PLAN_LABELS, PLAN_TAGLINES, PRIORITY_CTA } from "@/lib/recommendation";
+import { useRecommendation } from "@/lib/lucie-store";
 
 export const Route = createFileRoute("/recommandation")({
   head: () => ({
