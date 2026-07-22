@@ -148,13 +148,13 @@ const COMPANIES: Company[] = [
     hue: 220,
   },
   {
-    name: "Christine Mintz",
-    sector: "Coaching & accompagnement",
-    city: "France",
+    name: "Kris Conciergerie 66 — Christine Mintz",
+    sector: "Conciergerie & location saisonnière",
+    city: "Amélie-les-Bains-Palalda (66)",
     summary:
-      "Coach indépendante. Lucie assure la permanence téléphonique, filtre les demandes et propose des créneaux de découverte sans rompre la posture professionnelle.",
-    domain: null,
-    initials: "CM",
+      "Conciergerie dédiée aux propriétaires de locations saisonnières dans les Pyrénées-Orientales (accueil locataires, états des lieux, remise des clés, entretien). Lucie assure la permanence téléphonique, qualifie les demandes des propriétaires et locataires et bloque les interventions dans l'agenda.",
+    domain: "krisconciergerie.com",
+    initials: "KC",
     hue: 300,
   },
   {
