@@ -20,6 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { StepNav } from "@/components/step-nav";
 import {
   CHANNEL_OPTIONS,
   formatEUR,
