@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { useRef, useState } from "react";
 import {
   ArrowRight,
@@ -10,6 +11,9 @@ import {
   Sparkles,
   Download,
   Loader2,
+  Share2,
+  Check,
+  Copy,
 } from "lucide-react";
 import { PageHeader } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
@@ -18,6 +22,7 @@ import { RecommendationCard } from "@/components/recommendation-card";
 import { RoiBreakdown } from "@/components/roi-breakdown";
 import { formatEUR, useLucie, useMetrics, useRecommendation } from "@/lib/lucie-store";
 import { PLAN_LABELS, PLAN_TAGLINES, PRIORITY_CTA } from "@/lib/recommendation";
+import { createSharedDiagnostic } from "@/lib/share.functions";
 
 export const Route = createFileRoute("/recommandation")({
   head: () => ({
@@ -52,8 +57,78 @@ export const Route = createFileRoute("/recommandation")({
 function RecommandationPage() {
   const { state } = useLucie();
   const m = useMetrics();
+  const rec = useRecommendation();
   const exportRef = useRef<HTMLDivElement>(null);
   const [isExporting, setIsExporting] = useState(false);
+  const [shareUrl, setShareUrl] = useState<string | null>(null);
+  const [shareCopied, setShareCopied] = useState(false);
+  const [isSharing, setIsSharing] = useState(false);
+  const [shareError, setShareError] = useState<string | null>(null);
+  const createShare = useServerFn(createSharedDiagnostic);
+
+  const handleShare = async () => {
+    if (isSharing) return;
+    setIsSharing(true);
+    setShareError(null);
+    try {
+      const { token } = await createShare({
+        data: {
+          companyName: state.companyName,
+          activity: state.activity,
+          city: state.city,
+          employees: state.employees,
+          callsPerWeek: state.callsPerWeek,
+          missedCalls: state.missedCalls,
+          averageBasket: state.averageBasket,
+          revenueGoal: state.revenueGoal,
+          conversionRate: state.conversionRate,
+          channels: state.channels,
+          recommendation: {
+            score: rec.score,
+            tier: rec.tier,
+            plan: rec.plan,
+            priority: rec.priority,
+            estimatedMonthlyRoi: rec.estimatedMonthlyRoi,
+            justifications: rec.justifications,
+            concerns: rec.concerns,
+            planReason: rec.planReason,
+          },
+          metrics: {
+            monthlyReceived: m.monthlyReceived,
+            monthlyMissed: m.monthlyMissed,
+            monthlyLostRevenue: m.monthlyLostRevenue,
+            yearlyLostRevenue: m.yearlyLostRevenue,
+            recoverableOpportunities: m.recoverableOpportunities,
+            timeSavedHours: m.timeSavedHours,
+          },
+        },
+      });
+      const url = `${window.location.origin}/d/${token}`;
+      setShareUrl(url);
+      try {
+        await navigator.clipboard.writeText(url);
+        setShareCopied(true);
+        setTimeout(() => setShareCopied(false), 2500);
+      } catch {
+        /* clipboard blocked — url still shown */
+      }
+    } catch (err) {
+      setShareError(err instanceof Error ? err.message : "Impossible de générer le lien");
+    } finally {
+      setIsSharing(false);
+    }
+  };
+
+  const handleCopyAgain = async () => {
+    if (!shareUrl) return;
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      setShareCopied(true);
+      setTimeout(() => setShareCopied(false), 2500);
+    } catch {
+      /* noop */
+    }
+  };
 
   const handleExportPdf = async () => {
     if (!exportRef.current || isExporting) return;
@@ -103,25 +178,83 @@ function RecommandationPage() {
         title="Votre diagnostic est terminé"
         description="Voici la synthèse objective de votre situation, la formule que Lucie recommande — ou pas — et les prochaines étapes."
         actions={
-          <Button
-            variant="outline"
-            className="rounded-xl"
-            onClick={handleExportPdf}
-            disabled={isExporting}
-            aria-label="Exporter le diagnostic en PDF"
-          >
-            {isExporting ? (
-              <>
-                <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> Génération…
-              </>
-            ) : (
-              <>
-                <Download className="mr-1.5 h-4 w-4" /> Exporter en PDF
-              </>
-            )}
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              variant="outline"
+              className="rounded-xl"
+              onClick={handleShare}
+              disabled={isSharing}
+              aria-label="Générer un lien de partage sécurisé"
+            >
+              {isSharing ? (
+                <>
+                  <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> Génération…
+                </>
+              ) : (
+                <>
+                  <Share2 className="mr-1.5 h-4 w-4" /> Partager
+                </>
+              )}
+            </Button>
+            <Button
+              variant="outline"
+              className="rounded-xl"
+              onClick={handleExportPdf}
+              disabled={isExporting}
+              aria-label="Exporter le diagnostic en PDF"
+            >
+              {isExporting ? (
+                <>
+                  <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> Génération…
+                </>
+              ) : (
+                <>
+                  <Download className="mr-1.5 h-4 w-4" /> Exporter en PDF
+                </>
+              )}
+            </Button>
+          </div>
         }
       />
+
+      {(shareUrl || shareError) && (
+        <div
+          role="status"
+          aria-live="polite"
+          className="rounded-2xl border border-primary/30 bg-primary/[0.04] p-4"
+        >
+          {shareError ? (
+            <p className="text-sm text-destructive">{shareError}</p>
+          ) : (
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <div className="min-w-0">
+                <div className="text-[11px] font-medium uppercase tracking-widest text-primary">
+                  Lien de partage sécurisé — expire dans 30 jours
+                </div>
+                <p className="mt-1 truncate font-mono text-xs text-foreground sm:text-sm">
+                  {shareUrl}
+                </p>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                className="rounded-xl"
+                onClick={handleCopyAgain}
+              >
+                {shareCopied ? (
+                  <>
+                    <Check className="mr-1.5 h-4 w-4 text-primary" /> Copié
+                  </>
+                ) : (
+                  <>
+                    <Copy className="mr-1.5 h-4 w-4" /> Copier
+                  </>
+                )}
+              </Button>
+            </div>
+          )}
+        </div>
+      )}
 
       <div ref={exportRef} className="space-y-6 bg-background">
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">

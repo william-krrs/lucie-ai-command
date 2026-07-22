@@ -104,6 +104,30 @@ export type Database = {
         }
         Relationships: []
       }
+      shared_diagnostics: {
+        Row: {
+          created_at: string
+          expires_at: string
+          id: string
+          snapshot: Json
+          token: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          snapshot: Json
+          token: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          snapshot?: Json
+          token?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
