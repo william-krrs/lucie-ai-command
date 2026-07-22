@@ -17,7 +17,9 @@ export const Route = createFileRoute("/")({
         property: "og:description",
         content: "L'assistante IA qui répond à vos appels, qualifie vos prospects et vous aide à générer plus de chiffre d'affaires.",
       },
+      { property: "og:url", content: "https://lucie-ai-command.lovable.app/" },
     ],
+    links: [{ rel: "canonical", href: "https://lucie-ai-command.lovable.app/" }],
   }),
   component: Home,
 });
