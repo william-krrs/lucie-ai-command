@@ -2,6 +2,7 @@ import { createFileRoute, notFound } from "@tanstack/react-router";
 import { useRef, useState } from "react";
 import { Download, Loader2, Lock, ShieldCheck, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { QrCodeCard } from "@/components/qr-code";
 import { getSharedDiagnostic, type DiagnosticSnapshot } from "@/lib/share.functions";
 import { PLAN_LABELS, PRIORITY_LABELS, TIER_LABELS } from "@/lib/recommendation";
 
