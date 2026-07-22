@@ -15,12 +15,14 @@ function CompanyLogo({
   domain,
   initials,
   hue,
+  alt,
   size = 64,
   className = "",
 }: {
   domain: string | null;
   initials: string;
   hue: number;
+  alt: string;
   size?: number;
   className?: string;
 }) {
@@ -45,6 +47,7 @@ function CompanyLogo({
     <span
       className={`relative block h-full w-full ${showFallback ? "text-white" : "bg-white"}`}
       style={fallbackStyle}
+      title={alt}
     >
       {domain && status !== "error" && (
         <>
@@ -56,7 +59,7 @@ function CompanyLogo({
           )}
           <img
             src={`https://www.google.com/s2/favicons?domain=${domain}&sz=${size}`}
-            alt=""
+            alt={alt}
             loading="lazy"
             decoding="async"
             width={size}
@@ -70,7 +73,7 @@ function CompanyLogo({
         </>
       )}
       {showFallback && (
-        <span className="absolute inset-0 grid place-items-center font-semibold">
+        <span className="absolute inset-0 grid place-items-center font-semibold" aria-label={alt}>
           {initials}
         </span>
       )}
