@@ -295,7 +295,7 @@ function Home() {
                     </TooltipContent>
                   </Tooltip>
                   <span className="text-[10px] text-muted-foreground/60">
-                    Logos via les sites officiels des entreprises.
+                    Logos via les sites officiels ou URLs personnalisées.
                   </span>
                 </div>
               </TooltipProvider>
