@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import {
   AlertCircle,
   ArrowRight,
@@ -7,6 +8,9 @@ import {
   ClipboardCheck,
   Copy,
   Send,
+  Loader2,
+  Mail,
+  Database,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,6 +18,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from "sonner";
+import { submitPreparation } from "@/lib/preparation.functions";
 
 const CONTACT_EMAIL = "contact@lucieassistant.fr";
 
@@ -74,6 +79,12 @@ export function PreparationForm({
 }) {
   const [form, setForm] = useState<FormState>(EMPTY);
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [confirmation, setConfirmation] = useState<{
+    id: string;
+    emailStatus: "sent" | "skipped" | "failed";
+  } | null>(null);
+  const submit = useServerFn(submitPreparation);
 
   const planLabel = plan ? PLAN_LABELS[plan] : "Non précisée";
 
@@ -144,26 +155,59 @@ export function PreparationForm({
     ].join("\n");
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (requiredMissing.length > 0) {
       toast.error("Merci de compléter tous les champs obligatoires.");
       return;
     }
-    const subject = `Préparation Lucie — ${form.companyName} (${planLabel})`;
-    const body = buildBody();
+    const summary = buildBody();
+    setSubmitting(true);
     try {
-      localStorage.setItem(
-        "lucie:preparation",
-        JSON.stringify({ ...form, plan, sentAt: new Date().toISOString() }),
-      );
-    } catch {
-      /* ignore */
+      const res = await submit({
+        data: {
+          plan: plan ?? null,
+          contactName: form.contactName,
+          contactEmail: form.contactEmail,
+          companyName: form.companyName,
+          companyPhone: form.companyPhone,
+          website: form.website || null,
+          callVolume: form.callVolume,
+          interlocutor: form.interlocutor,
+          greeting: form.greeting,
+          location: form.location,
+          tone: form.tone,
+          services: form.services,
+          emergencyNumber: form.emergencyNumber,
+          emergencyCriteria: form.emergencyCriteria || null,
+          openingHours: form.openingHours,
+          rdvLink: form.rdvLink,
+          requiredInfo: form.requiredInfo,
+          techAccess: form.techAccess || null,
+          extra: form.extra || null,
+          summary,
+        },
+      });
+      try {
+        localStorage.setItem(
+          "lucie:preparation",
+          JSON.stringify({ ...form, plan, sentAt: new Date().toISOString(), submissionId: res.id }),
+        );
+      } catch {
+        /* ignore */
+      }
+      setConfirmation(res);
+      setSubmitted(true);
+      toast.success("Questionnaire enregistré — l'équipe Lucie prend le relais.");
+      if (typeof window !== "undefined") {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Envoi impossible. Réessayez ou écrivez-nous à contact@lucieassistant.fr.");
+    } finally {
+      setSubmitting(false);
     }
-    const mailto = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-    window.location.href = mailto;
-    setSubmitted(true);
-    toast.success("Votre client mail s'ouvre avec le récapitulatif pré-rempli.");
   };
 
   const handleCopy = async () => {
@@ -201,6 +245,17 @@ export function PreparationForm({
         </div>
       )}
 
+      {submitted && confirmation ? (
+        <SubmittedConfirmation
+          confirmation={confirmation}
+          planLabel={planLabel}
+          plan={plan}
+          onReset={() => {
+            setSubmitted(false);
+            setConfirmation(null);
+          }}
+        />
+      ) : (
       <form onSubmit={handleSubmit} className="space-y-8" noValidate>
         <Section n="1" title="Informations générales">
           <Grid>
@@ -479,8 +534,8 @@ export function PreparationForm({
 
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-xs text-muted-foreground">
-            En cliquant « Envoyer », votre messagerie s'ouvre avec le
-            récapitulatif pré-rempli vers <strong>{CONTACT_EMAIL}</strong>.
+            En cliquant « Envoyer », votre questionnaire est enregistré et
+            transmis à l'équipe Lucie (<strong>{CONTACT_EMAIL}</strong>).
           </p>
           <div className="flex flex-wrap gap-2">
             <Button
@@ -488,50 +543,114 @@ export function PreparationForm({
               variant="outline"
               onClick={handleCopy}
               className="h-11 rounded-xl"
+              disabled={submitting}
             >
               <Copy className="mr-2 h-4 w-4" aria-hidden="true" />
               Copier le récapitulatif
             </Button>
             <Button
               type="submit"
+              disabled={submitting}
               className="h-11 rounded-xl bg-primary px-6 text-primary-foreground shadow-[var(--shadow-elevated)] hover:bg-primary/90"
             >
-              <Send className="mr-2 h-4 w-4" aria-hidden="true" />
-              Envoyer à l'équipe Lucie
+              {submitting ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
+              ) : (
+                <Send className="mr-2 h-4 w-4" aria-hidden="true" />
+              )}
+              {submitting ? "Envoi en cours…" : "Envoyer à l'équipe Lucie"}
             </Button>
           </div>
         </div>
       </form>
-
-      {submitted && (
-        <section className="rounded-3xl border border-primary/20 bg-primary/[0.04] p-6 sm:p-8">
-          <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-start gap-3">
-              <CheckCircle2
-                className="mt-1 h-6 w-6 text-primary"
-                aria-hidden="true"
-              />
-              <div>
-                <h2 className="text-lg font-semibold text-foreground">
-                  Formulaire envoyé
-                </h2>
-                <p className="mt-1 max-w-xl text-sm text-muted-foreground">
-                  Nous revenons vers vous sous 72 h ouvrées pour planifier la
-                  phase de test. Suivez l'avancement dans la timeline
-                  d'exploitation.
-                </p>
-              </div>
-            </div>
-            <Button asChild className="h-11 rounded-xl">
-              <Link to="/suivi" search={{ plan }}>
-                Voir la timeline d'exploitation
-                <ArrowRight className="ml-2 h-4 w-4" aria-hidden="true" />
-              </Link>
-            </Button>
-          </div>
-        </section>
       )}
     </div>
+  );
+}
+
+function SubmittedConfirmation({
+  confirmation,
+  planLabel,
+  plan,
+  onReset,
+}: {
+  confirmation: { id: string; emailStatus: "sent" | "skipped" | "failed" };
+  planLabel: string;
+  plan?: "essential" | "pro" | "premium";
+  onReset: () => void;
+}) {
+  const reference = confirmation.id.slice(0, 8).toUpperCase();
+  return (
+    <section
+      role="status"
+      aria-live="polite"
+      className="rounded-3xl border border-primary/30 bg-primary/[0.05] p-6 shadow-[var(--shadow-elevated)] sm:p-10"
+    >
+      <div className="flex flex-col items-center text-center">
+        <div className="grid h-14 w-14 place-items-center rounded-full bg-primary text-primary-foreground">
+          <CheckCircle2 className="h-7 w-7" aria-hidden="true" />
+        </div>
+        <h2 className="mt-5 text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
+          Questionnaire enregistré ✅
+        </h2>
+        <p className="mt-3 max-w-xl text-sm text-muted-foreground sm:text-base">
+          Merci ! Votre configuration <strong>{planLabel}</strong> est bien reçue.
+          L'équipe Lucie planifie votre cadrage sous 24 h ouvrées et lance
+          l'installation sous 72 h.
+        </p>
+        <p className="mt-2 text-xs text-muted-foreground">
+          Référence : <span className="font-mono font-medium text-foreground">#{reference}</span>
+        </p>
+      </div>
+
+      <div className="mt-8 grid gap-4 sm:grid-cols-2">
+        <div className="flex items-start gap-3 rounded-2xl border border-border bg-card p-5">
+          <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
+            <Database className="h-4 w-4" aria-hidden="true" />
+          </div>
+          <div>
+            <div className="text-sm font-semibold text-foreground">Sauvegarde sécurisée</div>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Vos réponses sont chiffrées et stockées côté Lucie — reprises
+              immédiatement par notre équipe de setup.
+            </p>
+          </div>
+        </div>
+        <div className="flex items-start gap-3 rounded-2xl border border-border bg-card p-5">
+          <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
+            <Mail className="h-4 w-4" aria-hidden="true" />
+          </div>
+          <div>
+            <div className="text-sm font-semibold text-foreground">
+              {confirmation.emailStatus === "sent"
+                ? "Récap envoyé par email"
+                : "Récap transmis à l'équipe"}
+            </div>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {confirmation.emailStatus === "sent"
+                ? `Une copie du récapitulatif a été envoyée à ${CONTACT_EMAIL}.`
+                : `Notre équipe consulte le récap directement. Pour toute question : ${CONTACT_EMAIL}.`}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-8 flex flex-wrap justify-center gap-2">
+        <Button asChild className="h-11 rounded-xl">
+          <Link to="/suivi" search={{ plan }}>
+            Voir la timeline d'exploitation
+            <ArrowRight className="ml-2 h-4 w-4" aria-hidden="true" />
+          </Link>
+        </Button>
+        <Button
+          variant="outline"
+          className="h-11 rounded-xl"
+          onClick={onReset}
+        >
+          Envoyer un autre questionnaire
+        </Button>
+      </div>
+    </section>
   );
 }
 
