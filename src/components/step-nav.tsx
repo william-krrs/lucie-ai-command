@@ -22,7 +22,7 @@ export function StepNav({ current }: { current: StepPath }) {
   return (
     <nav
       aria-label="Navigation entre les étapes"
-      className="mt-12 border-t border-border pt-6"
+      className="cv-auto mt-12 border-t border-border pt-6"
     >
       <div className="mb-4 flex items-center justify-between text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
         <span>
