@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as RoiRouteImport } from './routes/roi'
+import { Route as OffresRouteImport } from './routes/offres'
 import { Route as InstallationRouteImport } from './routes/installation'
 import { Route as FaqRouteImport } from './routes/faq'
 import { Route as DiagnosticRouteImport } from './routes/diagnostic'
@@ -19,6 +20,11 @@ import { Route as IndexRouteImport } from './routes/index'
 const RoiRoute = RoiRouteImport.update({
   id: '/roi',
   path: '/roi',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OffresRoute = OffresRouteImport.update({
+  id: '/offres',
+  path: '/offres',
   getParentRoute: () => rootRouteImport,
 } as any)
 const InstallationRoute = InstallationRouteImport.update({
@@ -53,6 +59,7 @@ export interface FileRoutesByFullPath {
   '/diagnostic': typeof DiagnosticRoute
   '/faq': typeof FaqRoute
   '/installation': typeof InstallationRoute
+  '/offres': typeof OffresRoute
   '/roi': typeof RoiRoute
 }
 export interface FileRoutesByTo {
@@ -61,6 +68,7 @@ export interface FileRoutesByTo {
   '/diagnostic': typeof DiagnosticRoute
   '/faq': typeof FaqRoute
   '/installation': typeof InstallationRoute
+  '/offres': typeof OffresRoute
   '/roi': typeof RoiRoute
 }
 export interface FileRoutesById {
@@ -70,6 +78,7 @@ export interface FileRoutesById {
   '/diagnostic': typeof DiagnosticRoute
   '/faq': typeof FaqRoute
   '/installation': typeof InstallationRoute
+  '/offres': typeof OffresRoute
   '/roi': typeof RoiRoute
 }
 export interface FileRouteTypes {
@@ -80,9 +89,17 @@ export interface FileRouteTypes {
     | '/diagnostic'
     | '/faq'
     | '/installation'
+    | '/offres'
     | '/roi'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/demonstration' | '/diagnostic' | '/faq' | '/installation' | '/roi'
+  to:
+    | '/'
+    | '/demonstration'
+    | '/diagnostic'
+    | '/faq'
+    | '/installation'
+    | '/offres'
+    | '/roi'
   id:
     | '__root__'
     | '/'
@@ -90,6 +107,7 @@ export interface FileRouteTypes {
     | '/diagnostic'
     | '/faq'
     | '/installation'
+    | '/offres'
     | '/roi'
   fileRoutesById: FileRoutesById
 }
@@ -99,6 +117,7 @@ export interface RootRouteChildren {
   DiagnosticRoute: typeof DiagnosticRoute
   FaqRoute: typeof FaqRoute
   InstallationRoute: typeof InstallationRoute
+  OffresRoute: typeof OffresRoute
   RoiRoute: typeof RoiRoute
 }
 
@@ -109,6 +128,13 @@ declare module '@tanstack/react-router' {
       path: '/roi'
       fullPath: '/roi'
       preLoaderRoute: typeof RoiRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/offres': {
+      id: '/offres'
+      path: '/offres'
+      fullPath: '/offres'
+      preLoaderRoute: typeof OffresRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/installation': {
@@ -155,6 +181,7 @@ const rootRouteChildren: RootRouteChildren = {
   DiagnosticRoute: DiagnosticRoute,
   FaqRoute: FaqRoute,
   InstallationRoute: InstallationRoute,
+  OffresRoute: OffresRoute,
   RoiRoute: RoiRoute,
 }
 export const routeTree = rootRouteImport
