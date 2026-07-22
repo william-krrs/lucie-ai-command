@@ -63,30 +63,8 @@ export const submitPreparation = createServerFn({ method: "POST" })
       throw new Error("Impossible d'enregistrer votre questionnaire. Réessayez.");
     }
 
-    // Best-effort email send via Lovable Emails (silently no-op if not configured).
-    let emailStatus: "sent" | "skipped" | "failed" = "skipped";
-    try {
-      const apiKey = process.env.LOVABLE_API_KEY;
-      const senderDomain = process.env.SENDER_DOMAIN;
-      if (apiKey && senderDomain) {
-        const { sendLovableEmail } = await import("@lovable.dev/email-js");
-        await sendLovableEmail({
-          apiKey,
-          senderDomain,
-          from: `Lucie <preparation@${senderDomain}>`,
-          to: "contact@lucieassistant.fr",
-          replyTo: data.contactEmail,
-          subject: `Préparation Lucie — ${data.companyName} (${data.plan ?? "sans formule"})`,
-          text: data.summary,
-          idempotencyKey: `prep-${row.id}`,
-        });
-        emailStatus = "sent";
-      }
-    } catch (e) {
-      console.error("[submitPreparation] email send failed", e);
-      emailStatus = "failed";
-    }
-
+    // Email dispatch is wired once the sender domain is configured.
+    const emailStatus: "sent" | "skipped" | "failed" = "skipped";
     await supabaseAdmin
       .from("preparation_submissions")
       .update({ email_status: emailStatus })
