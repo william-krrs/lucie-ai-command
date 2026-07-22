@@ -25,6 +25,16 @@ import { submitPreparation } from "@/lib/preparation.functions";
 const CONTACT_EMAIL = "contact@lucieassistant.fr";
 const STORAGE_KEY = "lucie:preparation";
 
+function formatWhen(iso: string): string {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  return d.toLocaleString("fr-FR", {
+    dateStyle: "short",
+    timeStyle: "short",
+  });
+}
+
 const PLAN_LABELS: Record<string, string> = {
   essential: "Lucie Essential",
   pro: "Lucie Pro",
