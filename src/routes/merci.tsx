@@ -8,11 +8,9 @@ import {
   Clock,
   Wrench,
   Package,
-  CreditCard,
 } from "lucide-react";
 import { PageHeader } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 
 const planSearchSchema = z.object({
   plan: z.enum(["essential", "pro", "premium"]).optional(),
