@@ -7,6 +7,7 @@ import { StepNav } from "@/components/step-nav";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { SOCIAL_PROOF_COMPANY_COUNT } from "@/lib/config";
+import { getLogoStatus, setLogoStatus, logoCacheKey } from "@/lib/logo-cache";
 
 type LogoStatus = "loading" | "loaded" | "error";
 
@@ -23,7 +24,18 @@ function CompanyLogo({
   size?: number;
   className?: string;
 }) {
-  const [status, setStatus] = useState<LogoStatus>(domain ? "loading" : "error");
+  const cacheKey = domain ? logoCacheKey(domain, size) : null;
+  const [status, setStatus] = useState<LogoStatus>(() => {
+    if (!domain) return "error";
+    const cached = getLogoStatus(logoCacheKey(domain, size));
+    return cached ?? "loading";
+  });
+
+  const updateStatus = (next: "loaded" | "error") => {
+    setStatus(next);
+    if (cacheKey) setLogoStatus(cacheKey, next);
+  };
+
   const showFallback = !domain || status === "error";
   const fallbackStyle = showFallback
     ? { background: `linear-gradient(135deg, oklch(0.62 0.16 ${hue}), oklch(0.45 0.2 ${hue + 30}))` }
@@ -49,8 +61,8 @@ function CompanyLogo({
             decoding="async"
             width={size}
             height={size}
-            onLoad={() => setStatus("loaded")}
-            onError={() => setStatus("error")}
+            onLoad={() => updateStatus("loaded")}
+            onError={() => updateStatus("error")}
             className={`relative h-full w-full object-cover transition-opacity duration-300 ${
               status === "loaded" ? "opacity-100" : "opacity-0"
             } ${className}`}
