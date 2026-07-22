@@ -120,6 +120,7 @@ const COMPANIES: Company[] = [
 ];
 
 function Home() {
+  const [selected, setSelected] = useState<Company | null>(null);
   return (
     <div className="space-y-14">
       <PageHeader
