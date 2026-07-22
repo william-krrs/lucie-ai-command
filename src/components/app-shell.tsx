@@ -10,6 +10,7 @@ import {
   Sparkles,
   Circle,
   Menu,
+  CalendarDays,
 } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
@@ -22,6 +23,7 @@ const NAV = [
   { to: "/demonstration", label: "Démonstration", icon: PlayCircle },
   { to: "/offres", label: "Offres", icon: Package },
   { to: "/installation", label: "Installation", icon: Rocket },
+  { to: "/suivi", label: "Suivi", icon: CalendarDays },
   { to: "/faq", label: "Questions fréquentes", icon: HelpCircle },
 ] as const;
 
