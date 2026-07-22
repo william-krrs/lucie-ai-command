@@ -4,14 +4,16 @@ import {
   CheckCircle2,
   Calendar,
   Mail,
-  ArrowRight,
   Clock,
   Wrench,
   Package,
   AlertCircle,
+  ClipboardList,
+  ListChecks,
 } from "lucide-react";
 import { PageHeader } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
+import { PreparationForm } from "@/components/preparation-form";
 
 const planSearchSchema = z.object({
   plan: z.enum(["essential", "pro", "premium"]).optional(),
@@ -190,41 +192,69 @@ function Merci() {
         </div>
       </section>
 
+      <section
+        id="questionnaire"
+        aria-labelledby="questionnaire-title"
+        className="rounded-3xl border border-border bg-card p-6 shadow-[var(--shadow-card)] sm:p-8"
+      >
+        <header className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-start gap-3">
+            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-primary text-primary-foreground">
+              <ClipboardList className="h-5 w-5" aria-hidden="true" />
+            </div>
+            <div>
+              <div className="text-[11px] font-medium uppercase tracking-widest text-primary">
+                Étape 1 — Questionnaire de configuration
+              </div>
+              <h3
+                id="questionnaire-title"
+                className="mt-1 text-xl font-semibold tracking-tight text-foreground sm:text-2xl"
+              >
+                Configurez votre assistante Lucie
+              </h3>
+              <p className="mt-1 max-w-xl text-sm text-muted-foreground">
+                Remplissez ce formulaire directement ci-dessous — 5 minutes.
+                Vos réponses lancent l'installation sous 72 h ouvrées.
+              </p>
+            </div>
+          </div>
+        </header>
+
+        <PreparationForm plan={plan} intro={false} />
+      </section>
+
       <section className="rounded-3xl border border-border bg-card p-6 shadow-[var(--shadow-card)] sm:p-8">
-        <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+        <header className="mb-4 flex items-start gap-3">
+          <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-primary text-primary-foreground">
+            <ListChecks className="h-5 w-5" aria-hidden="true" />
+          </div>
           <div>
-            <div className="text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
-              Prochaine étape
+            <div className="text-[11px] font-medium uppercase tracking-widest text-primary">
+              Étape 2 — Timeline d'exploitation
             </div>
             <h3 className="mt-1 text-lg font-semibold tracking-tight text-foreground">
-              Passez à l'installation de Lucie
+              Suivez le déploiement en temps réel
             </h3>
-            <p className="mt-1 max-w-md text-sm text-muted-foreground">
-              Suivez le déroulement étape par étape et retrouvez les informations sur votre formule en cours de route.
+            <p className="mt-1 max-w-xl text-sm text-muted-foreground">
+              Dès le questionnaire envoyé, retrouvez ici le cadrage, la mise
+              en production et la phase de test.
             </p>
           </div>
-          <div className="flex flex-col gap-2 sm:items-end">
-            <Button
-              asChild
-              className="h-12 w-full rounded-xl bg-primary px-6 text-base text-primary-foreground shadow-[var(--shadow-elevated)] hover:bg-primary/90 sm:w-auto"
-            >
-              <Link to="/preparation" search={{ plan }}>
-                Remplir le formulaire de préparation
-                <ArrowRight className="ml-2 h-4 w-4" aria-hidden="true" />
-              </Link>
-            </Button>
-            <div className="flex flex-wrap gap-2">
-              <Button asChild variant="ghost" className="h-9 rounded-lg text-xs text-muted-foreground hover:text-foreground">
-                <Link to="/installation" search={{ plan }}>Voir l'installation</Link>
-              </Button>
-              <Button asChild variant="ghost" className="h-9 rounded-lg text-xs text-muted-foreground hover:text-foreground">
-                <Link to="/faq">Questions fréquentes</Link>
-              </Button>
-              <Button asChild variant="ghost" className="h-9 rounded-lg text-xs text-muted-foreground hover:text-foreground">
-                <Link to="/offres">← Retour aux offres</Link>
-              </Button>
-            </div>
-          </div>
+        </header>
+        <div className="flex flex-wrap gap-2">
+          <Button asChild className="h-11 rounded-xl">
+            <Link to="/suivi" search={{ plan }}>
+              Voir la timeline d'exploitation
+            </Link>
+          </Button>
+          <Button asChild variant="ghost" className="h-11 rounded-xl">
+            <Link to="/installation" search={{ plan }}>
+              Détails de l'installation
+            </Link>
+          </Button>
+          <Button asChild variant="ghost" className="h-11 rounded-xl">
+            <Link to="/faq">Questions fréquentes</Link>
+          </Button>
         </div>
       </section>
     </div>
