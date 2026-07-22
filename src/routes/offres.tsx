@@ -26,11 +26,10 @@ export const Route = createFileRoute("/offres")({
 type PlanKey = "essential" | "pro" | "premium";
 
 const STRIPE_LINKS: Record<PlanKey, string> = {
-  essential: "https://buy.stripe.com/7sY28rfJdbJN7u02XQ7kc0c",
-  pro: "https://buy.stripe.com/cNidR90OjbJN29G1TM7kc06",
+  essential: "https://buy.stripe.com/6oUdR940v8xB9C8cyq7kc0b",
+  pro: "https://buy.stripe.com/3cI8wP68DeVZg0waqi7kc0a",
   premium: "https://buy.stripe.com/5kQ5kD0OjcNRbKggOG7kc0d",
 };
-const STRIPE_INSTALLATION_LINK = "https://buy.stripe.com/aFa00jaoTaFJ4hO6a27kc05";
 
 const PLANS: {
   key: PlanKey;
