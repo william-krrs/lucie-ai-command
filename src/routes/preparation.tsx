@@ -17,7 +17,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from "sonner";
 
-const CONTACT_EMAIL = "contact@lucie.ai";
+const CONTACT_EMAIL = "contact@lucieassistant.fr";
 
 const searchSchema = z.object({
   plan: z.enum(["essential", "pro", "premium"]).optional(),

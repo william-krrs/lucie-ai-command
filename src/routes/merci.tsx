@@ -78,10 +78,10 @@ function Merci() {
                 ci-dessous la formule payée pour retrouver le bon récapitulatif,
                 ou écrivez-nous à{" "}
                 <a
-                  href="mailto:contact@lucie.ai?subject=Confirmation%20paiement%20Lucie"
+                  href="mailto:contact@lucieassistant.fr?subject=Confirmation%20paiement%20Lucie"
                   className="font-medium text-primary underline underline-offset-2"
                 >
-                  contact@lucie.ai
+                  contact@lucieassistant.fr
                 </a>
                 {" "}avec votre reçu Stripe, on prend le relais sous 24 h.
               </p>
