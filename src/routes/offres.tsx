@@ -215,11 +215,17 @@ function Offres() {
             <div className="text-[11px] uppercase tracking-widest text-muted-foreground">
               Comparateur
             </div>
-            <h2 className="mt-1 text-2xl font-semibold tracking-tight text-foreground">
+            <h2 className="mt-1 text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
               Comparez les fonctionnalités
             </h2>
+            <div className="mt-1 text-xs text-muted-foreground sm:hidden">
+              Formule sélectionnée :{" "}
+              <span className="font-medium text-primary">
+                {PLANS.find((p) => p.key === selected)?.name}
+              </span>
+            </div>
           </div>
-          <div className="hidden sm:block text-xs text-muted-foreground">
+          <div className="hidden text-xs text-muted-foreground sm:block">
             Formule sélectionnée :{" "}
             <span className="font-medium text-primary">
               {PLANS.find((p) => p.key === selected)?.name}
@@ -227,67 +233,72 @@ function Offres() {
           </div>
         </div>
 
-        <div className="overflow-hidden rounded-3xl border border-border bg-card shadow-[var(--shadow-card)]">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-border bg-muted/40">
-                <th className="px-5 py-4 text-left text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
-                  Fonctionnalité
-                </th>
-                {PLANS.map((p) => (
-                  <th
-                    key={p.key}
-                    onClick={() => setSelected(p.key)}
+        <div className="relative -mx-4 sm:mx-0">
+          <div className="overflow-x-auto overscroll-x-contain rounded-3xl border border-border bg-card shadow-[var(--shadow-card)]">
+            <table className="w-full min-w-[520px] border-collapse text-sm">
+              <thead>
+                <tr className="border-b border-border">
+                  <th className="sticky left-0 top-16 z-40 border-r border-border bg-card px-4 py-4 text-left text-[11px] font-medium uppercase tracking-widest text-muted-foreground shadow-[2px_0_0_0_hsl(var(--border))] sm:top-0 sm:px-5">
+                    Fonctionnalité
+                  </th>
+                  {PLANS.map((p) => (
+                    <th
+                      key={p.key}
+                      onClick={() => setSelected(p.key)}
+                      className={cn(
+                        "sticky top-16 z-20 cursor-pointer px-4 py-4 text-center text-[11px] font-medium uppercase tracking-widest transition-colors sm:top-0 sm:px-5",
+                        selected === p.key
+                          ? "bg-primary/10 text-primary"
+                          : "bg-muted/40 text-muted-foreground hover:text-foreground",
+                      )}
+                    >
+                      {p.name}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {COMPARISON.map((row, i) => (
+                  <tr
+                    key={row.label}
                     className={cn(
-                      "cursor-pointer px-5 py-4 text-center text-[11px] font-medium uppercase tracking-widest transition-colors",
-                      selected === p.key
-                        ? "bg-primary/10 text-primary"
-                        : "text-muted-foreground hover:text-foreground",
+                      "border-b border-border last:border-0 transition-colors",
+                      i % 2 === 1 ? "bg-muted/20" : "bg-card",
                     )}
                   >
-                    {p.name}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {COMPARISON.map((row, i) => (
-                <tr
-                  key={row.label}
-                  className={cn(
-                    "border-b border-border last:border-0 transition-colors",
-                    i % 2 === 1 ? "bg-muted/20" : "",
-                  )}
-                >
-                  <td className="px-5 py-3.5 text-foreground">{row.label}</td>
-                  {PLANS.map((p) => {
-                    const v = row.values[p.key];
-                    return (
-                      <td
-                        key={p.key}
-                        className={cn(
-                          "px-5 py-3.5 text-center transition-colors",
-                          selected === p.key ? "bg-primary/[0.06]" : "",
-                        )}
-                      >
-                        {typeof v === "boolean" ? (
-                          v ? (
-                            <span className="mx-auto grid h-6 w-6 place-items-center rounded-full bg-primary/10 text-primary">
-                              <Check className="h-3.5 w-3.5" />
-                            </span>
+                    <td className="sticky left-0 z-10 border-r border-border bg-card px-4 py-3.5 text-foreground sm:px-5">
+                      {row.label}
+                    </td>
+                    {PLANS.map((p) => {
+                      const v = row.values[p.key];
+                      return (
+                        <td
+                          key={p.key}
+                          className={cn(
+                            "px-4 py-3.5 text-center transition-colors sm:px-5",
+                            selected === p.key ? "bg-primary/[0.06]" : "",
+                          )}
+                        >
+                          {typeof v === "boolean" ? (
+                            v ? (
+                              <span className="mx-auto grid h-6 w-6 place-items-center rounded-full bg-primary/10 text-primary">
+                                <Check className="h-3.5 w-3.5" />
+                              </span>
+                            ) : (
+                              <span className="text-muted-foreground/40">—</span>
+                            )
                           ) : (
-                            <span className="text-muted-foreground/40">—</span>
-                          )
-                        ) : (
-                          <span className="font-medium text-foreground">{v}</span>
-                        )}
-                      </td>
-                    );
-                  })}
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                            <span className="font-medium text-foreground">{v}</span>
+                          )}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div className="pointer-events-none absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-card/80 to-transparent sm:hidden" />
         </div>
       </section>
       <StepNav current="/offres" />
