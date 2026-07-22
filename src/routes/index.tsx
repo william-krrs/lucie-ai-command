@@ -245,7 +245,7 @@ function Home() {
                           onClick={() => setSelected(c)}
                           className="relative grid h-8 w-8 place-items-center overflow-hidden rounded-full border-2 border-card bg-white text-[10px] shadow-sm outline-none transition-transform duration-200 hover:z-10 hover:scale-110 focus-visible:z-10 focus-visible:scale-110 focus-visible:ring-2 focus-visible:ring-primary/60"
                         >
-                          <CompanyLogo domain={c.domain} initials={c.initials} hue={c.hue} size={64} />
+                          <CompanyLogo domain={c.domain} initials={c.initials} hue={c.hue} alt={`Logo ${c.name}`} size={64} />
                         </button>
                       </TooltipTrigger>
                       <TooltipContent
