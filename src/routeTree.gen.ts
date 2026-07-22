@@ -9,8 +9,44 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as RoiRouteImport } from './routes/roi'
+import { Route as OffresRouteImport } from './routes/offres'
+import { Route as InstallationRouteImport } from './routes/installation'
+import { Route as FaqRouteImport } from './routes/faq'
+import { Route as DiagnosticRouteImport } from './routes/diagnostic'
+import { Route as DemonstrationRouteImport } from './routes/demonstration'
 import { Route as IndexRouteImport } from './routes/index'
 
+const RoiRoute = RoiRouteImport.update({
+  id: '/roi',
+  path: '/roi',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OffresRoute = OffresRouteImport.update({
+  id: '/offres',
+  path: '/offres',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InstallationRoute = InstallationRouteImport.update({
+  id: '/installation',
+  path: '/installation',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FaqRoute = FaqRouteImport.update({
+  id: '/faq',
+  path: '/faq',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DiagnosticRoute = DiagnosticRouteImport.update({
+  id: '/diagnostic',
+  path: '/diagnostic',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DemonstrationRoute = DemonstrationRouteImport.update({
+  id: '/demonstration',
+  path: '/demonstration',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -19,28 +55,116 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/demonstration': typeof DemonstrationRoute
+  '/diagnostic': typeof DiagnosticRoute
+  '/faq': typeof FaqRoute
+  '/installation': typeof InstallationRoute
+  '/offres': typeof OffresRoute
+  '/roi': typeof RoiRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/demonstration': typeof DemonstrationRoute
+  '/diagnostic': typeof DiagnosticRoute
+  '/faq': typeof FaqRoute
+  '/installation': typeof InstallationRoute
+  '/offres': typeof OffresRoute
+  '/roi': typeof RoiRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/demonstration': typeof DemonstrationRoute
+  '/diagnostic': typeof DiagnosticRoute
+  '/faq': typeof FaqRoute
+  '/installation': typeof InstallationRoute
+  '/offres': typeof OffresRoute
+  '/roi': typeof RoiRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/demonstration'
+    | '/diagnostic'
+    | '/faq'
+    | '/installation'
+    | '/offres'
+    | '/roi'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/demonstration'
+    | '/diagnostic'
+    | '/faq'
+    | '/installation'
+    | '/offres'
+    | '/roi'
+  id:
+    | '__root__'
+    | '/'
+    | '/demonstration'
+    | '/diagnostic'
+    | '/faq'
+    | '/installation'
+    | '/offres'
+    | '/roi'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  DemonstrationRoute: typeof DemonstrationRoute
+  DiagnosticRoute: typeof DiagnosticRoute
+  FaqRoute: typeof FaqRoute
+  InstallationRoute: typeof InstallationRoute
+  OffresRoute: typeof OffresRoute
+  RoiRoute: typeof RoiRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/roi': {
+      id: '/roi'
+      path: '/roi'
+      fullPath: '/roi'
+      preLoaderRoute: typeof RoiRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/offres': {
+      id: '/offres'
+      path: '/offres'
+      fullPath: '/offres'
+      preLoaderRoute: typeof OffresRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/installation': {
+      id: '/installation'
+      path: '/installation'
+      fullPath: '/installation'
+      preLoaderRoute: typeof InstallationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/faq': {
+      id: '/faq'
+      path: '/faq'
+      fullPath: '/faq'
+      preLoaderRoute: typeof FaqRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/diagnostic': {
+      id: '/diagnostic'
+      path: '/diagnostic'
+      fullPath: '/diagnostic'
+      preLoaderRoute: typeof DiagnosticRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/demonstration': {
+      id: '/demonstration'
+      path: '/demonstration'
+      fullPath: '/demonstration'
+      preLoaderRoute: typeof DemonstrationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -53,17 +177,13 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  DemonstrationRoute: DemonstrationRoute,
+  DiagnosticRoute: DiagnosticRoute,
+  FaqRoute: FaqRoute,
+  InstallationRoute: InstallationRoute,
+  OffresRoute: OffresRoute,
+  RoiRoute: RoiRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

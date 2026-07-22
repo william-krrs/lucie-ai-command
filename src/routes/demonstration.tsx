@@ -1,0 +1,95 @@
+import { createFileRoute } from "@tanstack/react-router";
+import { X, Check } from "lucide-react";
+import { PageHeader } from "@/components/app-shell";
+
+export const Route = createFileRoute("/demonstration")({
+  head: () => ({
+    meta: [
+      { title: "Démonstration — Lucie Command Center" },
+      {
+        name: "description",
+        content: "Comparez concrètement votre quotidien avant et après le déploiement de Lucie.",
+      },
+      { property: "og:title", content: "Démonstration — Lucie" },
+      { property: "og:description", content: "Avant / après Lucie : la différence en une image." },
+    ],
+  }),
+  component: Demonstration,
+});
+
+const BEFORE = [
+  "Appels manqués",
+  "Formulaires oubliés",
+  "Rappels tardifs",
+  "Temps perdu en admin",
+  "Clients perdus",
+];
+const AFTER = [
+  "Réponse immédiate en 1,2s",
+  "Qualification automatique",
+  "Prise de rendez-vous instantanée",
+  "Résumés d'appels envoyés",
+  "Suivi automatique post-appel",
+];
+
+function Demonstration() {
+  return (
+    <div className="space-y-10">
+      <PageHeader
+        eyebrow="Étape 03 · Démonstration"
+        title="Avant / après Lucie"
+        description="Le quotidien commercial de vos équipes, transformé."
+      />
+
+      <div className="grid gap-6 md:grid-cols-2">
+        <div className="relative rounded-3xl border border-border bg-card p-8 shadow-[var(--shadow-card)]">
+          <div className="absolute right-6 top-6 rounded-full bg-destructive/10 px-3 py-1 text-[11px] font-medium uppercase tracking-widest text-destructive">
+            Sans Lucie
+          </div>
+          <div className="text-[11px] uppercase tracking-widest text-muted-foreground">
+            Situation actuelle
+          </div>
+          <h3 className="mt-2 text-2xl font-semibold tracking-tight text-foreground">
+            Le chaos silencieux
+          </h3>
+          <ul className="mt-8 space-y-3">
+            {BEFORE.map((b) => (
+              <li
+                key={b}
+                className="flex items-center gap-3 rounded-xl border border-border bg-background/60 px-4 py-3 text-sm text-muted-foreground"
+              >
+                <span className="grid h-6 w-6 place-items-center rounded-md bg-destructive/10 text-destructive">
+                  <X className="h-3.5 w-3.5" />
+                </span>
+                <span className="line-through decoration-destructive/40">{b}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div className="relative rounded-3xl border border-primary/20 bg-gradient-to-br from-primary/[0.06] to-transparent p-8 shadow-[var(--shadow-elevated)]">
+          <div className="absolute right-6 top-6 rounded-full bg-primary/10 px-3 py-1 text-[11px] font-medium uppercase tracking-widest text-primary">
+            Avec Lucie
+          </div>
+          <div className="text-[11px] uppercase tracking-widest text-primary">Après déploiement</div>
+          <h3 className="mt-2 text-2xl font-semibold tracking-tight text-foreground">
+            Un pipeline maîtrisé
+          </h3>
+          <ul className="mt-8 space-y-3">
+            {AFTER.map((a) => (
+              <li
+                key={a}
+                className="flex items-center gap-3 rounded-xl border border-primary/15 bg-background px-4 py-3 text-sm text-foreground shadow-[var(--shadow-card)]"
+              >
+                <span className="grid h-6 w-6 place-items-center rounded-md bg-primary text-primary-foreground">
+                  <Check className="h-3.5 w-3.5" />
+                </span>
+                <span>{a}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </div>
+  );
+}
