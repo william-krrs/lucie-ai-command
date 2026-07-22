@@ -1,9 +1,31 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { CheckCircle2, Calendar, Mail, ArrowRight, Clock } from "lucide-react";
+import { z } from "zod";
+import {
+  CheckCircle2,
+  Calendar,
+  Mail,
+  ArrowRight,
+  Clock,
+  Wrench,
+  Package,
+  CreditCard,
+} from "lucide-react";
 import { PageHeader } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+
+const planSearchSchema = z.object({
+  plan: z.enum(["essential", "pro", "premium"]).optional(),
+});
+
+const PLAN_LABELS: Record<string, string> = {
+  essential: "Lucie Essential",
+  pro: "Lucie Pro",
+  premium: "Lucie Premium",
+};
 
 export const Route = createFileRoute("/merci")({
+  validateSearch: planSearchSchema,
   head: () => ({
     meta: [
       { title: "Merci — Paiement confirmé | Lucie" },
@@ -23,6 +45,9 @@ export const Route = createFileRoute("/merci")({
 });
 
 function Merci() {
+  const { plan } = Route.useSearch();
+  const planLabel = plan ? PLAN_LABELS[plan] : "votre formule Lucie";
+
   return (
     <div className="space-y-10">
       <PageHeader
@@ -43,6 +68,42 @@ function Merci() {
             Un reçu vient de vous être envoyé par Stripe. Notre équipe vous
             contacte sous 24 heures ouvrées pour planifier votre installation.
           </p>
+        </div>
+
+        <div className="mt-8 grid gap-4 sm:grid-cols-2">
+          <div className="rounded-2xl border border-border bg-card p-5 shadow-[var(--shadow-card)]">
+            <div className="flex items-start gap-4">
+              <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-primary text-primary-foreground">
+                <Package className="h-5 w-5" aria-hidden="true" />
+              </div>
+              <div>
+                <div className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
+                  Formule choisie
+                </div>
+                <div className="mt-1 text-lg font-semibold text-foreground">{planLabel}</div>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Abonnement mensuel activé dès réception du paiement.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-border bg-card p-5 shadow-[var(--shadow-card)]">
+            <div className="flex items-start gap-4">
+              <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-primary text-primary-foreground">
+                <Wrench className="h-5 w-5" aria-hidden="true" />
+              </div>
+              <div>
+                <div className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
+                  Installation incluse
+                </div>
+                <div className="mt-1 text-lg font-semibold text-foreground">490 € inclus</div>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Paramétrage, connexion et mise en production sans frais supplémentaires.
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div className="mt-8 grid gap-4 sm:grid-cols-3">
@@ -90,8 +151,8 @@ function Merci() {
               Découvrez les prochaines étapes
             </h3>
             <p className="mt-1 text-sm text-muted-foreground">
-              Reprenez là où vous vous étiez arrêté ou consultez le planning
-              d'installation.
+              Suivez le déroulement de votre installation ou consultez la FAQ
+              pour anticiper les questions courantes.
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
