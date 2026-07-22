@@ -208,12 +208,15 @@ function Merci() {
               asChild
               className="h-12 w-full rounded-xl bg-primary px-6 text-base text-primary-foreground shadow-[var(--shadow-elevated)] hover:bg-primary/90 sm:w-auto"
             >
-              <Link to="/installation" search={{ plan }}>
-                Continuer vers l'installation
+              <Link to="/preparation" search={{ plan }}>
+                Remplir le formulaire de préparation
                 <ArrowRight className="ml-2 h-4 w-4" aria-hidden="true" />
               </Link>
             </Button>
             <div className="flex flex-wrap gap-2">
+              <Button asChild variant="ghost" className="h-9 rounded-lg text-xs text-muted-foreground hover:text-foreground">
+                <Link to="/installation" search={{ plan }}>Voir l'installation</Link>
+              </Button>
               <Button asChild variant="ghost" className="h-9 rounded-lg text-xs text-muted-foreground hover:text-foreground">
                 <Link to="/faq">Questions fréquentes</Link>
               </Button>
