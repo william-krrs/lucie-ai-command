@@ -252,7 +252,7 @@ function Home() {
                         side="top"
                         align="center"
                         sideOffset={8}
-                        className="max-w-[220px] rounded-xl border border-border/60 bg-popover/95 px-3 py-2 text-left shadow-lg backdrop-blur data-[state=delayed-open]:animate-fade-in"
+                        className="max-w-[240px] rounded-xl border border-border/60 bg-popover/95 px-3 py-2 text-left shadow-lg backdrop-blur data-[state=delayed-open]:animate-fade-in"
                       >
                         <div className="text-[13px] font-semibold leading-tight text-foreground">
                           {c.name}
@@ -260,6 +260,12 @@ function Home() {
                         <div className="mt-0.5 text-[11px] leading-snug text-muted-foreground">
                           {c.sector}
                         </div>
+                        {c.domain && (
+                          <div className="mt-1.5 flex items-center gap-1 text-[10px] text-muted-foreground/70">
+                            <ExternalLink className="h-3 w-3" aria-hidden="true" />
+                            Logo via {c.domain}
+                          </div>
+                        )}
                       </TooltipContent>
                     </Tooltip>
                   ))}
