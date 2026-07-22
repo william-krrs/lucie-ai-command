@@ -77,24 +77,38 @@ function Home() {
             <div className="mt-8 flex items-center gap-6 text-xs text-muted-foreground">
               <div className="flex -space-x-2">
                 {[
-                  { name: "Basic Fit", initials: "BF", hue: 12 },
-                  { name: "Bruselec — Yohann Brusseau", initials: "BR", hue: 220 },
-                  { name: "Christine Mintz", initials: "CM", hue: 300 },
-                  { name: "Edclim — Wendy Dewolf", initials: "ED", hue: 170 },
-                  { name: "Scalisi Bâti Rénov — Mickaël Angelo Scalisi", initials: "SB", hue: 30 },
-                  { name: "Ligonde Désiré — Désir Vert Paysagiste", initials: "DV", hue: 140 },
-                  { name: "AMS Rénovation — Mehdi Aloui", initials: "AM", hue: 260 },
+                  { name: "Basic Fit", domain: "basic-fit.com", initials: "BF", hue: 12 },
+                  { name: "Bruselec — Yohann Brusseau", domain: "electricien-31.fr", initials: "BR", hue: 220 },
+                  { name: "Christine Mintz", domain: null, initials: "CM", hue: 300 },
+                  { name: "Edclim — Wendy Dewolf", domain: "ed-clim.fr", initials: "ED", hue: 170 },
+                  { name: "Scalisi Bâti Rénov — Mickaël Angelo Scalisi", domain: "scalisi-batirenov.fr", initials: "SB", hue: 30 },
+                  { name: "Ligonde Désiré — Désir Vert Paysagiste", domain: null, initials: "DV", hue: 140 },
+                  { name: "AMS Rénovation — Mehdi Aloui", domain: "ams-renovation73.fr", initials: "AM", hue: 260 },
                 ].map((c) => (
                   <div
                     key={c.name}
                     title={c.name}
                     aria-label={c.name}
-                    className="grid h-7 w-7 place-items-center rounded-full border-2 border-card text-[9px] font-semibold text-white shadow-sm"
-                    style={{
-                      background: `linear-gradient(135deg, oklch(0.62 0.16 ${c.hue}), oklch(0.45 0.2 ${c.hue + 30}))`,
-                    }}
+                    className="relative grid h-7 w-7 place-items-center overflow-hidden rounded-full border-2 border-card bg-white text-[9px] font-semibold text-white shadow-sm"
+                    style={
+                      c.domain
+                        ? undefined
+                        : { background: `linear-gradient(135deg, oklch(0.62 0.16 ${c.hue}), oklch(0.45 0.2 ${c.hue + 30}))` }
+                    }
                   >
-                    {c.initials}
+                    {c.domain ? (
+                      <img
+                        src={`https://www.google.com/s2/favicons?domain=${c.domain}&sz=64`}
+                        alt=""
+                        loading="lazy"
+                        className="h-full w-full object-cover"
+                        onError={(e) => {
+                          (e.currentTarget as HTMLImageElement).style.display = "none";
+                        }}
+                      />
+                    ) : (
+                      c.initials
+                    )}
                   </div>
                 ))}
               </div>
