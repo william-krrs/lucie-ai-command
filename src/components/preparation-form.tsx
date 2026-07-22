@@ -352,6 +352,13 @@ export function PreparationForm({
           confirmation={confirmation}
           planLabel={planLabel}
           plan={plan}
+          diagnostic={{
+            score: rec.score,
+            tierLabel: TIER_LABELS[rec.tier],
+            recommendedPlanLabel: rec.plan ? REC_PLAN_LABELS[rec.plan] : "—",
+            priorityLabel: PRIORITY_LABELS[rec.priority],
+            priorityEmoji: PRIORITY_EMOJI[rec.priority],
+          }}
           onReset={() => {
             setSubmitted(false);
             setConfirmation(null);
