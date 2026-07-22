@@ -1,9 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, PhoneCall, Sparkles, Zap, Clock, Users, LineChart, Info } from "lucide-react";
+import { ArrowRight, PhoneCall, Sparkles, Zap, Clock, Users, LineChart, Info, MapPin, Building2, ExternalLink } from "lucide-react";
+import { useState } from "react";
 import { PageHeader } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
 import { StepNav } from "@/components/step-nav";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { SOCIAL_PROOF_COMPANY_COUNT } from "@/lib/config";
 
 export const Route = createFileRoute("/")({
