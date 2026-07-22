@@ -9,9 +9,15 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as RoiRouteImport } from './routes/roi'
 import { Route as DiagnosticRouteImport } from './routes/diagnostic'
 import { Route as IndexRouteImport } from './routes/index'
 
+const RoiRoute = RoiRouteImport.update({
+  id: '/roi',
+  path: '/roi',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DiagnosticRoute = DiagnosticRouteImport.update({
   id: '/diagnostic',
   path: '/diagnostic',
@@ -26,31 +32,42 @@ const IndexRoute = IndexRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/diagnostic': typeof DiagnosticRoute
+  '/roi': typeof RoiRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/diagnostic': typeof DiagnosticRoute
+  '/roi': typeof RoiRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/diagnostic': typeof DiagnosticRoute
+  '/roi': typeof RoiRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/diagnostic'
+  fullPaths: '/' | '/diagnostic' | '/roi'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/diagnostic'
-  id: '__root__' | '/' | '/diagnostic'
+  to: '/' | '/diagnostic' | '/roi'
+  id: '__root__' | '/' | '/diagnostic' | '/roi'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   DiagnosticRoute: typeof DiagnosticRoute
+  RoiRoute: typeof RoiRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/roi': {
+      id: '/roi'
+      path: '/roi'
+      fullPath: '/roi'
+      preLoaderRoute: typeof RoiRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/diagnostic': {
       id: '/diagnostic'
       path: '/diagnostic'
@@ -71,6 +88,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   DiagnosticRoute: DiagnosticRoute,
+  RoiRoute: RoiRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
