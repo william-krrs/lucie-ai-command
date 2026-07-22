@@ -162,6 +162,39 @@ function RecommandationPage() {
         pdf.addImage(imgData, "PNG", margin, position, imgWidth, imgHeight);
         heightLeft -= pageHeight - margin * 2;
       }
+      // Watermark + footer (date + version) sur chaque page
+      const DIAGNOSTIC_VERSION = "v2.1";
+      const generatedAt = new Date().toLocaleString("fr-FR", {
+        dateStyle: "long",
+        timeStyle: "short",
+      });
+      const totalPages = pdf.getNumberOfPages();
+      for (let p = 1; p <= totalPages; p++) {
+        pdf.setPage(p);
+        // Filigrane diagonal centré
+        pdf.saveGraphicsState();
+        // @ts-expect-error jsPDF GState typing
+        pdf.setGState(new (pdf as any).GState({ opacity: 0.08 }));
+        pdf.setFont("helvetica", "bold");
+        pdf.setFontSize(72);
+        pdf.setTextColor(37, 99, 235);
+        pdf.text("LUCIE", pageWidth / 2, pageHeight / 2, {
+          align: "center",
+          angle: 45,
+        });
+        pdf.restoreGraphicsState();
+        // Pied de page : date + version + pagination
+        pdf.setFont("helvetica", "normal");
+        pdf.setFontSize(8);
+        pdf.setTextColor(120, 120, 120);
+        pdf.text(`Généré le ${generatedAt}`, margin, pageHeight - 4);
+        pdf.text(`Diagnostic Lucie ${DIAGNOSTIC_VERSION}`, pageWidth / 2, pageHeight - 4, {
+          align: "center",
+        });
+        pdf.text(`Page ${p} / ${totalPages}`, pageWidth - margin, pageHeight - 4, {
+          align: "right",
+        });
+      }
       const filename = `diagnostic-lucie-${(state.companyName || "prospect")
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, "-")
