@@ -171,6 +171,10 @@ function Merci() {
         description="Votre paiement a bien été reçu. Notre équipe prend le relais pour lancer votre installation."
       />
 
+      <section className="rounded-3xl border border-border bg-card p-6 shadow-[var(--shadow-card)] sm:p-8">
+        <JourneyProgress activeIndex={1} />
+      </section>
+
       {planMissing && (
         <section
           role="status"
