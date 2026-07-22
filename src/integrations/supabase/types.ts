@@ -14,7 +14,84 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      preparation_submissions: {
+        Row: {
+          call_volume: string
+          company_name: string
+          company_phone: string
+          contact_email: string
+          contact_name: string
+          created_at: string
+          email_status: string | null
+          emergency_criteria: string | null
+          emergency_number: string
+          extra: string | null
+          greeting: string
+          id: string
+          interlocutor: string
+          location: string
+          opening_hours: string
+          plan: string | null
+          rdv_link: string
+          required_info: string
+          services: string
+          summary: string
+          tech_access: string | null
+          tone: string
+          website: string | null
+        }
+        Insert: {
+          call_volume: string
+          company_name: string
+          company_phone: string
+          contact_email: string
+          contact_name: string
+          created_at?: string
+          email_status?: string | null
+          emergency_criteria?: string | null
+          emergency_number: string
+          extra?: string | null
+          greeting: string
+          id?: string
+          interlocutor: string
+          location: string
+          opening_hours: string
+          plan?: string | null
+          rdv_link: string
+          required_info: string
+          services: string
+          summary: string
+          tech_access?: string | null
+          tone: string
+          website?: string | null
+        }
+        Update: {
+          call_volume?: string
+          company_name?: string
+          company_phone?: string
+          contact_email?: string
+          contact_name?: string
+          created_at?: string
+          email_status?: string | null
+          emergency_criteria?: string | null
+          emergency_number?: string
+          extra?: string | null
+          greeting?: string
+          id?: string
+          interlocutor?: string
+          location?: string
+          opening_hours?: string
+          plan?: string | null
+          rdv_link?: string
+          required_info?: string
+          services?: string
+          summary?: string
+          tech_access?: string | null
+          tone?: string
+          website?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
