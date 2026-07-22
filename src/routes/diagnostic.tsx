@@ -22,6 +22,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { StepNav } from "@/components/step-nav";
 import { RecommendationCard } from "@/components/recommendation-card";
+import { ActivityCombobox } from "@/components/activity-combobox";
 import {
   CHANNEL_OPTIONS,
   formatEUR,
@@ -86,9 +87,9 @@ function Diagnostic() {
               />
             </Field>
             <Field label="Activité">
-              <Input
+              <ActivityCombobox
                 value={state.activity}
-                onChange={(e) => update("activity", e.target.value)}
+                onChange={(v) => update("activity", v)}
                 placeholder="Ex. Restauration"
               />
             </Field>
