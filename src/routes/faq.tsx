@@ -17,7 +17,9 @@ export const Route = createFileRoute("/faq")({
       },
       { property: "og:title", content: "FAQ — Lucie" },
       { property: "og:description", content: "Les réponses aux questions les plus fréquentes sur Lucie." },
+      { property: "og:url", content: "https://lucie-ai-command.lovable.app/faq" },
     ],
+    links: [{ rel: "canonical", href: "https://lucie-ai-command.lovable.app/faq" }],
   }),
   component: Faq,
 });

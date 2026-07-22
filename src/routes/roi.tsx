@@ -16,7 +16,9 @@ export const Route = createFileRoute("/roi")({
       },
       { property: "og:title", content: "Calculateur ROI — Lucie" },
       { property: "og:description", content: "Le vrai coût de vos appels manqués, en temps réel." },
+      { property: "og:url", content: "https://lucie-ai-command.lovable.app/roi" },
     ],
+    links: [{ rel: "canonical", href: "https://lucie-ai-command.lovable.app/roi" }],
   }),
   component: Roi,
 });

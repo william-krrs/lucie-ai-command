@@ -92,6 +92,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         content: "L'assistante IA qui répond à vos appels, qualifie vos prospects et vous aide à générer plus de chiffre d'affaires.",
       },
       { property: "og:type", content: "website" },
+      { property: "og:site_name", content: "Lucie Command Center" },
+      { property: "og:url", content: "https://lucie-ai-command.lovable.app/" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:title", content: "Accueil — Lucie" },
       { name: "twitter:description", content: "L'assistante IA qui répond à vos appels, qualifie vos prospects et vous aide à générer plus de chiffre d'affaires." },
@@ -104,6 +106,20 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         href: appCss,
       },
       { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
+    ],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Organization",
+          name: "Lucie",
+          url: "https://lucie-ai-command.lovable.app",
+          description:
+            "Assistante IA vocale qui répond aux appels, qualifie les prospects et prend les rendez-vous.",
+          publisher: { "@type": "Organization", name: "Spark Media Marketing" },
+        }),
+      },
     ],
   }),
   shellComponent: RootShell,

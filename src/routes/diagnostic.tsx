@@ -38,7 +38,9 @@ export const Route = createFileRoute("/diagnostic")({
       },
       { property: "og:title", content: "Diagnostic — Lucie" },
       { property: "og:description", content: "Le diagnostic commercial en direct de Lucie." },
+      { property: "og:url", content: "https://lucie-ai-command.lovable.app/diagnostic" },
     ],
+    links: [{ rel: "canonical", href: "https://lucie-ai-command.lovable.app/diagnostic" }],
   }),
   component: Diagnostic,
 });
