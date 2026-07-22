@@ -156,6 +156,12 @@ function SharedDiagnosticPage() {
             fondée sur les données déclarées.
           </p>
         </div>
+
+        <QrCodeCard
+          url={typeof window !== "undefined" ? window.location.href : ""}
+          label={`QR code du diagnostic de ${snap.companyName || "Lucie"}`}
+          companyName={snap.companyName || "diagnostic"}
+        />
       </main>
     </div>
   );
