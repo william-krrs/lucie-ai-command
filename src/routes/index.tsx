@@ -85,7 +85,19 @@ function Home() {
                   />
                 ))}
               </div>
-              <span>+25 entreprises utilisent Lucie au quotidien</span>
+              <TooltipProvider delayDuration={200}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className="inline-flex cursor-help items-center gap-1 underline-offset-4 hover:underline focus-visible:rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring" tabIndex={0}>
+                      +25 entreprises utilisent Lucie au quotidien
+                      <Info className="h-3 w-3 text-muted-foreground/80" aria-hidden="true" />
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" align="start" className="max-w-[260px] text-xs leading-relaxed">
+                    Chiffre basé sur les entreprises actives utilisant Lucie pour répondre à leurs appels entrants et qualifier leurs prospects en direct.
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
           </div>
 
