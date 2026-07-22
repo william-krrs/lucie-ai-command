@@ -132,8 +132,11 @@ function RecommandationPage() {
       await navigator.clipboard.writeText(shareUrl);
       setShareCopied(true);
       setTimeout(() => setShareCopied(false), 2500);
+      toast.success("Lien copié dans le presse-papiers");
     } catch {
-      /* noop */
+      toast.error("Impossible de copier le lien", {
+        description: "Autorisez l’accès au presse-papiers puis réessayez.",
+      });
     }
   };
 
