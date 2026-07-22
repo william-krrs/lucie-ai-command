@@ -34,29 +34,13 @@ export const Route = createFileRoute("/diagnostic")({
       { title: "Diagnostic — Lucie Command Center" },
       {
         name: "description",
-        content:
-          "Répondez à quelques questions et obtenez en direct votre potentiel de croissance avec Lucie.",
-      },
-      { property: "og:title", content: "Diagnostic — Lucie" },
-      { property: "og:description", content: "Votre diagnostic commercial en temps réel." },
-      { property: "og:url", content: "https://lucie-ai-command.lovable.app/diagnostic" },
-    ],
-    links: [{ rel: "canonical", href: "https://lucie-ai-command.lovable.app/diagnostic" }],
-  }),
-  component: DiagnosticPage,
-});
-
-export const Route = createFileRoute("/diagnostic")({
-  head: () => ({
-    meta: [
-      { title: "Diagnostic — Lucie Command Center" },
-      {
-        name: "description",
         content: "Diagnostic interactif : évaluez le chiffre d'affaires que vous laissez sur la table chaque mois.",
       },
       { property: "og:title", content: "Diagnostic — Lucie" },
       { property: "og:description", content: "Le diagnostic commercial en direct de Lucie." },
+      { property: "og:url", content: "https://lucie-ai-command.lovable.app/diagnostic" },
     ],
+    links: [{ rel: "canonical", href: "https://lucie-ai-command.lovable.app/diagnostic" }],
   }),
   component: Diagnostic,
 });
