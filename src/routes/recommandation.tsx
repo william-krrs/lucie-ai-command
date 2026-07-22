@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useRef, useState } from "react";
 import {
   ArrowRight,
   Building2,
@@ -8,6 +9,7 @@ import {
   Briefcase,
   Sparkles,
   Download,
+  Loader2,
 } from "lucide-react";
 import { PageHeader } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
@@ -49,6 +51,49 @@ export const Route = createFileRoute("/recommandation")({
 function RecommandationPage() {
   const { state } = useLucie();
   const m = useMetrics();
+  const exportRef = useRef<HTMLDivElement>(null);
+  const [isExporting, setIsExporting] = useState(false);
+
+  const handleExportPdf = async () => {
+    if (!exportRef.current || isExporting) return;
+    setIsExporting(true);
+    try {
+      const [{ default: html2canvas }, { jsPDF }] = await Promise.all([
+        import("html2canvas"),
+        import("jspdf"),
+      ]);
+      const node = exportRef.current;
+      const canvas = await html2canvas(node, {
+        scale: 2,
+        backgroundColor: "#ffffff",
+        useCORS: true,
+      });
+      const imgData = canvas.toDataURL("image/png");
+      const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const margin = 10;
+      const imgWidth = pageWidth - margin * 2;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      let heightLeft = imgHeight;
+      let position = margin;
+      pdf.addImage(imgData, "PNG", margin, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight - margin * 2;
+      while (heightLeft > 0) {
+        position = margin - (imgHeight - heightLeft);
+        pdf.addPage();
+        pdf.addImage(imgData, "PNG", margin, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight - margin * 2;
+      }
+      const filename = `diagnostic-lucie-${(state.companyName || "prospect")
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-|-$/g, "")}.pdf`;
+      pdf.save(filename);
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   return (
     <div className="space-y-10">
@@ -60,13 +105,24 @@ function RecommandationPage() {
           <Button
             variant="outline"
             className="rounded-xl"
-            onClick={() => window.print()}
+            onClick={handleExportPdf}
+            disabled={isExporting}
+            aria-label="Exporter le diagnostic en PDF"
           >
-            <Download className="mr-1.5 h-4 w-4" /> Exporter
+            {isExporting ? (
+              <>
+                <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> Génération…
+              </>
+            ) : (
+              <>
+                <Download className="mr-1.5 h-4 w-4" /> Exporter en PDF
+              </>
+            )}
           </Button>
         }
       />
 
+      <div ref={exportRef} className="space-y-6 bg-background">
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
         <section
           aria-labelledby="context-title"
@@ -132,6 +188,7 @@ function RecommandationPage() {
       </div>
 
       <NextStep />
+      </div>
 
       <StepNav current="/recommandation" />
     </div>
