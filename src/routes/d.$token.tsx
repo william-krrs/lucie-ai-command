@@ -162,11 +162,13 @@ function SharedDiagnosticPage() {
           </p>
         </div>
 
-        <QrCodeCard
-          url={typeof window !== "undefined" ? window.location.href : ""}
-          label={`QR code du diagnostic de ${snap.companyName || "Lucie"}`}
-          companyName={snap.companyName || "diagnostic"}
-        />
+        {shareUrl && (
+          <QrCodeCard
+            url={shareUrl}
+            label={`QR code du diagnostic de ${snap.companyName || "Lucie"}`}
+            companyName={snap.companyName || "diagnostic"}
+          />
+        )}
       </main>
     </div>
   );
