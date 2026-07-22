@@ -75,44 +75,60 @@ function Home() {
             </div>
 
             <div className="mt-8 flex items-center gap-6 text-xs text-muted-foreground">
-              <div className="flex -space-x-2">
-                {[
-                  { name: "Basic Fit", domain: "basic-fit.com", initials: "BF", hue: 12 },
-                  { name: "Bruselec — Yohann Brusseau", domain: "electricien-31.fr", initials: "BR", hue: 220 },
-                  { name: "Christine Mintz", domain: null, initials: "CM", hue: 300 },
-                  { name: "Edclim — Wendy Dewolf", domain: "ed-clim.fr", initials: "ED", hue: 170 },
-                  { name: "Scalisi Bâti Rénov — Mickaël Angelo Scalisi", domain: "scalisi-batirenov.fr", initials: "SB", hue: 30 },
-                  { name: "Ligonde Désiré — Désir Vert Paysagiste", domain: null, initials: "DV", hue: 140 },
-                  { name: "AMS Rénovation — Mehdi Aloui", domain: "ams-renovation73.fr", initials: "AM", hue: 260 },
-                ].map((c) => (
-                  <div
-                    key={c.name}
-                    title={c.name}
-                    aria-label={c.name}
-                    className="relative grid h-7 w-7 place-items-center overflow-hidden rounded-full border-2 border-card bg-white text-[9px] font-semibold text-white shadow-sm"
-                    style={
-                      c.domain
-                        ? undefined
-                        : { background: `linear-gradient(135deg, oklch(0.62 0.16 ${c.hue}), oklch(0.45 0.2 ${c.hue + 30}))` }
-                    }
-                  >
-                    {c.domain ? (
-                      <img
-                        src={`https://www.google.com/s2/favicons?domain=${c.domain}&sz=64`}
-                        alt=""
-                        loading="lazy"
-                        className="h-full w-full object-cover"
-                        onError={(e) => {
-                          (e.currentTarget as HTMLImageElement).style.display = "none";
-                        }}
-                      />
-                    ) : (
-                      c.initials
-                    )}
-                  </div>
-                ))}
-              </div>
-              <TooltipProvider delayDuration={200}>
+              <TooltipProvider delayDuration={150}>
+                <div className="flex -space-x-2">
+                  {[
+                    { name: "Basic Fit", sector: "Salles de sport · Fitness", domain: "basic-fit.com", initials: "BF", hue: 12 },
+                    { name: "Bruselec — Yohann Brusseau", sector: "Électricité · Photovoltaïque (Toulouse)", domain: "electricien-31.fr", initials: "BR", hue: 220 },
+                    { name: "Christine Mintz", sector: "Coaching & accompagnement", domain: null, initials: "CM", hue: 300 },
+                    { name: "Edclim — Wendy Dewolf", sector: "Climatisation & réfrigération", domain: "ed-clim.fr", initials: "ED", hue: 170 },
+                    { name: "Scalisi Bâti Rénov — Mickaël Angelo Scalisi", sector: "Maçonnerie & rénovation (Var)", domain: "scalisi-batirenov.fr", initials: "SB", hue: 30 },
+                    { name: "Ligonde Désiré — Désir Vert Paysagiste", sector: "Paysagisme & entretien de jardins", domain: null, initials: "DV", hue: 140 },
+                    { name: "AMS Rénovation — Mehdi Aloui", sector: "Rénovation & multi-services (Savoie)", domain: "ams-renovation73.fr", initials: "AM", hue: 260 },
+                  ].map((c) => (
+                    <Tooltip key={c.name}>
+                      <TooltipTrigger asChild>
+                        <button
+                          type="button"
+                          aria-label={`${c.name} — ${c.sector}`}
+                          className="relative grid h-8 w-8 place-items-center overflow-hidden rounded-full border-2 border-card bg-white text-[10px] font-semibold text-white shadow-sm outline-none transition-transform duration-200 hover:z-10 hover:scale-110 focus-visible:z-10 focus-visible:scale-110 focus-visible:ring-2 focus-visible:ring-primary/60"
+                          style={
+                            c.domain
+                              ? undefined
+                              : { background: `linear-gradient(135deg, oklch(0.62 0.16 ${c.hue}), oklch(0.45 0.2 ${c.hue + 30}))` }
+                          }
+                        >
+                          {c.domain ? (
+                            <img
+                              src={`https://www.google.com/s2/favicons?domain=${c.domain}&sz=64`}
+                              alt=""
+                              loading="lazy"
+                              className="h-full w-full object-cover"
+                              onError={(e) => {
+                                (e.currentTarget as HTMLImageElement).style.display = "none";
+                              }}
+                            />
+                          ) : (
+                            c.initials
+                          )}
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent
+                        side="top"
+                        align="center"
+                        sideOffset={8}
+                        className="max-w-[220px] rounded-xl border border-border/60 bg-popover/95 px-3 py-2 text-left shadow-lg backdrop-blur data-[state=delayed-open]:animate-fade-in"
+                      >
+                        <div className="text-[13px] font-semibold leading-tight text-foreground">
+                          {c.name}
+                        </div>
+                        <div className="mt-0.5 text-[11px] leading-snug text-muted-foreground">
+                          {c.sector}
+                        </div>
+                      </TooltipContent>
+                    </Tooltip>
+                  ))}
+                </div>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <span className="inline-flex cursor-help items-center gap-1 underline-offset-4 hover:underline focus-visible:rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring" tabIndex={0}>
