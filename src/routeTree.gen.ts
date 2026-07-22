@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as RoiRouteImport } from './routes/roi'
 import { Route as InstallationRouteImport } from './routes/installation'
+import { Route as FaqRouteImport } from './routes/faq'
 import { Route as DiagnosticRouteImport } from './routes/diagnostic'
 import { Route as DemonstrationRouteImport } from './routes/demonstration'
 import { Route as IndexRouteImport } from './routes/index'
@@ -23,6 +24,11 @@ const RoiRoute = RoiRouteImport.update({
 const InstallationRoute = InstallationRouteImport.update({
   id: '/installation',
   path: '/installation',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FaqRoute = FaqRouteImport.update({
+  id: '/faq',
+  path: '/faq',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DiagnosticRoute = DiagnosticRouteImport.update({
@@ -45,6 +51,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/demonstration': typeof DemonstrationRoute
   '/diagnostic': typeof DiagnosticRoute
+  '/faq': typeof FaqRoute
   '/installation': typeof InstallationRoute
   '/roi': typeof RoiRoute
 }
@@ -52,6 +59,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/demonstration': typeof DemonstrationRoute
   '/diagnostic': typeof DiagnosticRoute
+  '/faq': typeof FaqRoute
   '/installation': typeof InstallationRoute
   '/roi': typeof RoiRoute
 }
@@ -60,19 +68,27 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/demonstration': typeof DemonstrationRoute
   '/diagnostic': typeof DiagnosticRoute
+  '/faq': typeof FaqRoute
   '/installation': typeof InstallationRoute
   '/roi': typeof RoiRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/demonstration' | '/diagnostic' | '/installation' | '/roi'
+  fullPaths:
+    | '/'
+    | '/demonstration'
+    | '/diagnostic'
+    | '/faq'
+    | '/installation'
+    | '/roi'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/demonstration' | '/diagnostic' | '/installation' | '/roi'
+  to: '/' | '/demonstration' | '/diagnostic' | '/faq' | '/installation' | '/roi'
   id:
     | '__root__'
     | '/'
     | '/demonstration'
     | '/diagnostic'
+    | '/faq'
     | '/installation'
     | '/roi'
   fileRoutesById: FileRoutesById
@@ -81,6 +97,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   DemonstrationRoute: typeof DemonstrationRoute
   DiagnosticRoute: typeof DiagnosticRoute
+  FaqRoute: typeof FaqRoute
   InstallationRoute: typeof InstallationRoute
   RoiRoute: typeof RoiRoute
 }
@@ -99,6 +116,13 @@ declare module '@tanstack/react-router' {
       path: '/installation'
       fullPath: '/installation'
       preLoaderRoute: typeof InstallationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/faq': {
+      id: '/faq'
+      path: '/faq'
+      fullPath: '/faq'
+      preLoaderRoute: typeof FaqRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/diagnostic': {
@@ -129,6 +153,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   DemonstrationRoute: DemonstrationRoute,
   DiagnosticRoute: DiagnosticRoute,
+  FaqRoute: FaqRoute,
   InstallationRoute: InstallationRoute,
   RoiRoute: RoiRoute,
 }
