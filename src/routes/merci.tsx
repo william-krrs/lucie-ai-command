@@ -140,38 +140,36 @@ function Merci() {
       </section>
 
       <section className="rounded-3xl border border-border bg-card p-6 shadow-[var(--shadow-card)] sm:p-8">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <div className="text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
-              Poursuivre le parcours
+              Prochaine étape
             </div>
             <h3 className="mt-1 text-lg font-semibold tracking-tight text-foreground">
-              Découvrez les prochaines étapes
+              Passez à l'installation de Lucie
             </h3>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Suivez le déroulement de votre installation ou consultez la FAQ
-              pour anticiper les questions courantes.
+            <p className="mt-1 max-w-md text-sm text-muted-foreground">
+              Suivez le déroulement étape par étape et retrouvez les informations sur votre formule en cours de route.
             </p>
           </div>
-          <div className="flex flex-wrap gap-2">
-            <Button asChild variant="outline" className="h-11 rounded-xl">
-              <Link to="/offres">← Retour aux offres</Link>
-            </Button>
+          <div className="flex flex-col gap-2 sm:items-end">
             <Button
               asChild
-              className="h-11 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90"
+              className="h-12 w-full rounded-xl bg-primary px-6 text-base text-primary-foreground shadow-[var(--shadow-elevated)] hover:bg-primary/90 sm:w-auto"
             >
-              <Link to="/installation">
-                Voir l'installation
-                <ArrowRight className="ml-1.5 h-4 w-4" aria-hidden="true" />
+              <Link to="/installation" search={{ plan }}>
+                Continuer vers l'installation
+                <ArrowRight className="ml-2 h-4 w-4" aria-hidden="true" />
               </Link>
             </Button>
-            <Button
-              asChild
-              className="h-11 rounded-xl bg-foreground text-background hover:bg-foreground/90"
-            >
-              <Link to="/faq">Questions fréquentes</Link>
-            </Button>
+            <div className="flex flex-wrap gap-2">
+              <Button asChild variant="ghost" className="h-9 rounded-lg text-xs text-muted-foreground hover:text-foreground">
+                <Link to="/faq">Questions fréquentes</Link>
+              </Button>
+              <Button asChild variant="ghost" className="h-9 rounded-lg text-xs text-muted-foreground hover:text-foreground">
+                <Link to="/offres">← Retour aux offres</Link>
+              </Button>
+            </div>
           </div>
         </div>
       </section>
