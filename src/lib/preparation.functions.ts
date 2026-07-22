@@ -1,0 +1,96 @@
+import { createServerFn } from "@tanstack/react-start";
+import { z } from "zod";
+
+const submissionSchema = z.object({
+  plan: z.string().max(50).optional().nullable(),
+  contactName: z.string().trim().min(1).max(200),
+  contactEmail: z.string().trim().email().max(200),
+  companyName: z.string().trim().min(1).max(200),
+  companyPhone: z.string().trim().min(1).max(60),
+  website: z.string().max(400).optional().nullable(),
+  callVolume: z.string().trim().min(1).max(200),
+  interlocutor: z.string().trim().min(1).max(200),
+  greeting: z.string().trim().min(1).max(1000),
+  location: z.string().trim().min(1).max(300),
+  tone: z.string().trim().min(1).max(50),
+  services: z.string().trim().min(1).max(2000),
+  emergencyNumber: z.string().trim().min(1).max(60),
+  emergencyCriteria: z.string().max(1500).optional().nullable(),
+  openingHours: z.string().trim().min(1).max(300),
+  rdvLink: z.string().trim().min(1).max(400),
+  requiredInfo: z.string().trim().min(1).max(1500),
+  techAccess: z.string().max(1500).optional().nullable(),
+  extra: z.string().max(1500).optional().nullable(),
+  summary: z.string().min(1).max(20000),
+});
+
+export type PreparationSubmissionInput = z.infer<typeof submissionSchema>;
+
+export const submitPreparation = createServerFn({ method: "POST" })
+  .inputValidator((data: unknown) => submissionSchema.parse(data))
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: row, error } = await supabaseAdmin
+      .from("preparation_submissions")
+      .insert({
+        plan: data.plan ?? null,
+        contact_name: data.contactName,
+        contact_email: data.contactEmail,
+        company_name: data.companyName,
+        company_phone: data.companyPhone,
+        website: data.website ?? null,
+        call_volume: data.callVolume,
+        interlocutor: data.interlocutor,
+        greeting: data.greeting,
+        location: data.location,
+        tone: data.tone,
+        services: data.services,
+        emergency_number: data.emergencyNumber,
+        emergency_criteria: data.emergencyCriteria ?? null,
+        opening_hours: data.openingHours,
+        rdv_link: data.rdvLink,
+        required_info: data.requiredInfo,
+        tech_access: data.techAccess ?? null,
+        extra: data.extra ?? null,
+        summary: data.summary,
+      })
+      .select("id")
+      .single();
+
+    if (error) {
+      console.error("[submitPreparation] insert failed", error);
+      throw new Error("Impossible d'enregistrer votre questionnaire. Réessayez.");
+    }
+
+    // Best-effort email send via Lovable Emails (silently no-op if not configured).
+    let emailStatus: "sent" | "skipped" | "failed" = "skipped";
+    try {
+      const apiKey = process.env.LOVABLE_API_KEY;
+      const senderDomain = process.env.SENDER_DOMAIN;
+      if (apiKey && senderDomain) {
+        const { sendLovableEmail } = await import("@lovable.dev/email-js");
+        await sendLovableEmail({
+          apiKey,
+          senderDomain,
+          from: `Lucie <preparation@${senderDomain}>`,
+          to: "contact@lucieassistant.fr",
+          replyTo: data.contactEmail,
+          subject: `Préparation Lucie — ${data.companyName} (${data.plan ?? "sans formule"})`,
+          text: data.summary,
+          idempotencyKey: `prep-${row.id}`,
+        });
+        emailStatus = "sent";
+      }
+    } catch (e) {
+      console.error("[submitPreparation] email send failed", e);
+      emailStatus = "failed";
+    }
+
+    await supabaseAdmin
+      .from("preparation_submissions")
+      .update({ email_status: emailStatus })
+      .eq("id", row.id);
+
+    return { id: row.id as string, emailStatus };
+  });
