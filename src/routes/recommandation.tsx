@@ -15,6 +15,7 @@ import { PageHeader } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
 import { StepNav } from "@/components/step-nav";
 import { RecommendationCard } from "@/components/recommendation-card";
+import { RoiBreakdown } from "@/components/roi-breakdown";
 import { formatEUR, useLucie, useMetrics, useRecommendation } from "@/lib/lucie-store";
 import { PLAN_LABELS, PLAN_TAGLINES, PRIORITY_CTA } from "@/lib/recommendation";
 
@@ -186,6 +187,8 @@ function RecommandationPage() {
 
         <RecommendationCard showCta={false} />
       </div>
+
+      <RoiBreakdown />
 
       <NextStep />
       </div>
