@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight, PhoneCall, Sparkles, Zap, Clock, Users, LineChart, Info, MapPin, Building2, ExternalLink } from "lucide-react";
-import { useRef, useState, type KeyboardEvent } from "react";
+import { useState, type KeyboardEvent } from "react";
 import { PageHeader } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
 import { StepNav } from "@/components/step-nav";
