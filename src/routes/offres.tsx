@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { StepNav } from "@/components/step-nav";
 import { useRecommendation } from "@/lib/lucie-store";
-import { PLAN_LABELS, PLAN_TAGLINES, TIER_LABELS } from "@/lib/recommendation";
+import { PLAN_LABELS, PLAN_TAGLINES, TIER_LABELS, PRIORITY_CTA } from "@/lib/recommendation";
 
 export const Route = createFileRoute("/offres")({
   head: () => ({
@@ -137,6 +137,7 @@ function Offres() {
   }, [recommendedPlan]);
 
   const isRefusal = rec.tier === "refuse";
+  const cta = PRIORITY_CTA[rec.priority];
 
   return (
     <div className="space-y-14">
@@ -163,7 +164,8 @@ function Offres() {
                 isRefusal ? "text-destructive" : "text-primary",
               )}
             >
-              Score {rec.score}/100 · {TIER_LABELS[rec.tier]}
+              <span aria-hidden="true">{cta.emoji}</span> Score {rec.score}/100 ·{" "}
+              {TIER_LABELS[rec.tier]} · {cta.eyebrow}
             </div>
             <h2
               id="reco-inline-title"
@@ -176,12 +178,13 @@ function Offres() {
             <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
               {isRefusal
                 ? "Après analyse, Lucie n'apporterait pas suffisamment de valeur aujourd'hui. Nous préférons être transparents plutôt que de vendre une solution inadaptée."
-                : rec.planReason}
+                : `${rec.planReason} ${cta.description}`}
             </p>
           </div>
           <Button asChild variant="outline" className="rounded-xl">
             <Link to="/recommandation">
-              Voir le diagnostic complet <ArrowRight className="ml-1 h-4 w-4" />
+              {isRefusal ? "Voir le diagnostic complet" : cta.primaryLabel}{" "}
+              <ArrowRight className="ml-1 h-4 w-4" />
             </Link>
           </Button>
         </div>
