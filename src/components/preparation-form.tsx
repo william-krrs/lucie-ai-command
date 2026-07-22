@@ -720,11 +720,19 @@ function SubmittedConfirmation({
   confirmation,
   planLabel,
   plan,
+  diagnostic,
   onReset,
 }: {
   confirmation: { id: string; emailStatus: "sent" | "skipped" | "failed" };
   planLabel: string;
   plan?: "essential" | "pro" | "premium";
+  diagnostic: {
+    score: number;
+    tierLabel: string;
+    recommendedPlanLabel: string;
+    priorityLabel: string;
+    priorityEmoji: string;
+  };
   onReset: () => void;
 }) {
   const reference = confirmation.id.slice(0, 8).toUpperCase();
@@ -749,6 +757,36 @@ function SubmittedConfirmation({
         <p className="mt-2 text-xs text-muted-foreground">
           Référence : <span className="font-mono font-medium text-foreground">#{reference}</span>
         </p>
+      </div>
+
+      <div className="mt-6 grid gap-3 rounded-2xl border border-border bg-card p-4 sm:grid-cols-3 sm:p-5">
+        <div>
+          <div className="text-[11px] uppercase tracking-widest text-muted-foreground">
+            Score de compatibilité
+          </div>
+          <div className="mt-1 text-lg font-semibold tabular-nums text-foreground">
+            {diagnostic.score}
+            <span className="text-sm font-normal text-muted-foreground"> / 100</span>
+          </div>
+          <div className="text-xs text-muted-foreground">{diagnostic.tierLabel}</div>
+        </div>
+        <div>
+          <div className="text-[11px] uppercase tracking-widest text-muted-foreground">
+            Formule recommandée
+          </div>
+          <div className="mt-1 text-lg font-semibold text-foreground">
+            {diagnostic.recommendedPlanLabel}
+          </div>
+        </div>
+        <div>
+          <div className="text-[11px] uppercase tracking-widest text-muted-foreground">
+            Priorité commerciale
+          </div>
+          <div className="mt-1 text-lg font-semibold text-foreground">
+            <span aria-hidden="true">{diagnostic.priorityEmoji}</span>{" "}
+            {diagnostic.priorityLabel}
+          </div>
+        </div>
       </div>
 
       <div className="mt-8 grid gap-4 sm:grid-cols-2">
