@@ -324,6 +324,42 @@ function RecommandationPage() {
                   />
                 </div>
               )}
+
+              {shareUrl && (
+                <form
+                  className="flex flex-col gap-2 border-t border-primary/20 pt-4 sm:flex-row sm:items-center"
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    const email = prospectEmail.trim();
+                    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                      toast.error("Adresse email invalide.");
+                      return;
+                    }
+                    const company = state.companyName || "votre entreprise";
+                    const subject = `Votre diagnostic Lucie — ${company}`;
+                    const body = `Bonjour,\n\nVoici le lien vers votre diagnostic Lucie personnalisé pour ${company} :\n${shareUrl}\n\nCe lien est valable 30 jours. N'hésitez pas à revenir vers moi pour en discuter.\n\nBien à vous,`;
+                    window.location.href = `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+                    toast.success("Ouverture de votre client email…");
+                  }}
+                >
+                  <label htmlFor="prospect-email" className="sr-only">
+                    Email du prospect
+                  </label>
+                  <Input
+                    id="prospect-email"
+                    type="email"
+                    inputMode="email"
+                    autoComplete="email"
+                    placeholder="prospect@entreprise.fr"
+                    value={prospectEmail}
+                    onChange={(e) => setProspectEmail(e.target.value)}
+                    className="rounded-xl"
+                  />
+                  <Button type="submit" size="sm" className="rounded-xl whitespace-nowrap">
+                    <Mail className="mr-1.5 h-4 w-4" /> Envoyer par email
+                  </Button>
+                </form>
+              )}
             </div>
           )}
         </div>
