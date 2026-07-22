@@ -23,6 +23,7 @@ import { RoiBreakdown } from "@/components/roi-breakdown";
 import { formatEUR, useLucie, useMetrics, useRecommendation } from "@/lib/lucie-store";
 import { PLAN_LABELS, PLAN_TAGLINES, PRIORITY_CTA } from "@/lib/recommendation";
 import { createSharedDiagnostic } from "@/lib/share.functions";
+import { addPdfHistoryEntry } from "@/lib/pdf-history";
 
 export const Route = createFileRoute("/recommandation")({
   head: () => ({
@@ -166,6 +167,18 @@ function RecommandationPage() {
         .replace(/[^a-z0-9]+/g, "-")
         .replace(/^-|-$/g, "")}.pdf`;
       pdf.save(filename);
+      try {
+        const dataUrl = pdf.output("datauristring", { filename });
+        const blob = pdf.output("blob");
+        addPdfHistoryEntry({
+          filename,
+          companyName: state.companyName || "Prospect",
+          dataUrl,
+          sizeBytes: blob.size,
+        });
+      } catch {
+        /* history is best-effort */
+      }
     } finally {
       setIsExporting(false);
     }
