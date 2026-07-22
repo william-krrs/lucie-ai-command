@@ -15,12 +15,14 @@ function CompanyLogo({
   domain,
   initials,
   hue,
+  alt,
   size = 64,
   className = "",
 }: {
   domain: string | null;
   initials: string;
   hue: number;
+  alt: string;
   size?: number;
   className?: string;
 }) {
@@ -45,6 +47,7 @@ function CompanyLogo({
     <span
       className={`relative block h-full w-full ${showFallback ? "text-white" : "bg-white"}`}
       style={fallbackStyle}
+      title={alt}
     >
       {domain && status !== "error" && (
         <>
@@ -56,7 +59,7 @@ function CompanyLogo({
           )}
           <img
             src={`https://www.google.com/s2/favicons?domain=${domain}&sz=${size}`}
-            alt=""
+            alt={alt}
             loading="lazy"
             decoding="async"
             width={size}
@@ -70,7 +73,7 @@ function CompanyLogo({
         </>
       )}
       {showFallback && (
-        <span className="absolute inset-0 grid place-items-center font-semibold">
+        <span className="absolute inset-0 grid place-items-center font-semibold" aria-label={alt}>
           {initials}
         </span>
       )}
@@ -242,14 +245,14 @@ function Home() {
                           onClick={() => setSelected(c)}
                           className="relative grid h-8 w-8 place-items-center overflow-hidden rounded-full border-2 border-card bg-white text-[10px] shadow-sm outline-none transition-transform duration-200 hover:z-10 hover:scale-110 focus-visible:z-10 focus-visible:scale-110 focus-visible:ring-2 focus-visible:ring-primary/60"
                         >
-                          <CompanyLogo domain={c.domain} initials={c.initials} hue={c.hue} size={64} />
+                          <CompanyLogo domain={c.domain} initials={c.initials} hue={c.hue} alt={`Logo ${c.name}`} size={64} />
                         </button>
                       </TooltipTrigger>
                       <TooltipContent
                         side="top"
                         align="center"
                         sideOffset={8}
-                        className="max-w-[220px] rounded-xl border border-border/60 bg-popover/95 px-3 py-2 text-left shadow-lg backdrop-blur data-[state=delayed-open]:animate-fade-in"
+                        className="max-w-[240px] rounded-xl border border-border/60 bg-popover/95 px-3 py-2 text-left shadow-lg backdrop-blur data-[state=delayed-open]:animate-fade-in"
                       >
                         <div className="text-[13px] font-semibold leading-tight text-foreground">
                           {c.name}
@@ -257,21 +260,32 @@ function Home() {
                         <div className="mt-0.5 text-[11px] leading-snug text-muted-foreground">
                           {c.sector}
                         </div>
+                        {c.domain && (
+                          <div className="mt-1.5 flex items-center gap-1 text-[10px] text-muted-foreground/70">
+                            <ExternalLink className="h-3 w-3" aria-hidden="true" />
+                            Logo via {c.domain}
+                          </div>
+                        )}
                       </TooltipContent>
                     </Tooltip>
                   ))}
                 </div>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <span className="inline-flex cursor-help items-center gap-1 underline-offset-4 hover:underline focus-visible:rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring" tabIndex={0}>
-                      +{SOCIAL_PROOF_COMPANY_COUNT} entreprises utilisent Lucie au quotidien
-                      <Info className="h-3 w-3 text-muted-foreground/80" aria-hidden="true" />
-                    </span>
-                  </TooltipTrigger>
-                  <TooltipContent side="top" align="start" className="max-w-[260px] text-xs leading-relaxed">
-                    Chiffre basé sur les entreprises actives utilisant Lucie pour répondre à leurs appels entrants et qualifier leurs prospects en direct.
-                  </TooltipContent>
-                </Tooltip>
+                <div className="flex flex-col gap-1">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="inline-flex cursor-help items-center gap-1 underline-offset-4 hover:underline focus-visible:rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring" tabIndex={0}>
+                        +{SOCIAL_PROOF_COMPANY_COUNT} entreprises utilisent Lucie au quotidien
+                        <Info className="h-3 w-3 text-muted-foreground/80" aria-hidden="true" />
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent side="top" align="start" className="max-w-[260px] text-xs leading-relaxed">
+                      Chiffre basé sur les entreprises actives utilisant Lucie pour répondre à leurs appels entrants et qualifier leurs prospects en direct.
+                    </TooltipContent>
+                  </Tooltip>
+                  <span className="text-[10px] text-muted-foreground/60">
+                    Logos via les sites officiels des entreprises.
+                  </span>
+                </div>
               </TooltipProvider>
             </div>
           </div>
@@ -338,6 +352,7 @@ function Home() {
                       domain={selected.domain}
                       initials={selected.initials}
                       hue={selected.hue}
+                      alt={`Logo ${selected.name}`}
                       size={128}
                     />
                   </div>
