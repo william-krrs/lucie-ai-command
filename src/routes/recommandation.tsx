@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import {
   ArrowRight,
@@ -16,6 +16,9 @@ import {
   Check,
   Copy,
   Mail,
+  History,
+  Trash2,
+  ExternalLink,
 } from "lucide-react";
 import { PageHeader } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
@@ -28,6 +31,13 @@ import { formatEUR, useLucie, useMetrics, useRecommendation } from "@/lib/lucie-
 import { PLAN_LABELS, PLAN_TAGLINES, PRIORITY_CTA } from "@/lib/recommendation";
 import { createSharedDiagnostic } from "@/lib/share.functions";
 import { addPdfHistoryEntry } from "@/lib/pdf-history";
+import {
+  addShareHistoryEntry,
+  clearShareHistory,
+  getShareHistory,
+  removeShareHistoryEntry,
+  type ShareHistoryEntry,
+} from "@/lib/share-history";
 
 export const Route = createFileRoute("/recommandation")({
   head: () => ({
@@ -70,7 +80,12 @@ function RecommandationPage() {
   const [isSharing, setIsSharing] = useState(false);
   const [shareError, setShareError] = useState<string | null>(null);
   const [prospectEmail, setProspectEmail] = useState("");
+  const [shareHistory, setShareHistory] = useState<ShareHistoryEntry[]>([]);
   const createShare = useServerFn(createSharedDiagnostic);
+
+  useEffect(() => {
+    setShareHistory(getShareHistory());
+  }, []);
 
   const handleShare = async () => {
     if (isSharing) return;
@@ -111,6 +126,9 @@ function RecommandationPage() {
       });
       const url = `${window.location.origin}/d/${token}`;
       setShareUrl(url);
+      setShareHistory(
+        addShareHistoryEntry({ url, token, companyName: state.companyName || undefined }),
+      );
       try {
         await navigator.clipboard.writeText(url);
         setShareCopied(true);
