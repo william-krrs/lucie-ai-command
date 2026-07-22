@@ -215,6 +215,11 @@ export function PreparationForm({
     return [
       `Nouvelle préparation Lucie — Formule : ${planLabel}`,
       "",
+      "== 0. Diagnostic ==",
+      `Score de compatibilité : ${rec.score}/100 (${TIER_LABELS[rec.tier]})`,
+      `Formule recommandée : ${rec.plan ? REC_PLAN_LABELS[rec.plan] : "Aucune"}`,
+      `Priorité commerciale : ${PRIORITY_EMOJI[rec.priority]} ${PRIORITY_LABELS[rec.priority]}`,
+      "",
       "== 1. Informations générales ==",
       `Contact : ${form.contactName} <${form.contactEmail}>`,
       `Entreprise : ${form.companyName}`,
