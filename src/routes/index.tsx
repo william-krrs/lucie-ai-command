@@ -13,6 +13,7 @@ type LogoStatus = "loading" | "loaded" | "error";
 
 function CompanyLogo({
   domain,
+  logoUrl,
   initials,
   hue,
   alt,
@@ -20,16 +21,18 @@ function CompanyLogo({
   className = "",
 }: {
   domain: string | null;
+  logoUrl?: string | null;
   initials: string;
   hue: number;
   alt: string;
   size?: number;
   className?: string;
 }) {
-  const cacheKey = domain ? logoCacheKey(domain, size) : null;
+  const source = logoUrl?.trim() || (domain ? `https://www.google.com/s2/favicons?domain=${domain}&sz=${size}` : null);
+  const cacheKey = logoUrl?.trim() ? logoCacheKey(logoUrl, size) : domain ? logoCacheKey(domain, size) : null;
   const [status, setStatus] = useState<LogoStatus>(() => {
-    if (!domain) return "error";
-    const cached = getLogoStatus(logoCacheKey(domain, size));
+    if (!source) return "error";
+    const cached = cacheKey ? getLogoStatus(cacheKey) : null;
     return cached ?? "loading";
   });
 
@@ -38,7 +41,7 @@ function CompanyLogo({
     if (cacheKey) setLogoStatus(cacheKey, next);
   };
 
-  const showFallback = !domain || status === "error";
+  const showFallback = !source || status === "error";
   const fallbackStyle = showFallback
     ? { background: `linear-gradient(135deg, oklch(0.62 0.16 ${hue}), oklch(0.45 0.2 ${hue + 30}))` }
     : undefined;
@@ -49,7 +52,7 @@ function CompanyLogo({
       style={fallbackStyle}
       title={alt}
     >
-      {domain && status !== "error" && (
+      {source && status !== "error" && (
         <>
           {status === "loading" && (
             <span
@@ -58,7 +61,7 @@ function CompanyLogo({
             />
           )}
           <img
-            src={`https://www.google.com/s2/favicons?domain=${domain}&sz=${size}`}
+            src={source}
             alt={alt}
             loading="lazy"
             decoding="async"
