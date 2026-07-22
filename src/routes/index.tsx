@@ -4,6 +4,7 @@ import { PageHeader } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
 import { StepNav } from "@/components/step-nav";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { SOCIAL_PROOF_COMPANY_COUNT } from "@/lib/config";
 
 export const Route = createFileRoute("/")({
   head: () => ({
