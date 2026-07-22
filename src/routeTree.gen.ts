@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as RoiRouteImport } from './routes/roi'
 import { Route as OffresRouteImport } from './routes/offres'
+import { Route as MerciRouteImport } from './routes/merci'
 import { Route as InstallationRouteImport } from './routes/installation'
 import { Route as FaqRouteImport } from './routes/faq'
 import { Route as DiagnosticRouteImport } from './routes/diagnostic'
@@ -31,6 +32,11 @@ const RoiRoute = RoiRouteImport.update({
 const OffresRoute = OffresRouteImport.update({
   id: '/offres',
   path: '/offres',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MerciRoute = MerciRouteImport.update({
+  id: '/merci',
+  path: '/merci',
   getParentRoute: () => rootRouteImport,
 } as any)
 const InstallationRoute = InstallationRouteImport.update({
@@ -65,6 +71,7 @@ export interface FileRoutesByFullPath {
   '/diagnostic': typeof DiagnosticRoute
   '/faq': typeof FaqRoute
   '/installation': typeof InstallationRoute
+  '/merci': typeof MerciRoute
   '/offres': typeof OffresRoute
   '/roi': typeof RoiRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -75,6 +82,7 @@ export interface FileRoutesByTo {
   '/diagnostic': typeof DiagnosticRoute
   '/faq': typeof FaqRoute
   '/installation': typeof InstallationRoute
+  '/merci': typeof MerciRoute
   '/offres': typeof OffresRoute
   '/roi': typeof RoiRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -86,6 +94,7 @@ export interface FileRoutesById {
   '/diagnostic': typeof DiagnosticRoute
   '/faq': typeof FaqRoute
   '/installation': typeof InstallationRoute
+  '/merci': typeof MerciRoute
   '/offres': typeof OffresRoute
   '/roi': typeof RoiRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -98,6 +107,7 @@ export interface FileRouteTypes {
     | '/diagnostic'
     | '/faq'
     | '/installation'
+    | '/merci'
     | '/offres'
     | '/roi'
     | '/sitemap.xml'
@@ -108,6 +118,7 @@ export interface FileRouteTypes {
     | '/diagnostic'
     | '/faq'
     | '/installation'
+    | '/merci'
     | '/offres'
     | '/roi'
     | '/sitemap.xml'
@@ -118,6 +129,7 @@ export interface FileRouteTypes {
     | '/diagnostic'
     | '/faq'
     | '/installation'
+    | '/merci'
     | '/offres'
     | '/roi'
     | '/sitemap.xml'
@@ -129,6 +141,7 @@ export interface RootRouteChildren {
   DiagnosticRoute: typeof DiagnosticRoute
   FaqRoute: typeof FaqRoute
   InstallationRoute: typeof InstallationRoute
+  MerciRoute: typeof MerciRoute
   OffresRoute: typeof OffresRoute
   RoiRoute: typeof RoiRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
@@ -155,6 +168,13 @@ declare module '@tanstack/react-router' {
       path: '/offres'
       fullPath: '/offres'
       preLoaderRoute: typeof OffresRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/merci': {
+      id: '/merci'
+      path: '/merci'
+      fullPath: '/merci'
+      preLoaderRoute: typeof MerciRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/installation': {
@@ -201,6 +221,7 @@ const rootRouteChildren: RootRouteChildren = {
   DiagnosticRoute: DiagnosticRoute,
   FaqRoute: FaqRoute,
   InstallationRoute: InstallationRoute,
+  MerciRoute: MerciRoute,
   OffresRoute: OffresRoute,
   RoiRoute: RoiRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
@@ -208,3 +229,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
