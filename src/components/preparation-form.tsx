@@ -823,7 +823,7 @@ function SubmittedConfirmation({
 
       <div className="mt-8 flex flex-wrap justify-center gap-2">
         <Button asChild className="h-11 rounded-xl">
-          <Link to="/installation" search={{ plan }}>
+          <Link to="/installation">
             Voir la timeline d'installation
             <ArrowRight className="ml-2 h-4 w-4" aria-hidden="true" />
           </Link>

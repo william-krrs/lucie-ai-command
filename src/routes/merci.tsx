@@ -368,7 +368,7 @@ function Merci() {
             </Link>
           </Button>
           <Button asChild variant="ghost" className="h-11 rounded-xl">
-            <Link to="/installation" search={{ plan }}>
+            <Link to="/installation">
               Détails de l'installation
             </Link>
           </Button>
