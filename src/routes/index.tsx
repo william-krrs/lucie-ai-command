@@ -270,17 +270,22 @@ function Home() {
                     </Tooltip>
                   ))}
                 </div>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <span className="inline-flex cursor-help items-center gap-1 underline-offset-4 hover:underline focus-visible:rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring" tabIndex={0}>
-                      +{SOCIAL_PROOF_COMPANY_COUNT} entreprises utilisent Lucie au quotidien
-                      <Info className="h-3 w-3 text-muted-foreground/80" aria-hidden="true" />
-                    </span>
-                  </TooltipTrigger>
-                  <TooltipContent side="top" align="start" className="max-w-[260px] text-xs leading-relaxed">
-                    Chiffre basé sur les entreprises actives utilisant Lucie pour répondre à leurs appels entrants et qualifier leurs prospects en direct.
-                  </TooltipContent>
-                </Tooltip>
+                <div className="flex flex-col gap-1">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="inline-flex cursor-help items-center gap-1 underline-offset-4 hover:underline focus-visible:rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring" tabIndex={0}>
+                        +{SOCIAL_PROOF_COMPANY_COUNT} entreprises utilisent Lucie au quotidien
+                        <Info className="h-3 w-3 text-muted-foreground/80" aria-hidden="true" />
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent side="top" align="start" className="max-w-[260px] text-xs leading-relaxed">
+                      Chiffre basé sur les entreprises actives utilisant Lucie pour répondre à leurs appels entrants et qualifier leurs prospects en direct.
+                    </TooltipContent>
+                  </Tooltip>
+                  <span className="text-[10px] text-muted-foreground/60">
+                    Logos via les sites officiels des entreprises.
+                  </span>
+                </div>
               </TooltipProvider>
             </div>
           </div>
