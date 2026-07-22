@@ -119,9 +119,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               <Menu className="h-4 w-4" />
             </SheetTrigger>
             <SheetContent side="right" className="w-[85%] max-w-sm bg-sidebar p-0">
-              <VisuallyHidden>
-                <SheetTitle>Navigation</SheetTitle>
-              </VisuallyHidden>
+              <SheetTitle className="sr-only">Navigation</SheetTitle>
               <div className="flex items-center gap-3 px-6 pt-8 pb-6">
                 <div className="grid h-10 w-10 place-items-center rounded-xl bg-primary text-primary-foreground">
                   <Sparkles className="h-5 w-5" />
