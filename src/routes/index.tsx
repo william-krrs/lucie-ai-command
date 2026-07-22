@@ -76,14 +76,26 @@ function Home() {
 
             <div className="mt-8 flex items-center gap-6 text-xs text-muted-foreground">
               <div className="flex -space-x-2">
-                {[0, 1, 2, 3].map((i) => (
+                {[
+                  { name: "Basic Fit", initials: "BF", hue: 12 },
+                  { name: "Bruselec — Yohann Brusseau", initials: "BR", hue: 220 },
+                  { name: "Christine Mintz", initials: "CM", hue: 300 },
+                  { name: "Edclim — Wendy Dewolf", initials: "ED", hue: 170 },
+                  { name: "Scalisi Bâti Rénov — Mickaël Angelo Scalisi", initials: "SB", hue: 30 },
+                  { name: "Ligonde Désiré — Désir Vert Paysagiste", initials: "DV", hue: 140 },
+                  { name: "AMS Rénovation — Mehdi Aloui", initials: "AM", hue: 260 },
+                ].map((c) => (
                   <div
-                    key={i}
-                    className="h-7 w-7 rounded-full border-2 border-card"
+                    key={c.name}
+                    title={c.name}
+                    aria-label={c.name}
+                    className="grid h-7 w-7 place-items-center rounded-full border-2 border-card text-[9px] font-semibold text-white shadow-sm"
                     style={{
-                      background: `linear-gradient(135deg, oklch(0.7 0.15 ${200 + i * 20}), oklch(0.55 0.22 264))`,
+                      background: `linear-gradient(135deg, oklch(0.62 0.16 ${c.hue}), oklch(0.45 0.2 ${c.hue + 30}))`,
                     }}
-                  />
+                  >
+                    {c.initials}
+                  </div>
                 ))}
               </div>
               <TooltipProvider delayDuration={200}>
