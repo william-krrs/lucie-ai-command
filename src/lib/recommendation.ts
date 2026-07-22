@@ -56,6 +56,45 @@ export const PRIORITY_EMOJI: Record<Priority, string> = {
   low: "⚪",
 };
 
+export type PriorityCta = {
+  emoji: string;
+  eyebrow: string;
+  title: string;
+  description: string;
+  primaryLabel: string;
+  secondaryLabel: string;
+};
+
+export const PRIORITY_CTA: Record<Priority, PriorityCta> = {
+  high: {
+    emoji: "🔥",
+    eyebrow: "Priorité élevée · À traiter cette semaine",
+    title: "Réservez votre créneau de démarrage prioritaire",
+    description:
+      "Votre profil coche toutes les cases : chaque semaine sans Lucie représente un manque à gagner concret. Notre équipe vous rappelle sous 24 h pour lancer l'installation.",
+    primaryLabel: "Démarrer maintenant",
+    secondaryLabel: "Voir la démonstration",
+  },
+  medium: {
+    emoji: "🟡",
+    eyebrow: "Priorité moyenne · À planifier",
+    title: "Poursuivez vers la démonstration et la formule adaptée",
+    description:
+      "Lucie peut vous apporter de la valeur. Regardez la démonstration puis validez la formule recommandée pour cadrer le déploiement à votre rythme.",
+    primaryLabel: "Voir la formule recommandée",
+    secondaryLabel: "Voir la démonstration",
+  },
+  low: {
+    emoji: "⚪",
+    eyebrow: "Priorité faible · Explorer sans engagement",
+    title: "Explorez Lucie à votre rythme",
+    description:
+      "L'impact immédiat serait limité aujourd'hui. Découvrez la démonstration et gardez notre contact : nous referons un point dès que votre activité évoluera.",
+    primaryLabel: "Voir la démonstration",
+    secondaryLabel: "Consulter les offres",
+  },
+};
+
 export const PLAN_LABELS: Record<PlanKey, string> = {
   essential: "Essential",
   pro: "Pro",
