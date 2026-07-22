@@ -321,7 +321,7 @@ function Merci() {
             </div>
             <div>
               <div className="text-[11px] font-medium uppercase tracking-widest text-primary">
-                Étape 1 — Questionnaire de configuration
+                Étape 2 — Questionnaire de configuration
               </div>
               <h3
                 id="questionnaire-title"
@@ -347,7 +347,7 @@ function Merci() {
           </div>
           <div>
             <div className="text-[11px] font-medium uppercase tracking-widest text-primary">
-              Étape 2 — Timeline d'exploitation
+              Étape 3 — Timeline d'exploitation
             </div>
             <h3 className="mt-1 text-lg font-semibold tracking-tight text-foreground">
               Suivez le déploiement en temps réel
