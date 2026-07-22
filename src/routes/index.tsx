@@ -8,6 +8,64 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { SOCIAL_PROOF_COMPANY_COUNT } from "@/lib/config";
 
+type LogoStatus = "loading" | "loaded" | "error";
+
+function CompanyLogo({
+  domain,
+  initials,
+  hue,
+  size = 64,
+  className = "",
+}: {
+  domain: string | null;
+  initials: string;
+  hue: number;
+  size?: number;
+  className?: string;
+}) {
+  const [status, setStatus] = useState<LogoStatus>(domain ? "loading" : "error");
+  const showFallback = !domain || status === "error";
+  const fallbackStyle = showFallback
+    ? { background: `linear-gradient(135deg, oklch(0.62 0.16 ${hue}), oklch(0.45 0.2 ${hue + 30}))` }
+    : undefined;
+
+  return (
+    <span
+      className={`relative block h-full w-full ${showFallback ? "text-white" : "bg-white"}`}
+      style={fallbackStyle}
+    >
+      {domain && status !== "error" && (
+        <>
+          {status === "loading" && (
+            <span
+              aria-hidden="true"
+              className="absolute inset-0 animate-pulse bg-gradient-to-br from-muted via-muted/60 to-muted"
+            />
+          )}
+          <img
+            src={`https://www.google.com/s2/favicons?domain=${domain}&sz=${size}`}
+            alt=""
+            loading="lazy"
+            decoding="async"
+            width={size}
+            height={size}
+            onLoad={() => setStatus("loaded")}
+            onError={() => setStatus("error")}
+            className={`relative h-full w-full object-cover transition-opacity duration-300 ${
+              status === "loaded" ? "opacity-100" : "opacity-0"
+            } ${className}`}
+          />
+        </>
+      )}
+      {showFallback && (
+        <span className="absolute inset-0 grid place-items-center font-semibold">
+          {initials}
+        </span>
+      )}
+    </span>
+  );
+}
+
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
