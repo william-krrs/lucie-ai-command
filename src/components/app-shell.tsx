@@ -10,22 +10,25 @@ import {
   Sparkles,
   Circle,
   Menu,
-  CalendarDays,
   Gauge,
+  FileText,
+  Lock,
+  CalendarCheck2,
 } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from "@/components/ui/sheet";
+import { useBooking } from "@/lib/booking-store";
 
 const NAV = [
   { to: "/", label: "Accueil", icon: Home },
   { to: "/diagnostic", label: "Diagnostic", icon: ClipboardList },
   { to: "/roi", label: "ROI", icon: TrendingUp },
   { to: "/recommandation", label: "Recommandation", icon: Gauge },
-  { to: "/demonstration", label: "Démonstration", icon: PlayCircle },
-  { to: "/offres", label: "Offres", icon: Package },
-  { to: "/installation", label: "Installation", icon: Rocket },
-  { to: "/suivi", label: "Suivi", icon: CalendarDays },
+  { to: "/demonstration", label: "Démonstration", icon: PlayCircle, gated: true },
+  { to: "/offres", label: "Offres", icon: Package, gated: true },
+  { to: "/installation", label: "Installation", icon: Rocket, gated: true },
+  { to: "/preparation", label: "Questionnaire", icon: FileText, gated: true },
   { to: "/faq", label: "Questions fréquentes", icon: HelpCircle },
 ] as const;
 
@@ -33,35 +36,61 @@ export function AppShell({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const [mobileOpen, setMobileOpen] = useState(false);
   useEffect(() => setMobileOpen(false), [pathname]);
+  const { isUnlocked, isPendingMeeting } = useBooking();
 
   const navList = (
     <ul className="space-y-1" role="list">
       {NAV.map((item, i) => {
         const active = pathname === item.to;
         const Icon = item.icon;
+        const locked = "gated" in item && item.gated && !isUnlocked;
         return (
           <li key={item.to}>
             <Link
               to={item.to}
               aria-current={active ? "page" : undefined}
+              aria-disabled={locked ? true : undefined}
+              title={
+                locked
+                  ? isPendingMeeting
+                    ? "Débloqué le jour de votre rendez-vous"
+                    : "Prenez d'abord rendez-vous depuis la recommandation"
+                  : undefined
+              }
               className={cn(
                 "group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
                 active
                   ? "bg-primary text-primary-foreground shadow-[var(--shadow-elevated)]"
-                  : "text-foreground/70 hover:bg-accent hover:text-accent-foreground",
+                  : locked
+                    ? "text-foreground/40 hover:bg-accent/40"
+                    : "text-foreground/70 hover:bg-accent hover:text-accent-foreground",
               )}
             >
               <Icon className="h-4 w-4 shrink-0" strokeWidth={2} aria-hidden="true" />
               <span className="truncate">{item.label}</span>
-              <span
-                aria-hidden="true"
-                className={cn(
-                  "ml-auto text-[10px] font-mono tabular-nums",
-                  active ? "text-primary-foreground/70" : "text-muted-foreground/50",
-                )}
-              >
-                0{i + 1}
-              </span>
+              {locked ? (
+                isPendingMeeting ? (
+                  <CalendarCheck2
+                    className="ml-auto h-3.5 w-3.5 text-muted-foreground/70"
+                    aria-hidden="true"
+                  />
+                ) : (
+                  <Lock
+                    className="ml-auto h-3.5 w-3.5 text-muted-foreground/60"
+                    aria-hidden="true"
+                  />
+                )
+              ) : (
+                <span
+                  aria-hidden="true"
+                  className={cn(
+                    "ml-auto text-[10px] font-mono tabular-nums",
+                    active ? "text-primary-foreground/70" : "text-muted-foreground/50",
+                  )}
+                >
+                  0{i + 1}
+                </span>
+              )}
             </Link>
           </li>
         );

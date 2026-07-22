@@ -2,6 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { X, Check } from "lucide-react";
 import { PageHeader } from "@/components/app-shell";
 import { StepNav } from "@/components/step-nav";
+import { LockedPage } from "@/components/locked-page";
+import { useBooking } from "@/lib/booking-store";
 
 export const Route = createFileRoute("/demonstration")({
   head: () => ({
@@ -36,6 +38,15 @@ const AFTER = [
 ];
 
 function Demonstration() {
+  const { isUnlocked } = useBooking();
+  if (!isUnlocked) {
+    return (
+      <LockedPage
+        title="Démonstration verrouillée"
+        description="La démonstration se débloquera automatiquement le jour de votre rendez-vous. Prenez d'abord votre créneau depuis la recommandation."
+      />
+    );
+  }
   return (
     <div className="space-y-10">
       <PageHeader

@@ -363,12 +363,12 @@ function Merci() {
         </header>
         <div className="flex flex-wrap gap-2">
           <Button asChild className="h-11 rounded-xl">
-            <Link to="/suivi" search={{ plan }}>
-              Voir la timeline d'exploitation
+            <Link to="/preparation" search={{ plan }}>
+              Ouvrir le questionnaire de préparation
             </Link>
           </Button>
           <Button asChild variant="ghost" className="h-11 rounded-xl">
-            <Link to="/installation" search={{ plan }}>
+            <Link to="/installation">
               Détails de l'installation
             </Link>
           </Button>

@@ -2,6 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 import { PageHeader } from "@/components/app-shell";
 import { PreparationForm } from "@/components/preparation-form";
+import { LockedPage } from "@/components/locked-page";
+import { useBooking } from "@/lib/booking-store";
 
 const searchSchema = z.object({
   plan: z.enum(["essential", "pro", "premium"]).optional(),
@@ -17,7 +19,7 @@ export const Route = createFileRoute("/preparation")({
   validateSearch: searchSchema,
   head: () => ({
     meta: [
-      { title: "Préparation de votre assistante IA | Lucie" },
+      { title: "Questionnaire de préparation | Lucie" },
       {
         name: "description",
         content:
@@ -25,7 +27,7 @@ export const Route = createFileRoute("/preparation")({
       },
       {
         property: "og:title",
-        content: "Préparation de votre assistante IA | Lucie",
+        content: "Questionnaire de préparation | Lucie",
       },
       {
         property: "og:description",
@@ -50,13 +52,23 @@ export const Route = createFileRoute("/preparation")({
 
 function Preparation() {
   const { plan } = Route.useSearch();
+  const { isUnlocked } = useBooking();
   const planLabel = plan ? PLAN_LABELS[plan] : "Non précisée";
+
+  if (!isUnlocked) {
+    return (
+      <LockedPage
+        title="Questionnaire verrouillé"
+        description="Le questionnaire de préparation se débloque le jour de votre rendez-vous, après avoir choisi votre formule."
+      />
+    );
+  }
 
   return (
     <div className="space-y-8">
       <PageHeader
         eyebrow={`Formule ${planLabel}`}
-        title="Préparation de votre assistante IA"
+        title="Questionnaire de préparation"
         description="Un formulaire unique pour tout centraliser. Une fois validé, votre assistante sera prête pour une phase de test sous 72 h ouvrées."
       />
       <PreparationForm plan={plan} />

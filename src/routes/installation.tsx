@@ -11,6 +11,8 @@ import {
 } from "lucide-react";
 import { PageHeader } from "@/components/app-shell";
 import { StepNav } from "@/components/step-nav";
+import { LockedPage } from "@/components/locked-page";
+import { useBooking } from "@/lib/booking-store";
 
 export const Route = createFileRoute("/installation")({
   head: () => ({
@@ -40,6 +42,15 @@ const STEPS = [
 ];
 
 function Installation() {
+  const { isUnlocked } = useBooking();
+  if (!isUnlocked) {
+    return (
+      <LockedPage
+        title="Installation verrouillée"
+        description="Cette page se débloque le jour de votre rendez-vous, une fois votre formule choisie."
+      />
+    );
+  }
   return (
     <div className="space-y-10">
       <PageHeader

@@ -9,7 +9,6 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as SuiviRouteImport } from './routes/suivi'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as RoiRouteImport } from './routes/roi'
 import { Route as RecommandationRouteImport } from './routes/recommandation'
@@ -23,11 +22,6 @@ import { Route as DemonstrationRouteImport } from './routes/demonstration'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DTokenRouteImport } from './routes/d.$token'
 
-const SuiviRoute = SuiviRouteImport.update({
-  id: '/suivi',
-  path: '/suivi',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
@@ -101,7 +95,6 @@ export interface FileRoutesByFullPath {
   '/recommandation': typeof RecommandationRoute
   '/roi': typeof RoiRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
-  '/suivi': typeof SuiviRoute
   '/d/$token': typeof DTokenRoute
 }
 export interface FileRoutesByTo {
@@ -116,7 +109,6 @@ export interface FileRoutesByTo {
   '/recommandation': typeof RecommandationRoute
   '/roi': typeof RoiRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
-  '/suivi': typeof SuiviRoute
   '/d/$token': typeof DTokenRoute
 }
 export interface FileRoutesById {
@@ -132,7 +124,6 @@ export interface FileRoutesById {
   '/recommandation': typeof RecommandationRoute
   '/roi': typeof RoiRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
-  '/suivi': typeof SuiviRoute
   '/d/$token': typeof DTokenRoute
 }
 export interface FileRouteTypes {
@@ -149,7 +140,6 @@ export interface FileRouteTypes {
     | '/recommandation'
     | '/roi'
     | '/sitemap.xml'
-    | '/suivi'
     | '/d/$token'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -164,7 +154,6 @@ export interface FileRouteTypes {
     | '/recommandation'
     | '/roi'
     | '/sitemap.xml'
-    | '/suivi'
     | '/d/$token'
   id:
     | '__root__'
@@ -179,7 +168,6 @@ export interface FileRouteTypes {
     | '/recommandation'
     | '/roi'
     | '/sitemap.xml'
-    | '/suivi'
     | '/d/$token'
   fileRoutesById: FileRoutesById
 }
@@ -195,19 +183,11 @@ export interface RootRouteChildren {
   RecommandationRoute: typeof RecommandationRoute
   RoiRoute: typeof RoiRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
-  SuiviRoute: typeof SuiviRoute
   DTokenRoute: typeof DTokenRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/suivi': {
-      id: '/suivi'
-      path: '/suivi'
-      fullPath: '/suivi'
-      preLoaderRoute: typeof SuiviRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/sitemap.xml': {
       id: '/sitemap.xml'
       path: '/sitemap.xml'
@@ -307,7 +287,6 @@ const rootRouteChildren: RootRouteChildren = {
   RecommandationRoute: RecommandationRoute,
   RoiRoute: RoiRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
-  SuiviRoute: SuiviRoute,
   DTokenRoute: DTokenRoute,
 }
 export const routeTree = rootRouteImport

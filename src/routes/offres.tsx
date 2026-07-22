@@ -16,6 +16,8 @@ import { cn } from "@/lib/utils";
 import { StepNav } from "@/components/step-nav";
 import { useRecommendation } from "@/lib/lucie-store";
 import { PLAN_LABELS, PLAN_TAGLINES, TIER_LABELS, PRIORITY_CTA } from "@/lib/recommendation";
+import { LockedPage } from "@/components/locked-page";
+import { useBooking } from "@/lib/booking-store";
 
 export const Route = createFileRoute("/offres")({
   head: () => ({
@@ -128,6 +130,7 @@ const COMPARISON: { label: string; values: Record<PlanKey, string | boolean> }[]
 
 function Offres() {
   const rec = useRecommendation();
+  const { isUnlocked } = useBooking();
   const recommendedPlan: PlanKey = rec.plan ?? "pro";
   const [selected, setSelected] = useState<PlanKey>(recommendedPlan);
 
@@ -135,6 +138,15 @@ function Offres() {
   useEffect(() => {
     setSelected(recommendedPlan);
   }, [recommendedPlan]);
+
+  if (!isUnlocked) {
+    return (
+      <LockedPage
+        title="Offres verrouillées"
+        description="Vous pourrez choisir votre formule le jour de votre rendez-vous. En attendant, la formule recommandée reste consultable dans le diagnostic final."
+      />
+    );
+  }
 
   const isRefusal = rec.tier === "refuse";
   const cta = PRIORITY_CTA[rec.priority];
