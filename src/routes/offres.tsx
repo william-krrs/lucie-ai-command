@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { Check, Star, Sparkles, Crown } from "lucide-react";
+import { Check, Star, Sparkles, Crown, Wrench, Clock, ShieldCheck } from "lucide-react";
 import { PageHeader } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -24,6 +24,13 @@ export const Route = createFileRoute("/offres")({
 });
 
 type PlanKey = "essential" | "pro" | "premium";
+
+const STRIPE_LINKS: Record<PlanKey, string> = {
+  essential: "https://buy.stripe.com/7sY28rfJdbJN7u02XQ7kc0c",
+  pro: "https://buy.stripe.com/cNidR90OjbJN29G1TM7kc06",
+  premium: "https://buy.stripe.com/5kQ5kD0OjcNRbKggOG7kc0d",
+};
+const STRIPE_INSTALLATION_LINK = "https://buy.stripe.com/aFa00jaoTaFJ4hO6a27kc05";
 
 const PLANS: {
   key: PlanKey;
@@ -126,9 +133,17 @@ function Offres() {
           const Icon = p.icon;
           const featured = p.featured;
           return (
-            <button
+            <div
               key={p.key}
               onClick={() => setSelected(p.key)}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  setSelected(p.key);
+                }
+              }}
               className={cn(
                 "group relative flex flex-col rounded-3xl border p-7 text-left transition-all duration-300",
                 "shadow-[var(--shadow-card)] hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)]",
@@ -195,6 +210,7 @@ function Offres() {
               </ul>
 
               <Button
+                asChild
                 className={cn(
                   "mt-7 h-11 rounded-xl transition-all",
                   featured
@@ -202,12 +218,66 @@ function Offres() {
                     : "bg-foreground text-background hover:bg-foreground/90",
                 )}
               >
-                {p.cta}
+                <a
+                  href={STRIPE_LINKS[p.key]}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {p.cta}
+                </a>
               </Button>
-            </button>
+            </div>
           );
         })}
       </div>
+
+      <section
+        aria-labelledby="installation-fee"
+        className="rounded-3xl border border-primary/20 bg-primary/[0.04] p-6 shadow-[var(--shadow-card)] sm:p-8"
+      >
+        <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-start gap-4">
+            <div className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-primary text-primary-foreground">
+              <Wrench className="h-5 w-5" aria-hidden="true" />
+            </div>
+            <div>
+              <div className="text-[11px] font-medium uppercase tracking-widest text-primary">
+                Frais d'installation — obligatoires
+              </div>
+              <h2
+                id="installation-fee"
+                className="mt-1 text-lg font-semibold tracking-tight text-foreground sm:text-xl"
+              >
+                490 € une seule fois
+              </h2>
+              <p className="mt-1.5 max-w-xl text-sm text-muted-foreground">
+                Paramétrage complet de Lucie, connexion à votre agenda et vos
+                outils, entraînement sur votre activité et mise en production.
+                Facturé en plus de l'abonnement mensuel, sans surprise.
+              </p>
+              <div className="mt-3 flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
+                <span className="inline-flex items-center gap-1.5">
+                  <Clock className="h-3.5 w-3.5" aria-hidden="true" />
+                  Installation en 3 à 5 jours selon la complexité
+                </span>
+                <span className="inline-flex items-center gap-1.5">
+                  <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" />
+                  Paiement sécurisé Stripe
+                </span>
+              </div>
+            </div>
+          </div>
+          <Button
+            asChild
+            className="h-11 shrink-0 rounded-xl bg-foreground text-background hover:bg-foreground/90"
+          >
+            <a href={STRIPE_INSTALLATION_LINK} target="_blank" rel="noopener noreferrer">
+              Payer les frais d'installation
+            </a>
+          </Button>
+        </div>
+      </section>
 
       <section>
         <div className="mb-6 flex items-end justify-between">
