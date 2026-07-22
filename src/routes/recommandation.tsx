@@ -15,9 +15,11 @@ import {
   Share2,
   Check,
   Copy,
+  Mail,
 } from "lucide-react";
 import { PageHeader } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { StepNav } from "@/components/step-nav";
 import { RecommendationCard } from "@/components/recommendation-card";
 import { RoiBreakdown } from "@/components/roi-breakdown";
@@ -67,6 +69,7 @@ function RecommandationPage() {
   const [shareCopied, setShareCopied] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
   const [shareError, setShareError] = useState<string | null>(null);
+  const [prospectEmail, setProspectEmail] = useState("");
   const createShare = useServerFn(createSharedDiagnostic);
 
   const handleShare = async () => {
