@@ -16,6 +16,7 @@ import {
 import { PageHeader } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
 import { PreparationForm } from "@/components/preparation-form";
+import { ExportHistory } from "@/components/export-history";
 import { cn } from "@/lib/utils";
 
 const planSearchSchema = z.object({
@@ -339,6 +340,8 @@ function Merci() {
 
         <PreparationForm plan={plan} intro={false} />
       </section>
+
+      <ExportHistory />
 
       <section className="rounded-3xl border border-border bg-card p-6 shadow-[var(--shadow-card)] sm:p-8">
         <header className="mb-4 flex items-start gap-3">
