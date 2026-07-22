@@ -6,6 +6,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { StepNav } from "@/components/step-nav";
 
 export const Route = createFileRoute("/faq")({
   head: () => ({
@@ -93,6 +94,7 @@ function Faq() {
           </div>
         </div>
       </footer>
+      <StepNav current="/faq" />
     </div>
   );
 }

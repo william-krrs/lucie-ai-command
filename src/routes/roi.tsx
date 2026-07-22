@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { formatEUR, useLucie, useMetrics } from "@/lib/lucie-store";
+import { StepNav } from "@/components/step-nav";
 
 export const Route = createFileRoute("/roi")({
   head: () => ({
@@ -128,6 +129,7 @@ function Roi() {
           </div>
         </div>
       </div>
+      <StepNav current="/roi" />
     </div>
   );
 }
