@@ -312,13 +312,15 @@ function RecommandationPage() {
                 </Button>
               </div>
 
-              <div className="border-t border-primary/20 pt-4">
-                <QrCodeCard
-                  url={shareUrl}
-                  label={`QR code du diagnostic de ${state.companyName || "Lucie"}`}
-                  companyName={state.companyName || "diagnostic"}
-                />
-              </div>
+              {shareUrl && (
+                <div className="border-t border-primary/20 pt-4">
+                  <QrCodeCard
+                    url={shareUrl}
+                    label={`QR code du diagnostic de ${state.companyName || "Lucie"}`}
+                    companyName={state.companyName || "diagnostic"}
+                  />
+                </div>
+              )}
             </div>
           )}
         </div>
