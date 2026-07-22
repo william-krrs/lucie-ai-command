@@ -61,12 +61,18 @@ function Faq() {
         description="Les points que vos équipes et vos clients nous demandent le plus souvent."
       />
 
-      <div className="rounded-3xl border border-border bg-card p-4 md:p-6 shadow-[var(--shadow-card)]">
+      <section
+        aria-label="Liste des questions fréquentes"
+        className="rounded-3xl border border-border bg-card p-4 md:p-6 shadow-[var(--shadow-card)]"
+      >
         <Accordion type="single" collapsible className="w-full">
           {QUESTIONS.map((item, i) => (
             <AccordionItem key={item.q} value={`q-${i}`} className="border-border">
-              <AccordionTrigger className="text-left text-base font-medium text-foreground hover:no-underline">
-                <span className="mr-3 text-xs font-mono tabular-nums text-muted-foreground">
+              <AccordionTrigger
+                aria-label={`Question ${i + 1} : ${item.q}`}
+                className="text-left text-base font-medium text-foreground hover:no-underline"
+              >
+                <span aria-hidden="true" className="mr-3 text-xs font-mono tabular-nums text-muted-foreground">
                   0{i + 1}
                 </span>
                 {item.q}
@@ -77,7 +83,7 @@ function Faq() {
             </AccordionItem>
           ))}
         </Accordion>
-      </div>
+      </section>
 
       <footer className="mt-16 rounded-3xl border border-border bg-card p-6 md:p-8 shadow-[var(--shadow-card)]">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">

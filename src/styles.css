@@ -146,4 +146,32 @@
     background-color: var(--color-background);
     color: var(--color-foreground);
   }
+
+  :focus:not(:focus-visible) {
+    outline: none;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-ring, var(--ring));
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+
+  .skip-link {
+    position: absolute;
+    left: 0.75rem;
+    top: -3rem;
+    z-index: 100;
+    padding: 0.5rem 0.875rem;
+    background: var(--color-primary);
+    color: var(--color-primary-foreground);
+    border-radius: 0.5rem;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    transition: top 0.15s ease;
+  }
+
+  .skip-link:focus {
+    top: 0.75rem;
+  }
 }
