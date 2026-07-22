@@ -13,6 +13,7 @@ type LogoStatus = "loading" | "loaded" | "error";
 
 function CompanyLogo({
   domain,
+  logoUrl,
   initials,
   hue,
   alt,
@@ -20,16 +21,18 @@ function CompanyLogo({
   className = "",
 }: {
   domain: string | null;
+  logoUrl?: string | null;
   initials: string;
   hue: number;
   alt: string;
   size?: number;
   className?: string;
 }) {
-  const cacheKey = domain ? logoCacheKey(domain, size) : null;
+  const source = logoUrl?.trim() || (domain ? `https://www.google.com/s2/favicons?domain=${domain}&sz=${size}` : null);
+  const cacheKey = logoUrl?.trim() ? logoCacheKey(logoUrl, size) : domain ? logoCacheKey(domain, size) : null;
   const [status, setStatus] = useState<LogoStatus>(() => {
-    if (!domain) return "error";
-    const cached = getLogoStatus(logoCacheKey(domain, size));
+    if (!source) return "error";
+    const cached = cacheKey ? getLogoStatus(cacheKey) : null;
     return cached ?? "loading";
   });
 
@@ -38,7 +41,7 @@ function CompanyLogo({
     if (cacheKey) setLogoStatus(cacheKey, next);
   };
 
-  const showFallback = !domain || status === "error";
+  const showFallback = !source || status === "error";
   const fallbackStyle = showFallback
     ? { background: `linear-gradient(135deg, oklch(0.62 0.16 ${hue}), oklch(0.45 0.2 ${hue + 30}))` }
     : undefined;
@@ -49,7 +52,7 @@ function CompanyLogo({
       style={fallbackStyle}
       title={alt}
     >
-      {domain && status !== "error" && (
+      {source && status !== "error" && (
         <>
           {status === "loading" && (
             <span
@@ -58,7 +61,7 @@ function CompanyLogo({
             />
           )}
           <img
-            src={`https://www.google.com/s2/favicons?domain=${domain}&sz=${size}`}
+            src={source}
             alt={alt}
             loading="lazy"
             decoding="async"
@@ -115,10 +118,14 @@ type Company = {
   city: string;
   summary: string;
   domain: string | null;
+  /** URL directe vers le logo officiel (png/jpg/svg). Si absent, on tente le favicon via Google. */
+  logoUrl?: string | null;
   initials: string;
   hue: number;
 };
 
+// Pour utiliser un logo officiel personnalisé, ajoutez `logoUrl: "https://..."` dans l'objet entreprise.
+// Si logoUrl est absent, le logo est récupéré automatiquement via le favicon du domaine.
 const COMPANIES: Company[] = [
   {
     name: "Basic Fit",
@@ -245,7 +252,14 @@ function Home() {
                           onClick={() => setSelected(c)}
                           className="relative grid h-8 w-8 place-items-center overflow-hidden rounded-full border-2 border-card bg-white text-[10px] shadow-sm outline-none transition-transform duration-200 hover:z-10 hover:scale-110 focus-visible:z-10 focus-visible:scale-110 focus-visible:ring-2 focus-visible:ring-primary/60"
                         >
-                          <CompanyLogo domain={c.domain} initials={c.initials} hue={c.hue} alt={`Logo ${c.name}`} size={64} />
+                          <CompanyLogo
+                            domain={c.domain}
+                            logoUrl={c.logoUrl}
+                            initials={c.initials}
+                            hue={c.hue}
+                            alt={`Logo ${c.name}`}
+                            size={64}
+                          />
                         </button>
                       </TooltipTrigger>
                       <TooltipContent
@@ -260,10 +274,10 @@ function Home() {
                         <div className="mt-0.5 text-[11px] leading-snug text-muted-foreground">
                           {c.sector}
                         </div>
-                        {c.domain && (
+                        {(c.logoUrl || c.domain) && (
                           <div className="mt-1.5 flex items-center gap-1 text-[10px] text-muted-foreground/70">
                             <ExternalLink className="h-3 w-3" aria-hidden="true" />
-                            Logo via {c.domain}
+                            {c.logoUrl ? "Logo personnalisé" : `Logo via ${c.domain}`}
                           </div>
                         )}
                       </TooltipContent>
@@ -283,7 +297,7 @@ function Home() {
                     </TooltipContent>
                   </Tooltip>
                   <span className="text-[10px] text-muted-foreground/60">
-                    Logos via les sites officiels des entreprises.
+                    Logos via les sites officiels ou URLs personnalisées.
                   </span>
                 </div>
               </TooltipProvider>
@@ -350,6 +364,7 @@ function Home() {
                   >
                     <CompanyLogo
                       domain={selected.domain}
+                      logoUrl={selected.logoUrl}
                       initials={selected.initials}
                       hue={selected.hue}
                       alt={`Logo ${selected.name}`}
