@@ -163,20 +163,13 @@ function Home() {
             <div className="mt-8 flex items-center gap-6 text-xs text-muted-foreground">
               <TooltipProvider delayDuration={150}>
                 <div className="flex -space-x-2">
-                  {[
-                    { name: "Basic Fit", sector: "Salles de sport · Fitness", domain: "basic-fit.com", initials: "BF", hue: 12 },
-                    { name: "Bruselec — Yohann Brusseau", sector: "Électricité · Photovoltaïque (Toulouse)", domain: "electricien-31.fr", initials: "BR", hue: 220 },
-                    { name: "Christine Mintz", sector: "Coaching & accompagnement", domain: null, initials: "CM", hue: 300 },
-                    { name: "Edclim — Wendy Dewolf", sector: "Climatisation & réfrigération", domain: "ed-clim.fr", initials: "ED", hue: 170 },
-                    { name: "Scalisi Bâti Rénov — Mickaël Angelo Scalisi", sector: "Maçonnerie & rénovation (Var)", domain: "scalisi-batirenov.fr", initials: "SB", hue: 30 },
-                    { name: "Ligonde Désiré — Désir Vert Paysagiste", sector: "Paysagisme & entretien de jardins", domain: null, initials: "DV", hue: 140 },
-                    { name: "AMS Rénovation — Mehdi Aloui", sector: "Rénovation & multi-services (Savoie)", domain: "ams-renovation73.fr", initials: "AM", hue: 260 },
-                  ].map((c) => (
+                  {COMPANIES.map((c) => (
                     <Tooltip key={c.name}>
                       <TooltipTrigger asChild>
                         <button
                           type="button"
-                          aria-label={`${c.name} — ${c.sector}`}
+                          aria-label={`Ouvrir la fiche ${c.name}`}
+                          onClick={() => setSelected(c)}
                           className="relative grid h-8 w-8 place-items-center overflow-hidden rounded-full border-2 border-card bg-white text-[10px] font-semibold text-white shadow-sm outline-none transition-transform duration-200 hover:z-10 hover:scale-110 focus-visible:z-10 focus-visible:scale-110 focus-visible:ring-2 focus-visible:ring-primary/60"
                           style={
                             c.domain
