@@ -111,8 +111,13 @@ function RecommandationPage() {
         await navigator.clipboard.writeText(url);
         setShareCopied(true);
         setTimeout(() => setShareCopied(false), 2500);
+        toast.success("Lien de partage copié", {
+          description: "Le diagnostic public a été copié dans le presse-papiers.",
+        });
       } catch {
-        /* clipboard blocked — url still shown */
+        toast.error("Presse-papiers bloqué", {
+          description: "Copiez le lien affiché ci-dessous manuellement.",
+        });
       }
     } catch (err) {
       setShareError(err instanceof Error ? err.message : "Impossible de générer le lien");
