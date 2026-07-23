@@ -248,6 +248,7 @@ export function CalendlyEmbed() {
               onClick={async () => {
                 clearBooking();
                 setRescheduling(false);
+                setRecapUrl(null);
                 try {
                   await cancelBookingFn({ data: { clientRef: getClientRef() } });
                 } catch {
@@ -260,6 +261,66 @@ export function CalendlyEmbed() {
               Annuler le RDV
             </Button>
           </div>
+        </div>
+
+        <div className="mt-5 rounded-2xl border border-primary/25 bg-primary/[0.04] p-4 sm:p-5">
+          <div className="flex items-center gap-2 text-[11px] font-medium uppercase tracking-widest text-primary">
+            <Link2 className="h-3.5 w-3.5" aria-hidden="true" />
+            Lien récap partageable
+          </div>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Générez un lien lecture seule (diagnostic + RDV confirmé) à envoyer au prospect
+            juste après la prise de rendez-vous.
+          </p>
+          {recapUrl ? (
+            <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+              <Input
+                readOnly
+                value={recapUrl}
+                onFocus={(e) => e.currentTarget.select()}
+                className="h-11 min-h-11 rounded-xl bg-background font-mono text-xs"
+                aria-label="Lien récapitulatif partageable"
+              />
+              <Button
+                variant="outline"
+                className="h-11 min-h-11 rounded-xl"
+                onClick={copyRecap}
+                aria-label="Copier le lien récap"
+              >
+                <Copy className="mr-1.5 h-4 w-4" aria-hidden="true" />
+                Copier
+              </Button>
+              <Button
+                variant="ghost"
+                className="h-11 min-h-11 rounded-xl"
+                onClick={generateRecap}
+                disabled={sharing}
+                aria-label="Regénérer un nouveau lien"
+              >
+                Regénérer
+              </Button>
+            </div>
+          ) : (
+            <div className="mt-3">
+              <Button
+                onClick={generateRecap}
+                disabled={sharing}
+                className="h-11 min-h-11 rounded-xl"
+              >
+                {sharing ? (
+                  <>
+                    <Loader2 className="mr-1.5 h-4 w-4 animate-spin" aria-hidden="true" />
+                    Génération…
+                  </>
+                ) : (
+                  <>
+                    <Link2 className="mr-1.5 h-4 w-4" aria-hidden="true" />
+                    Générer le lien récap
+                  </>
+                )}
+              </Button>
+            </div>
+          )}
         </div>
       </section>
     );
