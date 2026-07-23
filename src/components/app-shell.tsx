@@ -19,6 +19,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { useBooking } from "@/lib/booking-store";
+import { SidebarProgress } from "@/components/sidebar-progress";
 
 const NAV = [
   { to: "/", label: "Accueil", icon: Home },
@@ -126,6 +127,10 @@ export function AppShell({ children }: { children: ReactNode }) {
           {navList}
         </nav>
 
+        <div className="mt-4">
+          <SidebarProgress />
+        </div>
+
         <div className="m-4 rounded-2xl border border-border bg-card p-4 shadow-[var(--shadow-card)]">
           <div className="flex items-center gap-2 text-xs font-medium text-foreground">
             <span className="relative flex h-2 w-2">
@@ -189,6 +194,9 @@ export function AppShell({ children }: { children: ReactNode }) {
                 </div>
                 {navList}
               </nav>
+              <div className="pb-6">
+                <SidebarProgress onNavigate={() => setMobileOpen(false)} />
+              </div>
             </SheetContent>
           </Sheet>
         </div>
