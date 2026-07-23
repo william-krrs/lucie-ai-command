@@ -59,6 +59,7 @@ function Preparation() {
     return (
       <LockedPage
         title="Questionnaire verrouillé"
+        step="Questionnaire de préparation"
         description="Le questionnaire de préparation se débloque le jour de votre rendez-vous, après avoir choisi votre formule."
       />
     );
