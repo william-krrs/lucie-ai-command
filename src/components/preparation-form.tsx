@@ -732,12 +732,18 @@ function SubmittedConfirmation({
   confirmation,
   planLabel,
   plan,
+  booking,
+  form,
+  summary,
   diagnostic,
   onReset,
 }: {
   confirmation: { id: string; emailStatus: "sent" | "skipped" | "failed" };
   planLabel: string;
   plan?: "essential" | "pro" | "premium";
+  booking: Booking | null;
+  form: FormState;
+  summary: string;
   diagnostic: {
     score: number;
     tierLabel: string;
@@ -748,6 +754,110 @@ function SubmittedConfirmation({
   onReset: () => void;
 }) {
   const reference = confirmation.id.slice(0, 8).toUpperCase();
+  const [exporting, setExporting] = useState(false);
+
+  const handleExportPdf = async () => {
+    setExporting(true);
+    try {
+      const { jsPDF } = await import("jspdf");
+      const doc = new jsPDF({ unit: "pt", format: "a4" });
+      const pageW = doc.internal.pageSize.getWidth();
+      const pageH = doc.internal.pageSize.getHeight();
+      const margin = 48;
+      let y = margin;
+
+      const ensureSpace = (needed: number) => {
+        if (y + needed > pageH - margin) {
+          doc.addPage();
+          y = margin;
+        }
+      };
+
+      const writeParagraph = (
+        text: string,
+        opts: { size?: number; bold?: boolean; color?: [number, number, number]; gap?: number } = {},
+      ) => {
+        const size = opts.size ?? 10;
+        doc.setFont("helvetica", opts.bold ? "bold" : "normal");
+        doc.setFontSize(size);
+        doc.setTextColor(...(opts.color ?? [30, 30, 30]));
+        const lines = doc.splitTextToSize(text || "—", pageW - margin * 2);
+        for (const line of lines as string[]) {
+          ensureSpace(size + 4);
+          doc.text(line, margin, y);
+          y += size + 4;
+        }
+        y += opts.gap ?? 4;
+      };
+
+      // Header
+      doc.setFillColor(20, 20, 30);
+      doc.rect(0, 0, pageW, 80, "F");
+      doc.setTextColor(255, 255, 255);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(18);
+      doc.text("Lucie — Récapitulatif du parcours", margin, 40);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(10);
+      doc.text(
+        `Généré le ${new Date().toLocaleString("fr-FR", { dateStyle: "long", timeStyle: "short" })}`,
+        margin,
+        60,
+      );
+      y = 110;
+
+      writeParagraph(`Référence : #${reference}`, { size: 10, color: [90, 90, 100] });
+      writeParagraph(`Formule choisie : ${planLabel}`, { size: 11, bold: true, gap: 10 });
+
+      writeParagraph("Rendez-vous", { size: 13, bold: true, color: [80, 40, 180] });
+      writeParagraph(
+        booking
+          ? `${formatBookingDate(booking.date)}${booking.time ? ` · ${booking.time}` : ""}`
+          : "Aucun rendez-vous confirmé",
+        { gap: 10 },
+      );
+
+      writeParagraph("Diagnostic", { size: 13, bold: true, color: [80, 40, 180] });
+      writeParagraph(`Score de compatibilité : ${diagnostic.score} / 100 (${diagnostic.tierLabel})`);
+      writeParagraph(`Formule recommandée : ${diagnostic.recommendedPlanLabel}`);
+      writeParagraph(`Priorité commerciale : ${diagnostic.priorityLabel}`, { gap: 10 });
+
+      writeParagraph("Contact", { size: 13, bold: true, color: [80, 40, 180] });
+      writeParagraph(`${form.contactName} — ${form.contactEmail}`);
+      writeParagraph(`Entreprise : ${form.companyName}`);
+      writeParagraph(`Téléphone : ${form.companyPhone}`);
+      if (form.website) writeParagraph(`Site : ${form.website}`);
+      writeParagraph(`Volume d'appels : ${form.callVolume}`, { gap: 10 });
+
+      writeParagraph("Questionnaire complet", { size: 13, bold: true, color: [80, 40, 180] });
+      // Skip the first line of the summary (already covered in header)
+      const body = summary.split("\n").slice(2).join("\n");
+      writeParagraph(body, { size: 9 });
+
+      // Footer with page numbers
+      const pages = doc.getNumberOfPages();
+      for (let i = 1; i <= pages; i++) {
+        doc.setPage(i);
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(8);
+        doc.setTextColor(140, 140, 150);
+        doc.text(`Lucie Command Center · Page ${i} / ${pages}`, margin, pageH - 20);
+      }
+
+      const filename = `lucie-recapitulatif-${(form.companyName || "parcours")
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-|-$/g, "")}.pdf`;
+      doc.save(filename);
+      toast.success("PDF récapitulatif téléchargé.");
+    } catch (err) {
+      console.error(err);
+      toast.error("Export PDF impossible. Réessayez.");
+    } finally {
+      setExporting(false);
+    }
+  };
+
   return (
     <section
       role="status"
@@ -770,6 +880,23 @@ function SubmittedConfirmation({
           Référence : <span className="font-mono font-medium text-foreground">#{reference}</span>
         </p>
       </div>
+
+      {booking && (
+        <div className="mt-6 flex flex-wrap items-center gap-3 rounded-2xl border border-[oklch(0.65_0.17_155)]/30 bg-[oklch(0.65_0.17_155)]/[0.06] p-4 sm:p-5">
+          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[oklch(0.65_0.17_155)]/15 text-[oklch(0.45_0.17_155)]">
+            <CalendarCheck2 className="h-5 w-5" aria-hidden="true" />
+          </span>
+          <div className="min-w-0">
+            <div className="text-[11px] font-medium uppercase tracking-widest text-[oklch(0.45_0.17_155)]">
+              Rendez-vous confirmé
+            </div>
+            <div className="mt-0.5 text-sm font-semibold text-foreground">
+              {formatBookingDate(booking.date)}
+              {booking.time ? ` · ${booking.time}` : ""}
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="mt-6 grid gap-3 rounded-2xl border border-border bg-card p-4 sm:grid-cols-3 sm:p-5">
         <div>
@@ -834,6 +961,18 @@ function SubmittedConfirmation({
       </div>
 
       <div className="mt-8 flex flex-wrap justify-center gap-2">
+        <Button
+          onClick={handleExportPdf}
+          disabled={exporting}
+          className="h-11 rounded-xl"
+        >
+          {exporting ? (
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
+          ) : (
+            <FileDown className="mr-2 h-4 w-4" aria-hidden="true" />
+          )}
+          {exporting ? "Génération…" : "Télécharger le récapitulatif PDF"}
+        </Button>
         <Button asChild className="h-11 rounded-xl">
           <Link to="/installation">
             Voir la timeline d'installation
