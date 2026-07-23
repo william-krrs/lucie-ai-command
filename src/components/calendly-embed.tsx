@@ -3,6 +3,9 @@ import { useServerFn } from "@tanstack/react-start";
 import {
   CalendarCheck2,
   CheckCircle2,
+  Copy,
+  Link2,
+  Loader2,
   RotateCcw,
   Sparkles,
   ExternalLink,
@@ -13,6 +16,9 @@ import { Label } from "@/components/ui/label";
 import { CALENDLY_URL } from "@/lib/config";
 import { useBooking, formatBookingDate, getClientRef } from "@/lib/booking-store";
 import { upsertBooking, cancelBooking } from "@/lib/bookings.functions";
+import { createSharedDiagnostic } from "@/lib/share.functions";
+import { useLucie, useMetrics, useRecommendation } from "@/lib/lucie-store";
+import { addShareHistoryEntry } from "@/lib/share-history";
 import { toast } from "sonner";
 
 function todayISO() {
@@ -35,6 +41,80 @@ export function CalendlyEmbed() {
   const [inviteeName, setInviteeName] = useState<string | undefined>();
   const upsertBookingFn = useServerFn(upsertBooking);
   const cancelBookingFn = useServerFn(cancelBooking);
+  const createShareFn = useServerFn(createSharedDiagnostic);
+  const { state } = useLucie();
+  const metrics = useMetrics();
+  const recommendation = useRecommendation();
+  const [recapUrl, setRecapUrl] = useState<string | null>(null);
+  const [sharing, setSharing] = useState(false);
+
+  async function generateRecap() {
+    if (!booking || sharing) return;
+    setSharing(true);
+    try {
+      const { token } = await createShareFn({
+        data: {
+          companyName: state.companyName,
+          activity: state.activity,
+          city: state.city,
+          employees: state.employees,
+          callsPerWeek: state.callsPerWeek,
+          missedCalls: state.missedCalls,
+          averageBasket: state.averageBasket,
+          revenueGoal: state.revenueGoal,
+          conversionRate: state.conversionRate,
+          channels: state.channels,
+          recommendation: {
+            score: recommendation.score,
+            tier: recommendation.tier,
+            plan: recommendation.plan,
+            priority: recommendation.priority,
+            estimatedMonthlyRoi: recommendation.estimatedMonthlyRoi,
+            justifications: recommendation.justifications,
+            concerns: recommendation.concerns,
+            planReason: recommendation.planReason,
+          },
+          metrics: {
+            monthlyReceived: metrics.monthlyReceived,
+            monthlyMissed: metrics.monthlyMissed,
+            monthlyLostRevenue: metrics.monthlyLostRevenue,
+            yearlyLostRevenue: metrics.yearlyLostRevenue,
+            recoverableOpportunities: metrics.recoverableOpportunities,
+            timeSavedHours: metrics.timeSavedHours,
+          },
+          booking: {
+            date: booking.date,
+            time: booking.time,
+            inviteeName: booking.user?.name,
+          },
+        },
+      });
+      const url = `${window.location.origin}/d/${token}`;
+      setRecapUrl(url);
+      addShareHistoryEntry({ url, token, companyName: state.companyName || "Récap RDV" });
+      try {
+        await navigator.clipboard.writeText(url);
+        toast.success("Lien récap copié — envoyez-le au prospect.");
+      } catch {
+        toast.info("Lien récap généré — copiez-le ci-dessous.");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Impossible de générer le lien récap.");
+    } finally {
+      setSharing(false);
+    }
+  }
+
+  async function copyRecap() {
+    if (!recapUrl) return;
+    try {
+      await navigator.clipboard.writeText(recapUrl);
+      toast.success("Lien copié dans le presse-papiers.");
+    } catch {
+      toast.error("Copie impossible. Sélectionnez le lien manuellement.");
+    }
+  }
 
   useEffect(() => {
     function onMessage(e: MessageEvent) {
