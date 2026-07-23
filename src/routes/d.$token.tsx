@@ -245,6 +245,40 @@ function ListBlock({ title, items, muted }: { title: string; items: string[]; mu
   );
 }
 
+function BookingBlock({
+  booking,
+}: {
+  booking: NonNullable<DiagnosticSnapshot["booking"]>;
+}) {
+  const dateLabel = (() => {
+    const d = new Date(`${booking.date}T00:00:00`);
+    if (Number.isNaN(d.getTime())) return booking.date;
+    return d.toLocaleDateString("fr-FR", {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
+  })();
+  return (
+    <div className="rounded-2xl border border-primary/30 bg-primary/[0.05] p-5">
+      <div className="flex items-center gap-2 text-[11px] font-medium uppercase tracking-widest text-primary">
+        <CalendarCheck2 className="h-3.5 w-3.5" aria-hidden="true" />
+        Rendez-vous confirmé
+      </div>
+      <div className="mt-1 text-lg font-semibold text-foreground">
+        {dateLabel}
+        {booking.time ? ` · ${booking.time}` : ""}
+      </div>
+      {booking.inviteeName && (
+        <div className="mt-1 text-sm text-muted-foreground">
+          Avec {booking.inviteeName}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function StateScreen({ title, body }: { title: string; body: string }) {
   return (
     <div className="grid min-h-screen place-items-center bg-muted/40 px-6">
