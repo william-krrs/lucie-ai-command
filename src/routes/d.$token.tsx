@@ -1,6 +1,6 @@
 import { createFileRoute, notFound } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { Download, Loader2, Lock, ShieldCheck, Sparkles } from "lucide-react";
+import { CalendarCheck2, Download, Loader2, Lock, ShieldCheck, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { QrCodeCard } from "@/components/qr-code";
 import { getSharedDiagnostic, type DiagnosticSnapshot } from "@/lib/share.functions";
@@ -141,6 +141,8 @@ function SharedDiagnosticPage() {
 
           <ScoreBlock snap={snap} />
 
+          {snap.booking && <BookingBlock booking={snap.booking} />}
+
           <div className="grid gap-3 sm:grid-cols-3">
             <Kpi label="Appels reçus / mois" value={snap.metrics.monthlyReceived.toLocaleString("fr-FR")} />
             <Kpi label="Appels manqués / mois" value={snap.metrics.monthlyMissed.toLocaleString("fr-FR")} />
@@ -239,6 +241,40 @@ function ListBlock({ title, items, muted }: { title: string; items: string[]; mu
           </li>
         ))}
       </ul>
+    </div>
+  );
+}
+
+function BookingBlock({
+  booking,
+}: {
+  booking: NonNullable<DiagnosticSnapshot["booking"]>;
+}) {
+  const dateLabel = (() => {
+    const d = new Date(`${booking.date}T00:00:00`);
+    if (Number.isNaN(d.getTime())) return booking.date;
+    return d.toLocaleDateString("fr-FR", {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
+  })();
+  return (
+    <div className="rounded-2xl border border-primary/30 bg-primary/[0.05] p-5">
+      <div className="flex items-center gap-2 text-[11px] font-medium uppercase tracking-widest text-primary">
+        <CalendarCheck2 className="h-3.5 w-3.5" aria-hidden="true" />
+        Rendez-vous confirmé
+      </div>
+      <div className="mt-1 text-lg font-semibold text-foreground">
+        {dateLabel}
+        {booking.time ? ` · ${booking.time}` : ""}
+      </div>
+      {booking.inviteeName && (
+        <div className="mt-1 text-sm text-muted-foreground">
+          Avec {booking.inviteeName}
+        </div>
+      )}
     </div>
   );
 }

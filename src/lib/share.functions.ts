@@ -30,6 +30,13 @@ const snapshotSchema = z.object({
     recoverableOpportunities: z.number(),
     timeSavedHours: z.number(),
   }),
+  booking: z
+    .object({
+      date: z.string().max(40),
+      time: z.string().max(10).optional(),
+      inviteeName: z.string().max(200).optional(),
+    })
+    .optional(),
 });
 
 export type DiagnosticSnapshot = z.infer<typeof snapshotSchema>;
