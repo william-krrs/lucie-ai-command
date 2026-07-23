@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import {
   CalendarCheck2,
   CheckCircle2,
@@ -10,7 +11,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CALENDLY_URL } from "@/lib/config";
-import { useBooking, formatBookingDate } from "@/lib/booking-store";
+import { useBooking, formatBookingDate, getClientRef } from "@/lib/booking-store";
+import { upsertBooking, cancelBooking } from "@/lib/bookings.functions";
 import { toast } from "sonner";
 
 function todayISO() {
@@ -29,6 +31,10 @@ export function CalendlyEmbed() {
   const dateInputRef = useRef<HTMLInputElement>(null);
   const confirmPanelRef = useRef<HTMLDivElement>(null);
   const [iframeLoaded, setIframeLoaded] = useState(false);
+  const [inviteeEmail, setInviteeEmail] = useState<string | undefined>();
+  const [inviteeName, setInviteeName] = useState<string | undefined>();
+  const upsertBookingFn = useServerFn(upsertBooking);
+  const cancelBookingFn = useServerFn(cancelBooking);
 
   useEffect(() => {
     function onMessage(e: MessageEvent) {
@@ -54,6 +60,12 @@ export function CalendlyEmbed() {
             );
           }
         }
+        // Try to grab invitee name/email from Calendly payload for auto-registration.
+        const invitee = (data as any).payload?.invitee as
+          | { name?: string; email?: string }
+          | undefined;
+        if (invitee?.email) setInviteeEmail(invitee.email);
+        if (invitee?.name) setInviteeName(invitee.name);
         setAwaitingConfirm(true);
         toast.success("Créneau réservé ! Confirmez la date pour débloquer la suite.");
         setTimeout(() => {
@@ -66,19 +78,43 @@ export function CalendlyEmbed() {
     return () => window.removeEventListener("message", onMessage);
   }, []);
 
-  function confirm() {
+  async function confirm() {
     if (!manualDate) {
       toast.error("Sélectionnez la date de votre rendez-vous.");
       dateInputRef.current?.focus();
       return;
     }
+    const email = inviteeEmail ?? booking?.user?.email;
+    const name = inviteeName ?? booking?.user?.name;
     setBooking({
       date: manualDate,
       time: manualTime || undefined,
+      inviteeName: name,
+      user: email ? { name, email } : booking?.user,
       createdAt: new Date().toISOString(),
     });
     setAwaitingConfirm(false);
     setRescheduling(false);
+    // Fire-and-forget server sync so reminders can be scheduled.
+    if (email) {
+      try {
+        const meetingAt = new Date(
+          `${manualDate}T${(manualTime || "10:00")}:00`,
+        ).toISOString();
+        await upsertBookingFn({
+          data: {
+            clientRef: getClientRef(),
+            email,
+            name,
+            meetingDate: manualDate,
+            meetingTime: manualTime || undefined,
+            meetingAt,
+          },
+        });
+      } catch (e) {
+        console.warn("[booking sync] failed", e);
+      }
+    }
     toast.success("Rendez-vous enregistré. La suite du parcours sera débloquée le jour J.");
   }
 
@@ -129,9 +165,14 @@ export function CalendlyEmbed() {
             <Button
               variant="ghost"
               className="min-h-11 rounded-xl text-destructive hover:text-destructive"
-              onClick={() => {
+              onClick={async () => {
                 clearBooking();
                 setRescheduling(false);
+                try {
+                  await cancelBookingFn({ data: { clientRef: getClientRef() } });
+                } catch {
+                  /* silent */
+                }
                 toast.info("Rendez-vous annulé. Les pages suivantes sont à nouveau verrouillées.");
               }}
               aria-label="Annuler mon rendez-vous"
