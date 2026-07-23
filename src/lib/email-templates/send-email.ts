@@ -29,7 +29,8 @@ export async function sendTemplateEmail<TName extends TemplateName>(
   if (!entry) throw new Error(`Unknown template: ${templateName}`);
 
   const data = opts.templateData ?? {};
-  const element = createElement(entry.component, data as any);
+  const Component = entry.component as unknown as (p: any) => any;
+  const element = createElement(Component, data);
   const html = await render(element);
   const text = await render(element, { plainText: true });
   const subject = typeof entry.subject === "function" ? entry.subject(data) : entry.subject;
