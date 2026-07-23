@@ -792,6 +792,45 @@ function SubmittedConfirmation({
       const margin = 48;
       let y = margin;
 
+      // Brand palette — Spark Media Marketing
+      const BRAND = {
+        primary: [80, 40, 180] as [number, number, number],
+        primaryDark: [40, 20, 90] as [number, number, number],
+        accent: [225, 29, 116] as [number, number, number],
+        ink: [20, 20, 30] as [number, number, number],
+        body: [55, 55, 70] as [number, number, number],
+        muted: [130, 130, 145] as [number, number, number],
+        surface: [245, 243, 255] as [number, number, number],
+        line: [220, 215, 235] as [number, number, number],
+      };
+
+      // Load Spark Media logo as data URL (bundled asset)
+      const logoUrl = (await import("@/assets/spark-media-logo.png")).default as string;
+      let logoData: string | null = null;
+      let logoRatio = 3; // width / height fallback
+      try {
+        const res = await fetch(logoUrl);
+        const blob = await res.blob();
+        logoData = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result as string);
+          reader.onerror = reject;
+          reader.readAsDataURL(blob);
+        });
+        // Try to get natural ratio
+        await new Promise<void>((resolve) => {
+          const img = new Image();
+          img.onload = () => {
+            if (img.width && img.height) logoRatio = img.width / img.height;
+            resolve();
+          };
+          img.onerror = () => resolve();
+          img.src = logoData!;
+        });
+      } catch {
+        logoData = null;
+      }
+
       const ensureSpace = (needed: number) => {
         if (y + needed > pageH - margin) {
           doc.addPage();
@@ -806,7 +845,7 @@ function SubmittedConfirmation({
         const size = opts.size ?? 10;
         doc.setFont("helvetica", opts.bold ? "bold" : "normal");
         doc.setFontSize(size);
-        doc.setTextColor(...(opts.color ?? [30, 30, 30]));
+        doc.setTextColor(...(opts.color ?? BRAND.body));
         const lines = doc.splitTextToSize(text || "—", pageW - margin * 2);
         for (const line of lines as string[]) {
           ensureSpace(size + 4);
@@ -816,62 +855,136 @@ function SubmittedConfirmation({
         y += opts.gap ?? 4;
       };
 
+      // Info box: label + value pairs on a soft violet card
+      const writeInfoRows = (rows: Array<[string, string]>) => {
+        const padX = 14;
+        const padY = 12;
+        const rowH = 20;
+        const boxH = padY * 2 + rows.length * rowH;
+        ensureSpace(boxH + 8);
+        doc.setFillColor(...BRAND.surface);
+        doc.roundedRect(margin, y - 4, pageW - margin * 2, boxH, 8, 8, "F");
+        // left accent bar
+        doc.setFillColor(...BRAND.primary);
+        doc.roundedRect(margin, y - 4, 3, boxH, 1.5, 1.5, "F");
+        let ry = y - 4 + padY + 4;
+        for (const [label, value] of rows) {
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(8);
+          doc.setTextColor(...BRAND.muted);
+          doc.text(label.toUpperCase(), margin + padX, ry);
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(11);
+          doc.setTextColor(...BRAND.ink);
+          const val = value || "—";
+          const maxW = pageW - margin * 2 - padX * 2 - 140;
+          const truncated = doc.splitTextToSize(val, maxW)[0] as string;
+          doc.text(truncated, margin + padX + 140, ry);
+          ry += rowH;
+        }
+        y += boxH + 12;
+      };
+
       const toc: { title: string; page: number }[] = [];
 
-      const startSection = (title: string) => {
+      const startSection = (title: string, index: number) => {
         // Always start each major section on a fresh page for clarity.
         if (y > margin + 10) {
           doc.addPage();
           y = margin;
         }
         toc.push({ title, page: doc.getCurrentPageInfo().pageNumber });
-        // Section banner
-        doc.setFillColor(80, 40, 180);
-        doc.rect(0, y - 24, pageW, 34, "F");
+        // Elegant section header: number chip + title + accent underline
+        const bannerY = y - 6;
+        doc.setFillColor(...BRAND.primary);
+        doc.roundedRect(margin, bannerY, 34, 34, 6, 6, "F");
         doc.setTextColor(255, 255, 255);
         doc.setFont("helvetica", "bold");
-        doc.setFontSize(14);
-        doc.text(title, margin, y);
-        y += 24;
-        // Reset text color for body
-        doc.setTextColor(30, 30, 30);
+        doc.setFontSize(16);
+        doc.text(String(index).padStart(2, "0"), margin + 17, bannerY + 22, { align: "center" });
+
+        doc.setTextColor(...BRAND.muted);
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(8);
+        doc.text("SECTION", margin + 46, bannerY + 12);
+
+        doc.setTextColor(...BRAND.ink);
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(18);
+        doc.text(title, margin + 46, bannerY + 28);
+
+        y = bannerY + 44;
+        // Accent underline
+        doc.setDrawColor(...BRAND.accent);
+        doc.setLineWidth(2);
+        doc.line(margin, y, margin + 40, y);
+        doc.setDrawColor(...BRAND.line);
+        doc.setLineWidth(0.5);
+        doc.line(margin + 44, y, pageW - margin, y);
+        y += 22;
+        doc.setTextColor(...BRAND.body);
       };
 
       // Start on page 1 with a placeholder — we'll insert the cover last.
       y = margin;
 
       // ---- Rendez-vous ----
-      startSection("1. Rendez-vous");
-      writeParagraph(
-        booking
-          ? `Date : ${formatBookingDate(booking.date)}${booking.time ? ` · ${booking.time}` : ""}`
-          : "Aucun rendez-vous confirmé",
-        { size: 11, bold: true },
-      );
-      if (booking?.user?.name) writeParagraph(`Participant : ${booking.user.name}`);
-      if (booking?.user?.email) writeParagraph(`Email : ${booking.user.email}`);
-      writeParagraph(`Statut : ${booking?.status ?? "à confirmer"}`, { gap: 10 });
+      startSection("Rendez-vous", 1);
+      writeInfoRows([
+        [
+          "Date",
+          booking
+            ? `${formatBookingDate(booking.date)}${booking.time ? " · " + booking.time : ""}`
+            : "Aucun rendez-vous confirmé",
+        ],
+        ["Participant", booking?.user?.name ?? "—"],
+        ["Email", booking?.user?.email ?? "—"],
+        ["Statut", booking?.status ?? "à confirmer"],
+      ]);
 
       // ---- Diagnostic ----
-      startSection("2. Diagnostic");
-      writeParagraph(`Score de compatibilité : ${diagnostic.score} / 100 (${diagnostic.tierLabel})`, {
-        size: 11,
-        bold: true,
-      });
-      writeParagraph(`Formule recommandée : ${diagnostic.recommendedPlanLabel}`);
-      writeParagraph(`Formule choisie : ${planLabel}`);
-      writeParagraph(`Priorité commerciale : ${diagnostic.priorityLabel}`, { gap: 10 });
+      startSection("Diagnostic", 2);
+      // Big score highlight
+      ensureSpace(70);
+      doc.setFillColor(...BRAND.primaryDark);
+      doc.roundedRect(margin, y - 4, pageW - margin * 2, 62, 10, 10, "F");
+      doc.setTextColor(255, 255, 255);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(9);
+      doc.text("SCORE DE COMPATIBILITÉ", margin + 18, y + 14);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(30);
+      doc.text(`${diagnostic.score}`, margin + 18, y + 42);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(12);
+      doc.text(`/ 100`, margin + 18 + doc.getTextWidth(`${diagnostic.score}`) + 4, y + 42);
+      doc.setTextColor(...BRAND.accent);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(11);
+      doc.text(diagnostic.tierLabel.toUpperCase(), pageW - margin - 18, y + 14, { align: "right" });
+      doc.setTextColor(255, 255, 255);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(10);
+      doc.text(`Priorité : ${diagnostic.priorityLabel}`, pageW - margin - 18, y + 42, { align: "right" });
+      y += 74;
+      writeInfoRows([
+        ["Formule recommandée", diagnostic.recommendedPlanLabel],
+        ["Formule choisie", planLabel],
+      ]);
 
       // ---- Contact ----
-      startSection("3. Contact");
-      writeParagraph(`${form.contactName} — ${form.contactEmail}`, { size: 11, bold: true });
-      writeParagraph(`Entreprise : ${form.companyName}`);
-      writeParagraph(`Téléphone : ${form.companyPhone}`);
-      if (form.website) writeParagraph(`Site : ${form.website}`);
-      writeParagraph(`Volume d'appels : ${form.callVolume}`, { gap: 10 });
+      startSection("Contact", 3);
+      writeInfoRows([
+        ["Nom", form.contactName],
+        ["Email", form.contactEmail],
+        ["Entreprise", form.companyName],
+        ["Téléphone", form.companyPhone],
+        ["Site web", form.website || "—"],
+        ["Volume d'appels", form.callVolume],
+      ]);
 
       // ---- Questionnaire complet ----
-      startSection("4. Questionnaire complet");
+      startSection("Questionnaire complet", 4);
       const body = summary.split("\n").slice(2).join("\n");
       writeParagraph(body, { size: 9 });
 
@@ -881,48 +994,109 @@ function SubmittedConfirmation({
       for (const item of toc) item.page += 1;
       doc.setPage(1);
 
-      // Cover banner
-      doc.setFillColor(20, 20, 30);
-      doc.rect(0, 0, pageW, 140, "F");
+      // ---- Premium Cover ----
+      // Dark hero band
+      doc.setFillColor(...BRAND.ink);
+      doc.rect(0, 0, pageW, 260, "F");
+      // Violet gradient-like overlay stripes
+      doc.setFillColor(...BRAND.primary);
+      doc.rect(0, 240, pageW, 6, "F");
+      doc.setFillColor(...BRAND.accent);
+      doc.rect(0, 250, pageW, 2, "F");
+
+      // Logo top-left
+      if (logoData) {
+        const logoH = 40;
+        const logoW = logoH * logoRatio;
+        try {
+          doc.addImage(logoData, "PNG", margin, 36, logoW, logoH);
+        } catch {
+          /* ignore */
+        }
+      } else {
+        doc.setTextColor(255, 255, 255);
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(14);
+        doc.text("SPARK MEDIA MARKETING", margin, 60);
+      }
+
+      // Eyebrow
+      doc.setTextColor(...BRAND.accent);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(9);
+      doc.text("RÉCAPITULATIF PREMIUM", margin, 120);
+
+      // Title
       doc.setTextColor(255, 255, 255);
       doc.setFont("helvetica", "bold");
-      doc.setFontSize(22);
-      doc.text("Lucie — Récapitulatif du parcours", margin, 60);
+      doc.setFontSize(30);
+      doc.text("Lucie Command Center", margin, 155);
       doc.setFont("helvetica", "normal");
-      doc.setFontSize(11);
-      doc.text(
-        `Généré le ${new Date().toLocaleString("fr-FR", { dateStyle: "long", timeStyle: "short" })}`,
-        margin,
-        85,
+      doc.setFontSize(14);
+      doc.setTextColor(200, 195, 220);
+      doc.text("Diagnostic, formule et parcours d'installation", margin, 180);
+
+      // Meta chips
+      const chipY = 208;
+      const drawChip = (label: string, x: number) => {
+        const w = doc.getTextWidth(label) + 20;
+        doc.setDrawColor(120, 100, 200);
+        doc.setLineWidth(0.6);
+        doc.setFillColor(45, 30, 90);
+        doc.roundedRect(x, chipY - 12, w, 20, 10, 10, "FD");
+        doc.setTextColor(220, 210, 245);
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(9);
+        doc.text(label, x + 10, chipY + 2);
+        return x + w + 8;
+      };
+      let cx = margin;
+      cx = drawChip(`#${reference}`, cx);
+      cx = drawChip(planLabel.toUpperCase(), cx);
+      drawChip(
+        new Date().toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" }),
+        cx,
       );
-      doc.text(`Référence #${reference}`, margin, 105);
-      doc.text(`Formule choisie : ${planLabel}`, margin, 125);
 
       // Sommaire
-      let ty = 200;
-      doc.setTextColor(30, 30, 30);
+      let ty = 320;
+      doc.setTextColor(...BRAND.muted);
       doc.setFont("helvetica", "bold");
-      doc.setFontSize(16);
-      doc.text("Sommaire", margin, ty);
-      ty += 10;
-      doc.setDrawColor(80, 40, 180);
-      doc.setLineWidth(1.2);
-      doc.line(margin, ty, margin + 60, ty);
+      doc.setFontSize(9);
+      doc.text("TABLE DES MATIÈRES", margin, ty);
+      ty += 8;
+      doc.setDrawColor(...BRAND.accent);
+      doc.setLineWidth(2);
+      doc.line(margin, ty, margin + 32, ty);
       ty += 26;
+
+      doc.setTextColor(...BRAND.ink);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(22);
+      doc.text("Sommaire", margin, ty);
+      ty += 28;
 
       doc.setFont("helvetica", "normal");
       doc.setFontSize(12);
+      let sectionIdx = 0;
       for (const item of toc) {
+        sectionIdx += 1;
         const label = item.title;
         const pageStr = `p. ${item.page}`;
-        const labelW = doc.getTextWidth(label);
+        const numLabel = String(sectionIdx).padStart(2, "0");
+        const fullLabel = `${numLabel}  ·  ${label}`;
+        const labelW = doc.getTextWidth(fullLabel);
         const pageW2 = doc.getTextWidth(pageStr);
         const rowY = ty;
-        // Label (clickable)
-        doc.setTextColor(80, 40, 180);
-        doc.text(label, margin, rowY);
+        // Number highlighted, then label
+        doc.setTextColor(...BRAND.accent);
+        doc.setFont("helvetica", "bold");
+        doc.text(numLabel, margin, rowY);
+        doc.setTextColor(...BRAND.ink);
+        doc.setFont("helvetica", "normal");
+        doc.text(`  ·  ${label}`, margin + doc.getTextWidth(numLabel), rowY);
         // Dotted leader
-        doc.setTextColor(180, 180, 190);
+        doc.setTextColor(...BRAND.line);
         const dotStart = margin + labelW + 6;
         const dotEnd = pageW - margin - pageW2 - 6;
         if (dotEnd > dotStart) {
@@ -930,29 +1104,51 @@ function SubmittedConfirmation({
           doc.text(dots, dotStart, rowY);
         }
         // Page number
-        doc.setTextColor(30, 30, 30);
+        doc.setTextColor(...BRAND.primary);
+        doc.setFont("helvetica", "bold");
         doc.text(pageStr, pageW - margin - pageW2, rowY);
+        doc.setFont("helvetica", "normal");
         // Clickable link across the whole row
         doc.link(margin, rowY - 12, pageW - margin * 2, 18, { pageNumber: item.page });
-        ty += 22;
+        ty += 26;
       }
 
-      doc.setTextColor(140, 140, 150);
+      // Cover footer note
+      doc.setDrawColor(...BRAND.line);
+      doc.setLineWidth(0.5);
+      doc.line(margin, pageH - margin - 40, pageW - margin, pageH - margin - 40);
+      doc.setTextColor(...BRAND.muted);
+      doc.setFont("helvetica", "italic");
       doc.setFontSize(9);
       doc.text(
-        "Astuce : cliquez sur une ligne du sommaire pour accéder directement à la section.",
+        "Document confidentiel — Cliquez sur une entrée du sommaire pour accéder à la section.",
         margin,
-        pageH - margin - 10,
+        pageH - margin - 22,
       );
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(8);
+      doc.setTextColor(...BRAND.primary);
+      doc.text("SPARK MEDIA MARKETING", pageW - margin, pageH - margin - 22, { align: "right" });
 
       // Footer with page numbers on all pages (including cover).
       const pages = doc.getNumberOfPages();
       for (let i = 1; i <= pages; i++) {
         doc.setPage(i);
-        doc.setFont("helvetica", "normal");
+        if (i === 1) continue; // cover has its own footer treatment
+        // Thin brand rule
+        doc.setDrawColor(...BRAND.line);
+        doc.setLineWidth(0.5);
+        doc.line(margin, pageH - 34, pageW - margin, pageH - 34);
+        doc.setFont("helvetica", "bold");
         doc.setFontSize(8);
-        doc.setTextColor(140, 140, 150);
-        doc.text(`Lucie Command Center · Page ${i} / ${pages}`, margin, pageH - 20);
+        doc.setTextColor(...BRAND.primary);
+        doc.text("LUCIE COMMAND CENTER", margin, pageH - 20);
+        doc.setFont("helvetica", "normal");
+        doc.setTextColor(...BRAND.muted);
+        doc.text("by Spark Media Marketing", margin + doc.getTextWidth("LUCIE COMMAND CENTER") + 6, pageH - 20);
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(...BRAND.ink);
+        doc.text(`${i} / ${pages}`, pageW - margin, pageH - 20, { align: "right" });
       }
 
       const filename = `lucie-recapitulatif-${(form.companyName || "parcours")
