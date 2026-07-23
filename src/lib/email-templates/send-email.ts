@@ -33,7 +33,10 @@ export async function sendTemplateEmail<TName extends TemplateName>(
   const element: ReactElement = createElement(Component, data as any);
   const html = await render(element);
   const text = await render(element, { plainText: true });
-  const subject = typeof entry.subject === "function" ? entry.subject(data) : entry.subject;
+  const subject =
+    typeof entry.subject === "function"
+      ? (entry.subject as (d: any) => string)(data)
+      : entry.subject;
 
   try {
     const res = await sendLovableEmail(
