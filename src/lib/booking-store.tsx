@@ -10,6 +10,24 @@ import {
 
 const STORAGE_KEY = "lucie:booking:v2";
 const LEGACY_KEY = "lucie:booking:v1";
+const CLIENT_REF_KEY = "lucie:booking:clientRef";
+
+function getOrCreateClientRef(): string {
+  if (typeof window === "undefined") return "";
+  let ref = window.localStorage.getItem(CLIENT_REF_KEY);
+  if (!ref) {
+    ref =
+      typeof crypto !== "undefined" && "randomUUID" in crypto
+        ? crypto.randomUUID()
+        : `ref-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+    window.localStorage.setItem(CLIENT_REF_KEY, ref);
+  }
+  return ref;
+}
+
+export function getClientRef(): string {
+  return getOrCreateClientRef();
+}
 
 export type BookingStatus = "pending" | "active" | "completed" | "cancelled";
 

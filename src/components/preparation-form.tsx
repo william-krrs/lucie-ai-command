@@ -23,8 +23,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from "sonner";
 import { submitPreparation } from "@/lib/preparation.functions";
+import { upsertBooking } from "@/lib/bookings.functions";
 import { useRecommendation } from "@/lib/lucie-store";
-import { useBooking, formatBookingDate, type Booking } from "@/lib/booking-store";
+import { useBooking, formatBookingDate, getClientRef, type Booking } from "@/lib/booking-store";
 import {
   PLAN_LABELS as REC_PLAN_LABELS,
   PRIORITY_EMOJI,
@@ -314,6 +315,25 @@ export function PreparationForm({
         updateBooking({
           user: { name: form.contactName, email: form.contactEmail },
         });
+        // Ensure a server booking exists so 24h/2h reminders can fire.
+        try {
+          const meetingAt = new Date(
+            `${booking.date}T${(booking.time || "10:00")}:00`,
+          ).toISOString();
+          await upsertBooking({
+            data: {
+              clientRef: getClientRef(),
+              email: form.contactEmail,
+              name: form.contactName,
+              phone: form.companyPhone,
+              meetingDate: booking.date,
+              meetingTime: booking.time || undefined,
+              meetingAt,
+            },
+          });
+        } catch (e) {
+          console.warn("[booking sync] failed", e);
+        }
       }
       toast.success("Questionnaire enregistré — l'équipe Lucie prend le relais.");
       if (typeof window !== "undefined") {
