@@ -17,6 +17,7 @@ function todayISO() {
 export function CalendlyEmbed() {
   const { booking, setBooking, clearBooking } = useBooking();
   const [awaitingConfirm, setAwaitingConfirm] = useState(false);
+  const [rescheduling, setRescheduling] = useState(false);
   const [manualDate, setManualDate] = useState(todayISO());
   const [manualTime, setManualTime] = useState("10:00");
   const dateInputRef = useRef<HTMLInputElement>(null);
@@ -49,7 +50,7 @@ export function CalendlyEmbed() {
     toast.success("Rendez-vous enregistré. La suite du parcours sera débloquée le jour J.");
   }
 
-  if (booking) {
+  if (booking && !rescheduling) {
     return (
       <section
         aria-labelledby="calendly-booked-title"
@@ -77,17 +78,32 @@ export function CalendlyEmbed() {
               </p>
             </div>
           </div>
-          <Button
-            variant="ghost"
-            className="rounded-xl"
-            onClick={() => {
-              clearBooking();
-              toast.info("Rendez-vous annulé. Reprenez un créneau ci-dessous.");
-            }}
-          >
-            <RotateCcw className="mr-1.5 h-4 w-4" aria-hidden="true" />
-            Modifier le rendez-vous
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              variant="outline"
+              className="rounded-xl"
+              onClick={() => {
+                setRescheduling(true);
+                setManualDate(booking.date);
+                setManualTime(booking.time ?? "10:00");
+                toast.info("Choisissez un nouveau créneau ci-dessous.");
+              }}
+            >
+              <RotateCcw className="mr-1.5 h-4 w-4" aria-hidden="true" />
+              Reprogrammer
+            </Button>
+            <Button
+              variant="ghost"
+              className="rounded-xl text-destructive hover:text-destructive"
+              onClick={() => {
+                clearBooking();
+                setRescheduling(false);
+                toast.info("Rendez-vous annulé. Les pages suivantes sont à nouveau verrouillées.");
+              }}
+            >
+              Annuler le RDV
+            </Button>
+          </div>
         </div>
       </section>
     );
