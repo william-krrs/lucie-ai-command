@@ -47,6 +47,7 @@ export function CalendlyEmbed() {
       createdAt: new Date().toISOString(),
     });
     setAwaitingConfirm(false);
+    setRescheduling(false);
     toast.success("Rendez-vous enregistré. La suite du parcours sera débloquée le jour J.");
   }
 
