@@ -1,6 +1,6 @@
 import { render } from "@react-email/render";
 import { sendLovableEmail, EmailAPIError } from "@lovable.dev/email-js";
-import { createElement } from "react";
+import { createElement, type ReactElement } from "react";
 import { TEMPLATES, type TemplateName } from "./registry";
 
 // The verified delegated subdomain used for the actual API lookup.
@@ -29,8 +29,8 @@ export async function sendTemplateEmail<TName extends TemplateName>(
   if (!entry) throw new Error(`Unknown template: ${templateName}`);
 
   const data = opts.templateData ?? {};
-  const Component = entry.component as unknown as (p: any) => any;
-  const element = createElement(Component, data);
+  const Component = entry.component as unknown as (p: any) => ReactElement;
+  const element: ReactElement = createElement(Component, data as any);
   const html = await render(element);
   const text = await render(element, { plainText: true });
   const subject = typeof entry.subject === "function" ? entry.subject(data) : entry.subject;
