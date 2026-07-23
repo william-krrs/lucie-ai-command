@@ -114,7 +114,7 @@ export function PreparationForm({
   const hydrated = useRef(false);
   const submit = useServerFn(submitPreparation);
   const rec = useRecommendation();
-  const { booking } = useBooking();
+  const { booking, updateBooking } = useBooking();
 
   // Auto-hydrate from localStorage if the prospect comes back later.
   useEffect(() => {
