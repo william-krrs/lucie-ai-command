@@ -816,51 +816,136 @@ function SubmittedConfirmation({
         y += opts.gap ?? 4;
       };
 
-      // Header
-      doc.setFillColor(20, 20, 30);
-      doc.rect(0, 0, pageW, 80, "F");
-      doc.setTextColor(255, 255, 255);
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(18);
-      doc.text("Lucie — Récapitulatif du parcours", margin, 40);
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(10);
-      doc.text(
-        `Généré le ${new Date().toLocaleString("fr-FR", { dateStyle: "long", timeStyle: "short" })}`,
-        margin,
-        60,
-      );
-      y = 110;
+      const toc: { title: string; page: number }[] = [];
 
-      writeParagraph(`Référence : #${reference}`, { size: 10, color: [90, 90, 100] });
-      writeParagraph(`Formule choisie : ${planLabel}`, { size: 11, bold: true, gap: 10 });
+      const startSection = (title: string) => {
+        // Always start each major section on a fresh page for clarity.
+        if (y > margin + 10) {
+          doc.addPage();
+          y = margin;
+        }
+        toc.push({ title, page: doc.getCurrentPageInfo().pageNumber });
+        // Section banner
+        doc.setFillColor(80, 40, 180);
+        doc.rect(0, y - 24, pageW, 34, "F");
+        doc.setTextColor(255, 255, 255);
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(14);
+        doc.text(title, margin, y);
+        y += 24;
+        // Reset text color for body
+        doc.setTextColor(30, 30, 30);
+      };
 
-      writeParagraph("Rendez-vous", { size: 13, bold: true, color: [80, 40, 180] });
+      // Start on page 1 with a placeholder — we'll insert the cover last.
+      y = margin;
+
+      // ---- Rendez-vous ----
+      startSection("1. Rendez-vous");
       writeParagraph(
         booking
-          ? `${formatBookingDate(booking.date)}${booking.time ? ` · ${booking.time}` : ""}`
+          ? `Date : ${formatBookingDate(booking.date)}${booking.time ? ` · ${booking.time}` : ""}`
           : "Aucun rendez-vous confirmé",
-        { gap: 10 },
+        { size: 11, bold: true },
       );
+      if (booking?.user?.name) writeParagraph(`Participant : ${booking.user.name}`);
+      if (booking?.user?.email) writeParagraph(`Email : ${booking.user.email}`);
+      writeParagraph(`Statut : ${booking?.status ?? "à confirmer"}`, { gap: 10 });
 
-      writeParagraph("Diagnostic", { size: 13, bold: true, color: [80, 40, 180] });
-      writeParagraph(`Score de compatibilité : ${diagnostic.score} / 100 (${diagnostic.tierLabel})`);
+      // ---- Diagnostic ----
+      startSection("2. Diagnostic");
+      writeParagraph(`Score de compatibilité : ${diagnostic.score} / 100 (${diagnostic.tierLabel})`, {
+        size: 11,
+        bold: true,
+      });
       writeParagraph(`Formule recommandée : ${diagnostic.recommendedPlanLabel}`);
+      writeParagraph(`Formule choisie : ${planLabel}`);
       writeParagraph(`Priorité commerciale : ${diagnostic.priorityLabel}`, { gap: 10 });
 
-      writeParagraph("Contact", { size: 13, bold: true, color: [80, 40, 180] });
-      writeParagraph(`${form.contactName} — ${form.contactEmail}`);
+      // ---- Contact ----
+      startSection("3. Contact");
+      writeParagraph(`${form.contactName} — ${form.contactEmail}`, { size: 11, bold: true });
       writeParagraph(`Entreprise : ${form.companyName}`);
       writeParagraph(`Téléphone : ${form.companyPhone}`);
       if (form.website) writeParagraph(`Site : ${form.website}`);
       writeParagraph(`Volume d'appels : ${form.callVolume}`, { gap: 10 });
 
-      writeParagraph("Questionnaire complet", { size: 13, bold: true, color: [80, 40, 180] });
-      // Skip the first line of the summary (already covered in header)
+      // ---- Questionnaire complet ----
+      startSection("4. Questionnaire complet");
       const body = summary.split("\n").slice(2).join("\n");
       writeParagraph(body, { size: 9 });
 
-      // Footer with page numbers
+      // ---- Cover + TOC (inserted at page 1) ----
+      doc.insertPage(1);
+      // Shift recorded section pages by 1 since we prepended the cover.
+      for (const item of toc) item.page += 1;
+      doc.setPage(1);
+
+      // Cover banner
+      doc.setFillColor(20, 20, 30);
+      doc.rect(0, 0, pageW, 140, "F");
+      doc.setTextColor(255, 255, 255);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(22);
+      doc.text("Lucie — Récapitulatif du parcours", margin, 60);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(11);
+      doc.text(
+        `Généré le ${new Date().toLocaleString("fr-FR", { dateStyle: "long", timeStyle: "short" })}`,
+        margin,
+        85,
+      );
+      doc.text(`Référence #${reference}`, margin, 105);
+      doc.text(`Formule choisie : ${planLabel}`, margin, 125);
+
+      // Sommaire
+      let ty = 200;
+      doc.setTextColor(30, 30, 30);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(16);
+      doc.text("Sommaire", margin, ty);
+      ty += 10;
+      doc.setDrawColor(80, 40, 180);
+      doc.setLineWidth(1.2);
+      doc.line(margin, ty, margin + 60, ty);
+      ty += 26;
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(12);
+      for (const item of toc) {
+        const label = item.title;
+        const pageStr = `p. ${item.page}`;
+        const labelW = doc.getTextWidth(label);
+        const pageW2 = doc.getTextWidth(pageStr);
+        const rowY = ty;
+        // Label (clickable)
+        doc.setTextColor(80, 40, 180);
+        doc.text(label, margin, rowY);
+        // Dotted leader
+        doc.setTextColor(180, 180, 190);
+        const dotStart = margin + labelW + 6;
+        const dotEnd = pageW - margin - pageW2 - 6;
+        if (dotEnd > dotStart) {
+          const dots = ".".repeat(Math.max(0, Math.floor((dotEnd - dotStart) / 3)));
+          doc.text(dots, dotStart, rowY);
+        }
+        // Page number
+        doc.setTextColor(30, 30, 30);
+        doc.text(pageStr, pageW - margin - pageW2, rowY);
+        // Clickable link across the whole row
+        doc.link(margin, rowY - 12, pageW - margin * 2, 18, { pageNumber: item.page });
+        ty += 22;
+      }
+
+      doc.setTextColor(140, 140, 150);
+      doc.setFontSize(9);
+      doc.text(
+        "Astuce : cliquez sur une ligne du sommaire pour accéder directement à la section.",
+        margin,
+        pageH - margin - 10,
+      );
+
+      // Footer with page numbers on all pages (including cover).
       const pages = doc.getNumberOfPages();
       for (let i = 1; i <= pages; i++) {
         doc.setPage(i);
