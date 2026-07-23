@@ -14,6 +14,60 @@ export type Database = {
   }
   public: {
     Tables: {
+      bookings: {
+        Row: {
+          client_ref: string
+          created_at: string
+          email: string
+          id: string
+          last_error: string | null
+          meeting_at: string
+          meeting_date: string
+          meeting_time: string | null
+          name: string | null
+          phone: string | null
+          reminder_24h_sent_at: string | null
+          reminder_2h_sent_at: string | null
+          status: string
+          timezone: string
+          updated_at: string
+        }
+        Insert: {
+          client_ref: string
+          created_at?: string
+          email: string
+          id?: string
+          last_error?: string | null
+          meeting_at: string
+          meeting_date: string
+          meeting_time?: string | null
+          name?: string | null
+          phone?: string | null
+          reminder_24h_sent_at?: string | null
+          reminder_2h_sent_at?: string | null
+          status?: string
+          timezone?: string
+          updated_at?: string
+        }
+        Update: {
+          client_ref?: string
+          created_at?: string
+          email?: string
+          id?: string
+          last_error?: string | null
+          meeting_at?: string
+          meeting_date?: string
+          meeting_time?: string | null
+          name?: string | null
+          phone?: string | null
+          reminder_24h_sent_at?: string | null
+          reminder_2h_sent_at?: string | null
+          status?: string
+          timezone?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       preparation_submissions: {
         Row: {
           call_volume: string
