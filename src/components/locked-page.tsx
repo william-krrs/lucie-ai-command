@@ -1,64 +1,124 @@
 import { Link } from "@tanstack/react-router";
-import { Lock, CalendarCheck2, ArrowRight } from "lucide-react";
+import { Lock, CalendarCheck2, ArrowRight, CalendarPlus, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useBooking, formatBookingDate } from "@/lib/booking-store";
 
 export function LockedPage({
   title,
   description,
+  step,
 }: {
   title: string;
   description?: string;
+  /** Nom de l'étape verrouillée, affiché dans le message (ex: "Démonstration"). */
+  step?: string;
 }) {
   const { booking, isPendingMeeting } = useBooking();
 
+  const daysUntil = (() => {
+    if (!booking) return null;
+    const [y, m, d] = booking.date.split("-").map(Number);
+    const target = new Date(y, (m ?? 1) - 1, d ?? 1);
+    target.setHours(0, 0, 0, 0);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return Math.round((target.getTime() - today.getTime()) / 86400000);
+  })();
+
+  const daysLabel =
+    daysUntil == null
+      ? null
+      : daysUntil <= 0
+        ? "Aujourd'hui"
+        : daysUntil === 1
+          ? "Dans 1 jour"
+          : `Dans ${daysUntil} jours`;
+
   return (
     <section
+      role="region"
       aria-labelledby="locked-title"
+      aria-live="polite"
       className="mx-auto max-w-2xl rounded-3xl border border-border bg-card p-8 text-center shadow-[var(--shadow-card)] sm:p-12"
     >
-      <span className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-muted text-foreground/70">
+      <span
+        className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-muted text-foreground/70"
+        aria-hidden="true"
+      >
         <Lock className="h-6 w-6" aria-hidden="true" />
       </span>
+      {step && (
+        <div className="mt-4 text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
+          Étape verrouillée · {step}
+        </div>
+      )}
       <h1
         id="locked-title"
-        className="mt-5 text-xl font-semibold tracking-tight text-foreground sm:text-2xl"
+        className="mt-2 text-xl font-semibold tracking-tight text-foreground sm:text-2xl"
       >
         {title}
       </h1>
       <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
         {description ??
-          "Cette page se débloquera automatiquement le jour de votre rendez-vous avec l'équipe Lucie."}
+          (isPendingMeeting
+            ? "Cette page se débloquera automatiquement le jour de votre rendez-vous avec l'équipe Lucie."
+            : "Réservez d'abord un créneau avec l'équipe Lucie pour débloquer cette étape.")}
       </p>
 
       {isPendingMeeting && booking ? (
         <div className="mx-auto mt-6 max-w-md rounded-2xl border border-primary/30 bg-primary/[0.05] p-4 text-left">
-          <div className="flex items-center gap-2 text-[11px] font-medium uppercase tracking-widest text-primary">
-            <CalendarCheck2 className="h-4 w-4" aria-hidden="true" />
-            Rendez-vous confirmé
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2 text-[11px] font-medium uppercase tracking-widest text-primary">
+              <CalendarCheck2 className="h-4 w-4" aria-hidden="true" />
+              Rendez-vous confirmé
+            </div>
+            {daysLabel && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary">
+                <Clock className="h-3 w-3" aria-hidden="true" />
+                {daysLabel}
+              </span>
+            )}
           </div>
           <div className="mt-1 text-sm font-medium text-foreground">
             {formatBookingDate(booking.date)}
             {booking.time ? ` · ${booking.time}` : ""}
           </div>
           <p className="mt-1 text-xs text-muted-foreground">
-            Revenez ce jour-là pour choisir votre formule et finaliser le lancement.
+            {step
+              ? `Revenez ce jour-là pour débloquer "${step}" et poursuivre le parcours.`
+              : "Revenez ce jour-là pour débloquer la suite du parcours."}
           </p>
         </div>
       ) : (
-        <p className="mt-4 text-xs text-muted-foreground">
-          Aucun rendez-vous détecté pour l'instant.
-        </p>
+        <div className="mx-auto mt-6 max-w-md rounded-2xl border border-dashed border-border bg-muted/40 p-4 text-left">
+          <div className="flex items-center gap-2 text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
+            <CalendarPlus className="h-4 w-4" aria-hidden="true" />
+            Aucun rendez-vous détecté
+          </div>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Réservez un créneau via Calendly depuis la page Recommandation pour
+            débloquer automatiquement la suite.
+          </p>
+        </div>
       )}
 
       <div className="mt-6 flex flex-wrap justify-center gap-2">
-        <Button asChild className="rounded-xl">
-          <Link to="/recommandation">
-            {isPendingMeeting ? "Revoir mon rendez-vous" : "Prendre rendez-vous"}
+        <Button asChild className="min-h-11 rounded-xl">
+          <Link
+            to="/recommandation"
+            hash="calendly"
+            aria-label={
+              isPendingMeeting
+                ? "Revoir mon rendez-vous sur la page Recommandation"
+                : "Ouvrir Calendly pour réserver un rendez-vous"
+            }
+          >
+            <CalendarCheck2 className="mr-1.5 h-4 w-4" aria-hidden="true" />
+            {isPendingMeeting ? "Revoir mon rendez-vous" : "Réserver sur Calendly"}
             <ArrowRight className="ml-1 h-4 w-4" aria-hidden="true" />
           </Link>
         </Button>
-        <Button asChild variant="outline" className="rounded-xl">
+        <Button asChild variant="outline" className="min-h-11 rounded-xl">
           <Link to="/diagnostic">Revenir au diagnostic</Link>
         </Button>
       </div>
