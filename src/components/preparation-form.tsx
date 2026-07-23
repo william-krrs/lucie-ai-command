@@ -114,7 +114,7 @@ export function PreparationForm({
   const hydrated = useRef(false);
   const submit = useServerFn(submitPreparation);
   const rec = useRecommendation();
-  const { booking } = useBooking();
+  const { booking, updateBooking } = useBooking();
 
   // Auto-hydrate from localStorage if the prospect comes back later.
   useEffect(() => {
@@ -309,6 +309,12 @@ export function PreparationForm({
       }
       setConfirmation(res);
       setSubmitted(true);
+      // Attache le contact au RDV pour que le verrou reste cohérent après reload.
+      if (booking) {
+        updateBooking({
+          user: { name: form.contactName, email: form.contactEmail },
+        });
+      }
       toast.success("Questionnaire enregistré — l'équipe Lucie prend le relais.");
       if (typeof window !== "undefined") {
         window.scrollTo({ top: 0, behavior: "smooth" });
