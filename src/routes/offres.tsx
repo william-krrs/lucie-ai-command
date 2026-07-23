@@ -143,6 +143,7 @@ function Offres() {
     return (
       <LockedPage
         title="Offres verrouillées"
+        step="Offres & pricing"
         description="Vous pourrez choisir votre formule le jour de votre rendez-vous. En attendant, la formule recommandée reste consultable dans le diagnostic final."
       />
     );

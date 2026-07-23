@@ -47,6 +47,7 @@ function Installation() {
     return (
       <LockedPage
         title="Installation verrouillée"
+        step="Installation"
         description="Cette page se débloque le jour de votre rendez-vous, une fois votre formule choisie."
       />
     );
