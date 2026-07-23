@@ -9,6 +9,7 @@ import {
   RotateCcw,
   Sparkles,
   ExternalLink,
+  AlertTriangle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -37,6 +38,8 @@ export function CalendlyEmbed() {
   const dateInputRef = useRef<HTMLInputElement>(null);
   const confirmPanelRef = useRef<HTMLDivElement>(null);
   const [iframeLoaded, setIframeLoaded] = useState(false);
+  const [iframeError, setIframeError] = useState<null | "timeout" | "error">(null);
+  const [iframeKey, setIframeKey] = useState(0);
   const [inviteeEmail, setInviteeEmail] = useState<string | undefined>();
   const [inviteeName, setInviteeName] = useState<string | undefined>();
   const upsertBookingFn = useServerFn(upsertBooking);
@@ -47,6 +50,22 @@ export function CalendlyEmbed() {
   const recommendation = useRecommendation();
   const [recapUrl, setRecapUrl] = useState<string | null>(null);
   const [sharing, setSharing] = useState(false);
+
+  // Detect failed iframe load (blocked by network, tracker blockers, or CSP)
+  useEffect(() => {
+    if (iframeLoaded || iframeError || booking) return;
+    const t = window.setTimeout(() => {
+      if (!iframeLoaded) setIframeError("timeout");
+    }, 12000);
+    return () => window.clearTimeout(t);
+  }, [iframeLoaded, iframeError, iframeKey, booking]);
+
+  function retryIframe() {
+    setIframeLoaded(false);
+    setIframeError(null);
+    setIframeKey((k) => k + 1);
+    toast.info("Nouvelle tentative de chargement du calendrier…");
+  }
 
   async function generateRecap() {
     if (!booking || sharing) return;
@@ -354,7 +373,7 @@ export function CalendlyEmbed() {
       </div>
 
       <div className="relative mt-6 overflow-hidden rounded-2xl border border-border bg-card">
-        {!iframeLoaded && (
+        {!iframeLoaded && !iframeError && (
           <div
             className="absolute inset-0 z-10 grid animate-pulse place-items-center bg-card"
             aria-hidden="true"
@@ -365,15 +384,60 @@ export function CalendlyEmbed() {
             </div>
           </div>
         )}
-        <iframe
-          src={CALENDLY_URL}
-          title="Prise de rendez-vous Calendly avec l'équipe Lucie"
-          onLoad={() => setIframeLoaded(true)}
-          loading="lazy"
-          className="block h-[720px] w-full min-h-[560px] sm:h-[680px] md:h-[720px] lg:h-[760px]"
-          allow="camera; microphone; autoplay; fullscreen; payment"
-          style={{ colorScheme: "light" }}
-        />
+        {iframeError ? (
+          <div
+            role="alert"
+            className="flex min-h-[560px] flex-col items-center justify-center gap-4 bg-card p-6 text-center"
+          >
+            <span className="grid h-12 w-12 place-items-center rounded-full bg-destructive/10 text-destructive">
+              <AlertTriangle className="h-6 w-6" aria-hidden="true" />
+            </span>
+            <div className="max-w-md">
+              <h3 className="text-base font-semibold text-foreground">
+                Impossible de charger le calendrier
+              </h3>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {iframeError === "timeout"
+                  ? "Le calendrier met trop de temps à répondre. Un bloqueur de scripts, une extension ou une connexion instable peuvent en être la cause."
+                  : "Une erreur est survenue lors de l'ouverture du calendrier."}
+              </p>
+            </div>
+            <div className="flex flex-wrap justify-center gap-2">
+              <Button onClick={retryIframe} className="min-h-11 rounded-xl">
+                <RotateCcw className="mr-1.5 h-4 w-4" aria-hidden="true" />
+                Réessayer
+              </Button>
+              <a
+                href={CALENDLY_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex min-h-11 items-center gap-1.5 rounded-xl border border-border bg-background px-4 text-sm font-medium text-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
+              >
+                <ExternalLink className="h-4 w-4" aria-hidden="true" />
+                Ouvrir dans un nouvel onglet
+              </a>
+            </div>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Vous pouvez aussi renseigner votre créneau manuellement ci-dessous une fois
+              votre RDV pris.
+            </p>
+          </div>
+        ) : (
+          <iframe
+            key={iframeKey}
+            src={CALENDLY_URL}
+            title="Prise de rendez-vous Calendly avec l'équipe Lucie"
+            onLoad={() => {
+              setIframeLoaded(true);
+              setIframeError(null);
+            }}
+            onError={() => setIframeError("error")}
+            loading="lazy"
+            className="block h-[720px] w-full min-h-[560px] sm:h-[680px] md:h-[720px] lg:h-[760px]"
+            allow="camera; microphone; autoplay; fullscreen; payment"
+            style={{ colorScheme: "light" }}
+          />
+        )}
       </div>
 
       <p className="mt-3 text-center text-xs text-muted-foreground">
