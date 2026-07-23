@@ -167,10 +167,44 @@ export function CalendlyEmbed() {
         if (invitee?.name) setInviteeName(invitee.name);
         setAwaitingConfirm(true);
         toast.success("Créneau réservé ! Confirmez la date pour débloquer la suite.");
-        setTimeout(() => {
-          confirmPanelRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
-          dateInputRef.current?.focus();
-        }, 200);
+        // Smart, non-intrusive scroll & focus for mobile:
+        // - Wait a frame so the panel is mounted with its new styles.
+        // - Only scroll if the panel isn't already comfortably visible.
+        // - Focus the panel container (tabindex=-1) instead of the date input
+        //   to avoid popping the on-screen keyboard on mobile.
+        // - Respect prefers-reduced-motion.
+        window.requestAnimationFrame(() => {
+          window.setTimeout(() => {
+            const panel = confirmPanelRef.current;
+            if (!panel) return;
+            const rect = panel.getBoundingClientRect();
+            const vh = window.innerHeight || document.documentElement.clientHeight;
+            const isMobile = window.matchMedia("(max-width: 767px)").matches;
+            const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+            const topVisible = rect.top >= 72 && rect.top <= vh * 0.75;
+            const fullyVisible = rect.top >= 0 && rect.bottom <= vh;
+            if (!topVisible && !fullyVisible) {
+              // Mobile: align near top with a small offset for sticky headers.
+              // Desktop: keep it centered where it feels natural.
+              if (isMobile) {
+                const offset = 80; // sticky top bar allowance
+                const target = window.scrollY + rect.top - offset;
+                window.scrollTo({
+                  top: Math.max(0, target),
+                  behavior: reduce ? "auto" : "smooth",
+                });
+              } else {
+                panel.scrollIntoView({
+                  behavior: reduce ? "auto" : "smooth",
+                  block: "center",
+                });
+              }
+            }
+            // Focus the panel (not the input) so screen readers announce it
+            // and keyboard users land on it, without opening the mobile keyboard.
+            panel.focus({ preventScroll: true });
+          }, 120);
+        });
       }
     }
     window.addEventListener("message", onMessage);
@@ -454,10 +488,11 @@ export function CalendlyEmbed() {
 
       <div
         ref={confirmPanelRef}
+        tabIndex={-1}
         role={awaitingConfirm ? "status" : undefined}
         aria-live={awaitingConfirm ? "polite" : undefined}
         className={
-          "mt-6 rounded-2xl border p-4 transition-colors duration-300 sm:p-5 " +
+          "mt-6 scroll-mt-24 rounded-2xl border p-4 outline-none transition-colors duration-300 focus-visible:ring-2 focus-visible:ring-primary/50 sm:p-5 " +
           (awaitingConfirm
             ? "border-[oklch(0.65_0.17_155)]/50 bg-[oklch(0.65_0.17_155)]/[0.08] ring-2 ring-[oklch(0.65_0.17_155)]/30 animate-fade-in"
             : "border-border bg-card")
