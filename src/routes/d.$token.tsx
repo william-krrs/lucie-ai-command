@@ -1,6 +1,6 @@
 import { createFileRoute, notFound } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { Download, Loader2, Lock, ShieldCheck, Sparkles } from "lucide-react";
+import { CalendarCheck2, Download, Loader2, Lock, ShieldCheck, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { QrCodeCard } from "@/components/qr-code";
 import { getSharedDiagnostic, type DiagnosticSnapshot } from "@/lib/share.functions";
@@ -140,6 +140,8 @@ function SharedDiagnosticPage() {
           </div>
 
           <ScoreBlock snap={snap} />
+
+          {snap.booking && <BookingBlock booking={snap.booking} />}
 
           <div className="grid gap-3 sm:grid-cols-3">
             <Kpi label="Appels reçus / mois" value={snap.metrics.monthlyReceived.toLocaleString("fr-FR")} />
