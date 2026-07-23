@@ -13,6 +13,8 @@ import {
   Database,
   RotateCcw,
   History,
+  FileDown,
+  CalendarCheck2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,6 +24,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from "sonner";
 import { submitPreparation } from "@/lib/preparation.functions";
 import { useRecommendation } from "@/lib/lucie-store";
+import { useBooking, formatBookingDate, type Booking } from "@/lib/booking-store";
 import {
   PLAN_LABELS as REC_PLAN_LABELS,
   PRIORITY_EMOJI,
@@ -111,6 +114,7 @@ export function PreparationForm({
   const hydrated = useRef(false);
   const submit = useServerFn(submitPreparation);
   const rec = useRecommendation();
+  const { booking } = useBooking();
 
   // Auto-hydrate from localStorage if the prospect comes back later.
   useEffect(() => {
@@ -214,6 +218,11 @@ export function PreparationForm({
 
     return [
       `Nouvelle préparation Lucie — Formule : ${planLabel}`,
+      "",
+      "== RDV ==",
+      booking
+        ? `${formatBookingDate(booking.date)}${booking.time ? ` · ${booking.time}` : ""}`
+        : "Aucun rendez-vous confirmé",
       "",
       "== 0. Diagnostic ==",
       `Score de compatibilité : ${rec.score}/100 (${TIER_LABELS[rec.tier]})`,
@@ -352,6 +361,9 @@ export function PreparationForm({
           confirmation={confirmation}
           planLabel={planLabel}
           plan={plan}
+          booking={booking}
+          form={form}
+          summary={buildBody()}
           diagnostic={{
             score: rec.score,
             tierLabel: TIER_LABELS[rec.tier],
