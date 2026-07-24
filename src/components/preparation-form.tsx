@@ -350,6 +350,7 @@ export function PreparationForm({
         );
         pendingRef.current = false;
         setSaveState({ status: "saved", at });
+        let pushSnapshot = false;
         // Historique : on empile un snapshot horodaté si le contenu a
         // changé et si le dernier point date d'au moins HISTORY_MIN_INTERVAL_MS.
         setHistory((prev) => {
@@ -373,6 +374,7 @@ export function PreparationForm({
               } catch {
                 /* ignore */
               }
+              pushSnapshot = true;
               return replaced;
             }
           }
@@ -385,8 +387,32 @@ export function PreparationForm({
           } catch {
             /* ignore */
           }
+          pushSnapshot = true;
           return next;
         });
+        // Sync cloud : envoi fire-and-forget du snapshot pour la reprise multi-appareils.
+        if (pushSnapshot) {
+          const filled = Object.values(form).filter(
+            (v) => typeof v === "string" && v.trim().length > 0,
+          ).length;
+          pushRemoteDraft({
+            data: {
+              plan: plan ?? null,
+              form: { ...form } as Record<string, string>,
+              filled,
+              snapshotAt: at,
+            },
+          })
+            .then((remote) => {
+              // Marque le point comme synchronisé pour l'afficher côté UI.
+              setHistory((prev) =>
+                prev.map((s) => (s.at === remote.snapshotAt ? { ...s, remote: true } : s)),
+              );
+            })
+            .catch((err) => {
+              console.warn("[preparation] cloud sync failed", err);
+            });
+        }
       } catch {
         pendingRef.current = false;
         setSaveState({ status: "error", at: null });
