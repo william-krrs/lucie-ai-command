@@ -272,7 +272,7 @@
   }
 
   @media (max-width: 640px) {
-    .container, main { word-break: break-word; overflow-wrap: anywhere; }
+    .container, main { overflow-wrap: break-word; }
   }
 
   :focus:not(:focus-visible) {
