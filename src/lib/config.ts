@@ -18,4 +18,4 @@ export const CALENDLY_URL =
  * Remplacez ce lien par votre URL Calendly dédiée à la mise en service.
  */
 export const CALENDLY_URL_SETUP =
-  "https://calendly.com/lucie-sparkmedia/parametrage";
+  "https://calendly.com/contact-lucieassistant/30-minute-meeting-clone";
