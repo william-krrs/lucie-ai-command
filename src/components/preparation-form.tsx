@@ -582,42 +582,95 @@ export function PreparationForm({
         </div>
 
         {resumed && (
-          <div
+          <details
+            open
             role="status"
-            className="flex flex-col gap-3 rounded-2xl border border-primary/25 bg-primary/[0.05] p-4 text-sm sm:flex-row sm:items-center sm:justify-between"
+            className="group rounded-2xl border border-primary/25 bg-primary/[0.05] p-4 text-sm"
           >
-            <div className="flex items-start gap-3">
-              <History
-                className="mt-0.5 h-5 w-5 shrink-0 text-primary"
-                aria-hidden="true"
-              />
-              <div>
-                <p className="font-semibold text-foreground">
-                  Reprise automatique de votre questionnaire
-                </p>
-                <p className="mt-0.5 text-xs text-muted-foreground">
-                  {resumed.submissionId
-                    ? "Vous aviez déjà envoyé un premier questionnaire. Ajustez vos réponses et renvoyez si besoin."
-                    : "Vos réponses précédentes ont été rechargées. Continuez là où vous vous étiez arrêté."}
-                  {resumed.at && (
-                    <>
-                      {" "}Dernière sauvegarde&nbsp;: {formatWhen(resumed.at)}.
-                    </>
-                  )}
-                </p>
+            <summary className="flex cursor-pointer list-none flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-start gap-3">
+                <History
+                  className="mt-0.5 h-5 w-5 shrink-0 text-primary"
+                  aria-hidden="true"
+                />
+                <div>
+                  <p className="font-semibold text-foreground">
+                    Reprise automatique · {resumed.restoredCount} champ
+                    {resumed.restoredCount > 1 ? "s" : ""} restauré
+                    {resumed.restoredCount > 1 ? "s" : ""}
+                  </p>
+                  <p className="mt-0.5 text-xs text-muted-foreground">
+                    {resumed.submissionId
+                      ? "Vous aviez déjà envoyé un premier questionnaire. Ajustez vos réponses et renvoyez si besoin."
+                      : "Vos réponses précédentes ont été rechargées depuis le brouillon local. Continuez là où vous vous étiez arrêté."}
+                    {resumed.at && (
+                      <>
+                        {" "}Dernière sauvegarde&nbsp;: {formatWhen(resumed.at)}.
+                      </>
+                    )}
+                  </p>
+                </div>
               </div>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="h-9 self-start rounded-lg text-xs sm:self-auto"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleReset();
+                }}
+              >
+                <RotateCcw className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
+                Repartir de zéro
+              </Button>
+            </summary>
+            <div className="mt-4 grid gap-2 border-t border-primary/15 pt-4 sm:grid-cols-2">
+              {resumed.sections.map((s) => {
+                const pct = s.total === 0 ? 0 : Math.round((s.filled / s.total) * 100);
+                const complete = s.filled === s.total;
+                const empty = s.filled === 0;
+                return (
+                  <div
+                    key={s.label}
+                    className="flex items-center justify-between gap-3 rounded-lg bg-background/60 px-3 py-2 text-xs"
+                  >
+                    <div className="flex items-center gap-2">
+                      {complete ? (
+                        <CheckCircle2
+                          className="h-3.5 w-3.5 text-emerald-500"
+                          aria-hidden="true"
+                        />
+                      ) : empty ? (
+                        <AlertCircle
+                          className="h-3.5 w-3.5 text-muted-foreground/60"
+                          aria-hidden="true"
+                        />
+                      ) : (
+                        <CloudUpload
+                          className="h-3.5 w-3.5 text-primary"
+                          aria-hidden="true"
+                        />
+                      )}
+                      <span
+                        className={
+                          empty
+                            ? "text-muted-foreground"
+                            : "font-medium text-foreground"
+                        }
+                      >
+                        {s.label}
+                      </span>
+                    </div>
+                    <span className="tabular-nums text-muted-foreground">
+                      {s.filled}/{s.total}
+                      <span className="ml-1 text-muted-foreground/60">· {pct}%</span>
+                    </span>
+                  </div>
+                );
+              })}
             </div>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              className="h-9 self-start rounded-lg text-xs sm:self-auto"
-              onClick={handleReset}
-            >
-              <RotateCcw className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
-              Repartir de zéro
-            </Button>
-          </div>
+          </details>
         )}
 
         <Section n="1" title="Informations générales">
