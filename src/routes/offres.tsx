@@ -9,6 +9,8 @@ import {
   Clock,
   ShieldCheck,
   ArrowRight,
+  Calendar,
+  ExternalLink,
 } from "lucide-react";
 import { PageHeader } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
