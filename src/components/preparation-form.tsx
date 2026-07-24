@@ -482,6 +482,59 @@ export function PreparationForm({
         />
       ) : (
       <form onSubmit={handleSubmit} className="space-y-8" noValidate>
+        <div
+          role="status"
+          aria-live="polite"
+          className="flex flex-col gap-3 rounded-2xl border border-border/60 bg-muted/30 p-3 text-xs sm:flex-row sm:items-center sm:justify-between sm:text-sm"
+        >
+          <div className="flex items-center gap-2">
+            {saveState.status === "pending" ? (
+              <>
+                <CloudUpload className="h-4 w-4 animate-pulse text-primary" aria-hidden="true" />
+                <span className="font-medium text-foreground">Enregistrement…</span>
+              </>
+            ) : saveState.status === "saved" && saveState.at ? (
+              <>
+                <Save className="h-4 w-4 text-emerald-500" aria-hidden="true" />
+                <span className="font-medium text-foreground">
+                  Sauvegardé automatiquement
+                </span>
+                <span className="text-muted-foreground">· {formatWhen(saveState.at)}</span>
+              </>
+            ) : saveState.status === "error" ? (
+              <>
+                <AlertCircle className="h-4 w-4 text-destructive" aria-hidden="true" />
+                <span className="font-medium text-destructive">
+                  Sauvegarde impossible sur ce navigateur
+                </span>
+              </>
+            ) : (
+              <>
+                <Save className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+                <span className="text-muted-foreground">
+                  Vos réponses sont sauvegardées à chaque frappe
+                </span>
+              </>
+            )}
+          </div>
+          <div className="flex items-center gap-3 sm:w-64">
+            <div
+              className="h-1.5 flex-1 overflow-hidden rounded-full bg-border/60"
+              aria-hidden="true"
+            >
+              <div
+                className="h-full rounded-full bg-primary transition-all duration-300"
+                style={{
+                  width: `${Math.round((completion.filled / completion.total) * 100)}%`,
+                }}
+              />
+            </div>
+            <span className="tabular-nums text-muted-foreground">
+              {completion.filled}/{completion.total}
+            </span>
+          </div>
+        </div>
+
         {resumed && (
           <div
             role="status"
