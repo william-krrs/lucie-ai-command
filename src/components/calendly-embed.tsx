@@ -29,7 +29,24 @@ function todayISO() {
   ).padStart(2, "0")}`;
 }
 
-export function CalendlyEmbed() {
+export type CalendlyEmbedProps = {
+  url?: string;
+  eyebrow?: string;
+  title?: string;
+  description?: string;
+  bookedTitle?: string;
+  bookedDescription?: string;
+};
+
+export function CalendlyEmbed({
+  url,
+  eyebrow,
+  title,
+  description,
+  bookedTitle,
+  bookedDescription,
+}: CalendlyEmbedProps = {}) {
+  const calendlyUrl = url ?? CALENDLY_URL;
   const { booking, setBooking, clearBooking } = useBooking();
   const [awaitingConfirm, setAwaitingConfirm] = useState(false);
   const [rescheduling, setRescheduling] = useState(false);
@@ -271,12 +288,13 @@ export function CalendlyEmbed() {
                 id="calendly-booked-title"
                 className="mt-1 text-lg font-semibold tracking-tight text-foreground sm:text-xl"
               >
-                {formatBookingDate(booking.date)}
-                {booking.time ? ` · ${booking.time}` : ""}
+                {bookedTitle
+                  ? bookedTitle
+                  : `${formatBookingDate(booking.date)}${booking.time ? ` · ${booking.time}` : ""}`}
               </h2>
               <p className="mt-1 max-w-xl text-sm text-muted-foreground">
-                La démonstration, les offres, l'installation et le questionnaire seront
-                automatiquement débloqués le jour de votre rendez-vous.
+                {bookedDescription ??
+                  "La démonstration, les offres, l'installation et le questionnaire seront automatiquement débloqués le jour de votre rendez-vous."}
               </p>
             </div>
           </div>
