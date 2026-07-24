@@ -214,11 +214,9 @@ function ScoreBlock({ snap }: { snap: DiagnosticSnapshot }) {
 
 function Kpi({ label, value, emphasize }: { label: string; value: string; emphasize?: boolean }) {
   return (
-    <div className="rounded-2xl border border-border bg-card p-4">
-      <div className="text-[11px] uppercase tracking-widest text-muted-foreground">{label}</div>
-      <div
-        className={`mt-1 text-lg font-semibold tabular-nums ${emphasize ? "text-primary" : "text-foreground"}`}
-      >
+    <div className="rounded-2xl border border-border bg-card p-4 min-w-0">
+      <div className="kpi-label truncate">{label}</div>
+      <div className={`mt-2 kpi-value-md break-words ${emphasize ? "text-primary" : "text-foreground"}`}>
         {value}
       </div>
     </div>
