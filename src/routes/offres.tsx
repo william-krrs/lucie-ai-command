@@ -272,10 +272,8 @@ function Offres() {
                 </span>
               </div>
 
-              <div className="mt-6 flex items-baseline gap-1">
-                <span className="text-4xl font-semibold tracking-tight tabular-nums text-foreground">
-                  {p.price}
-                </span>
+              <div className="mt-6 flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5">
+                <span className="kpi-value-xl text-foreground">{p.price}</span>
                 <span className="text-sm text-muted-foreground">/mois TTC</span>
               </div>
               <p className="mt-1.5 text-xs text-muted-foreground">{p.tagline}</p>
