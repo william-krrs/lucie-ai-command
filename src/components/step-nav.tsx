@@ -9,8 +9,10 @@ const STEPS = [
   { to: "/recommandation", label: "Recommandation" },
   { to: "/demonstration", label: "Démonstration" },
   { to: "/offres", label: "Offres" },
-  { to: "/installation", label: "Installation" },
+  { to: "/merci", label: "Paiement" },
   { to: "/preparation", label: "Questionnaire" },
+  { to: "/installation", label: "Installation" },
+  { to: "/rdv-test", label: "RDV test & paramétrage" },
   { to: "/faq", label: "Questions fréquentes" },
 ] as const;
 
