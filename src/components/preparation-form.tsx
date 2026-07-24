@@ -258,18 +258,63 @@ export function PreparationForm({
 
   // Historique des sauvegardes (horodaté) — hydraté au montage.
   useEffect(() => {
+    let cancelled = false;
     try {
       const raw = localStorage.getItem(HISTORY_KEY);
-      if (!raw) return;
-      const parsed = JSON.parse(raw) as HistorySnapshot[] | null;
-      if (!Array.isArray(parsed)) return;
-      const filtered = plan
-        ? parsed.filter((s) => !s.plan || s.plan === plan)
-        : parsed;
-      setHistory(filtered.slice(0, HISTORY_LIMIT));
+      if (raw) {
+        const parsed = JSON.parse(raw) as HistorySnapshot[] | null;
+        if (Array.isArray(parsed)) {
+          const filtered = plan
+            ? parsed.filter((s) => !s.plan || s.plan === plan)
+            : parsed;
+          setHistory(filtered.slice(0, HISTORY_LIMIT));
+        }
+      }
     } catch {
       /* ignore malformed history */
     }
+
+    // Synchronisation cloud : on récupère les points de sauvegarde stockés côté
+    // Supabase pour permettre la reprise depuis n'importe quel appareil.
+    (async () => {
+      try {
+        const remote = await fetchRemoteDrafts();
+        if (cancelled || !Array.isArray(remote)) return;
+        setHistory((prev) => {
+          const remoteSnaps: HistorySnapshot[] = remote
+            .filter((r) => !plan || !r.plan || r.plan === plan)
+            .map((r) => ({
+              at: r.snapshotAt,
+              form: { ...EMPTY, ...(r.form as Partial<FormState>) },
+              plan: r.plan,
+              filled: r.filled,
+              remote: true,
+            }));
+          const seen = new Set<string>();
+          const merged: HistorySnapshot[] = [];
+          for (const s of [...remoteSnaps, ...prev]) {
+            const key = s.at;
+            if (seen.has(key)) continue;
+            seen.add(key);
+            merged.push(s);
+          }
+          merged.sort((a, b) => (a.at < b.at ? 1 : -1));
+          const capped = merged.slice(0, HISTORY_LIMIT);
+          try {
+            localStorage.setItem(HISTORY_KEY, JSON.stringify(capped));
+          } catch {
+            /* ignore */
+          }
+          return capped;
+        });
+      } catch (err) {
+        console.warn("[preparation] fetch remote drafts failed", err);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
   }, [plan]);
 
   // Sauvegarde incrémentale : à chaque frappe on planifie une écriture
