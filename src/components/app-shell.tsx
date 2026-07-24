@@ -243,24 +243,24 @@ export function PageHeader({
   actions?: ReactNode;
 }) {
   return (
-    <header className="mb-8 md:mb-10 flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
+    <header className="mb-6 sm:mb-8 md:mb-10 flex flex-col gap-4 sm:gap-6 sm:flex-row sm:items-end sm:justify-between">
       <div className="min-w-0">
         {eyebrow && (
-          <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1 text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
+          <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-border bg-card px-2.5 py-1 text-[10px] sm:text-[11px] font-medium uppercase tracking-[0.16em] sm:tracking-widest text-muted-foreground">
             <span className="h-1.5 w-1.5 rounded-full bg-primary" />
             {eyebrow}
           </div>
         )}
-        <h1 className="text-2xl sm:text-3xl md:text-4xl font-semibold tracking-tight text-foreground">
+        <h1 className="text-[1.55rem] leading-[1.15] sm:text-3xl md:text-4xl font-semibold tracking-tight text-foreground break-words">
           {title}
         </h1>
         {description && (
-          <p className="mt-3 max-w-2xl text-sm sm:text-[15px] leading-relaxed text-muted-foreground">
+          <p className="mt-2.5 sm:mt-3 max-w-2xl text-[13.5px] sm:text-[15px] leading-relaxed text-muted-foreground">
             {description}
           </p>
         )}
       </div>
-      {actions && <div className="flex shrink-0 items-center gap-2">{actions}</div>}
+      {actions && <div className="flex flex-wrap items-center gap-2 sm:shrink-0">{actions}</div>}
     </header>
   );
 }
