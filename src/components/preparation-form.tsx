@@ -399,6 +399,13 @@ export function PreparationForm({
       toast.error("Merci de compléter tous les champs obligatoires.");
       return;
     }
+    if (!reviewing) {
+      setReviewing(true);
+      if (typeof window !== "undefined") {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+      return;
+    }
     const summary = buildBody();
     setSubmitting(true);
     try {
