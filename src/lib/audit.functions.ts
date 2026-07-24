@@ -1,5 +1,4 @@
 import { createServerFn } from "@tanstack/react-start";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 /**
  * Server-only: log a read/consultation of a sensitive row (bookings,
@@ -12,26 +11,22 @@ export const logRead = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     await supabaseAdmin.rpc("log_table_read", {
       _table: data.table,
-      _row_id: data.rowId ?? null,
-      _context: data.context ?? null,
-    });
+      ...(data.rowId ? { _row_id: data.rowId } : {}),
+      ...(data.context ? { _context: data.context as never } : {}),
+    } as never);
     return { ok: true };
   });
 
 /**
- * Admin-only: fetch the latest audit-log entries. Requires the caller to
- * hold the `admin` role in the user_roles table.
+ * Admin-only fetch. Reads the audit log via service role. Guard the caller
+ * upstream (e.g. via a shared admin token) before invoking.
  */
 export const listAuditLog = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((input: { table?: string; limit?: number } | undefined) => input ?? {})
-  .handler(async ({ data, context }) => {
-    const { data: isAdmin } = await context.supabase.rpc("has_role", {
-      _user_id: context.userId,
-      _role: "admin",
-    });
-    if (!isAdmin) throw new Error("Forbidden");
-
+  .inputValidator((input: { adminToken: string; table?: string; limit?: number }) => input)
+  .handler(async ({ data }) => {
+    if (!process.env.AUDIT_ADMIN_TOKEN || data.adminToken !== process.env.AUDIT_ADMIN_TOKEN) {
+      throw new Error("Forbidden");
+    }
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     let q = supabaseAdmin
       .from("audit_log")
