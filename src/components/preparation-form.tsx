@@ -113,6 +113,9 @@ export function PreparationForm({
   const [resumed, setResumed] = useState<{
     at: string;
     submissionId?: string;
+    restoredCount: number;
+    sections: { label: string; filled: number; total: number }[];
+    toast?: boolean;
   } | null>(null);
   const [saveState, setSaveState] = useState<{
     status: "idle" | "pending" | "saved" | "error";
@@ -124,6 +127,34 @@ export function PreparationForm({
   const submit = useServerFn(submitPreparation);
   const rec = useRecommendation();
   const { booking, updateBooking } = useBooking();
+
+  // Regroupement des champs par section — utilisé pour l'aperçu de reprise.
+  const SECTIONS: { label: string; keys: (keyof FormState)[] }[] = useMemo(
+    () => [
+      {
+        label: "Informations générales",
+        keys: [
+          "contactName",
+          "contactEmail",
+          "companyName",
+          "companyPhone",
+          "website",
+          "callVolume",
+          "interlocutor",
+        ],
+      },
+      { label: "Accueil vocal", keys: ["greeting", "location", "tone"] },
+      { label: "Expertise et services", keys: ["services"] },
+      {
+        label: "Appels et urgences",
+        keys: ["emergencyNumber", "emergencyCriteria", "openingHours"],
+      },
+      { label: "Prise de RDV", keys: ["rdvLink", "requiredInfo"] },
+      { label: "Accès technique", keys: ["techAccess"] },
+      { label: "Notes complémentaires", keys: ["extra"] },
+    ],
+    [],
+  );
 
   // Auto-hydrate from localStorage if the prospect comes back later.
   useEffect(() => {
@@ -141,24 +172,39 @@ export function PreparationForm({
       // Only prefill when it matches the current plan (or when no plan filter applies).
       if (plan && saved.plan && saved.plan !== plan) return;
       const next: FormState = { ...EMPTY };
-      let hasValue = false;
+      let restoredCount = 0;
       (Object.keys(EMPTY) as (keyof FormState)[]).forEach((k) => {
         const v = saved[k];
         if (typeof v === "string" && v.length > 0) {
           (next[k] as string) = v;
-          hasValue = true;
+          restoredCount += 1;
         }
       });
-      if (!hasValue) return;
+      if (restoredCount === 0) return;
       setForm(next);
-      setResumed({ at: saved.sentAt ?? "", submissionId: saved.submissionId });
+      const sections = SECTIONS.map((s) => ({
+        label: s.label,
+        total: s.keys.length,
+        filled: s.keys.filter((k) => String(next[k]).trim().length > 0).length,
+      }));
+      setResumed({
+        at: saved.updatedAt ?? saved.sentAt ?? "",
+        submissionId: saved.submissionId,
+        restoredCount,
+        sections,
+      });
       if (saved.updatedAt) {
         setSaveState({ status: "saved", at: saved.updatedAt });
       }
+      // Toast discret pour signaler la reprise après un refresh / reconnexion.
+      toast.success(
+        `Brouillon restauré · ${restoredCount} champ${restoredCount > 1 ? "s" : ""} récupéré${restoredCount > 1 ? "s" : ""}.`,
+        { duration: 4000 },
+      );
     } catch {
       /* ignore malformed storage */
     }
-  }, [plan]);
+  }, [plan, SECTIONS]);
 
   // Sauvegarde incrémentale : à chaque frappe on planifie une écriture
   // localStorage debouncée (~600 ms). L'état d'enregistrement est exposé
