@@ -23,6 +23,7 @@ import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from 
 import { useBooking } from "@/lib/booking-store";
 import { SidebarProgress } from "@/components/sidebar-progress";
 import { ProspectSwitcher } from "@/components/prospect-switcher";
+import { BookingSync } from "@/components/booking-sync";
 
 const NAV = [
   { to: "/", label: "Accueil", icon: Home },
