@@ -373,9 +373,9 @@ function Home() {
                   Live
                 </span>
               </div>
-              <div className="mt-6 text-2xl font-semibold tracking-tight tabular-nums">{s.value}</div>
-              <div className="mt-1 text-xs text-muted-foreground">{s.label}</div>
-              <div className="mt-3 text-[11px] text-primary">{s.trend}</div>
+              <div className="mt-5 sm:mt-6 kpi-value-lg text-foreground break-words">{s.value}</div>
+              <div className="mt-1.5 kpi-label truncate">{s.label}</div>
+              <div className="mt-3 text-[11px] font-medium text-primary">{s.trend}</div>
             </div>
           );
         })}
