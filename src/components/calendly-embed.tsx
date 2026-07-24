@@ -459,7 +459,7 @@ export function CalendlyEmbed({
                 Réessayer
               </Button>
               <a
-                href={CALENDLY_URL}
+                href={calendlyUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex min-h-11 items-center gap-1.5 rounded-xl border border-border bg-background px-4 text-sm font-medium text-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
@@ -476,7 +476,7 @@ export function CalendlyEmbed({
         ) : (
           <iframe
             key={iframeKey}
-            src={CALENDLY_URL}
+            src={calendlyUrl}
             title="Prise de rendez-vous Calendly avec l'équipe Lucie"
             onLoad={() => {
               setIframeLoaded(true);
@@ -494,7 +494,7 @@ export function CalendlyEmbed({
       <p className="mt-3 text-center text-xs text-muted-foreground">
         Le calendrier ne s'affiche pas ?{" "}
         <a
-          href={CALENDLY_URL}
+          href={calendlyUrl}
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex items-center gap-1 text-primary underline underline-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded"
