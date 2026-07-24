@@ -368,6 +368,90 @@
   .skip-link:focus {
     top: 0.75rem;
   }
+
+  /* ── Touch feedback: unified active / pressed states ─────────
+     Removes iOS/Android's grey/blue tap flash and provides a
+     consistent tactile response for buttons, links and any
+     element marked interactive. Uses design tokens for motion.  */
+  html {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  button,
+  a,
+  [role="button"],
+  [role="tab"],
+  [role="menuitem"],
+  [role="option"],
+  [data-pressable],
+  label[for],
+  summary {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;   /* removes 300ms delay + double-tap zoom */
+    user-select: none;
+    -webkit-user-select: none;
+    transition:
+      transform var(--duration-fast) var(--ease-std),
+      filter    var(--duration-fast) var(--ease-std),
+      box-shadow var(--duration-fast) var(--ease-std),
+      background-color var(--duration-fast) var(--ease-std);
+  }
+
+  /* Pressed state — active on pointer, aria-pressed=true, data-state=open */
+  button:active:not(:disabled),
+  a:active,
+  [role="button"]:active:not([aria-disabled="true"]),
+  [role="tab"]:active,
+  [role="menuitem"]:active,
+  [role="option"]:active,
+  [data-pressable]:active,
+  summary:active,
+  [aria-pressed="true"],
+  [data-state="open"][data-pressable],
+  [data-state="on"] {
+    transform: scale(0.97);
+    filter: brightness(0.92);
+  }
+
+  /* Cards / large surfaces get a softer press (less scale, more tint) */
+  [data-pressable="card"]:active,
+  .card-pressable:active {
+    transform: scale(0.985);
+    filter: brightness(0.94);
+    box-shadow: var(--elev-xs);
+  }
+
+  /* Disabled surfaces never respond to taps */
+  :disabled,
+  [aria-disabled="true"],
+  [data-disabled="true"] {
+    transform: none !important;
+    filter: none !important;
+    cursor: not-allowed;
+  }
+
+  /* Preserve intent for reduced-motion users */
+  @media (prefers-reduced-motion: reduce) {
+    button, a, [role="button"], [role="tab"], [role="menuitem"],
+    [role="option"], [data-pressable], summary {
+      transition: filter var(--duration-fast) linear,
+                  background-color var(--duration-fast) linear;
+    }
+    button:active, a:active, [role="button"]:active,
+    [data-pressable]:active, .card-pressable:active {
+      transform: none;
+    }
+  }
+
+  /* Coarse pointers (touch) — slightly stronger feedback to feel deliberate */
+  @media (hover: none) and (pointer: coarse) {
+    button:active:not(:disabled),
+    [role="button"]:active:not([aria-disabled="true"]),
+    [data-pressable]:active {
+      transform: scale(0.96);
+      filter: brightness(0.88);
+    }
+  }
 }
 
 @utility cv-auto {
