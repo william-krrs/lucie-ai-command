@@ -686,6 +686,29 @@ export function PreparationForm({
           </details>
         )}
 
+        {reviewing && (
+          <ReviewPanel
+            form={form}
+            planLabel={planLabel}
+            booking={booking}
+            diagnostic={{
+              score: rec.score,
+              tierLabel: TIER_LABELS[rec.tier],
+              recommendedPlanLabel: rec.plan ? REC_PLAN_LABELS[rec.plan] : "—",
+              priorityLabel: PRIORITY_LABELS[rec.priority],
+              priorityEmoji: PRIORITY_EMOJI[rec.priority],
+            }}
+            onEdit={() => {
+              setReviewing(false);
+              if (typeof window !== "undefined") {
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }
+            }}
+            submitting={submitting}
+          />
+        )}
+
+        <div className={reviewing ? "hidden" : "space-y-8"}>
         <Section n="1" title="Informations générales">
           <Grid>
             <Field label="Votre nom et prénom" required>
@@ -982,14 +1005,11 @@ export function PreparationForm({
               disabled={submitting}
               className="h-11 rounded-xl bg-primary px-6 text-primary-foreground shadow-[var(--shadow-elevated)] hover:bg-primary/90"
             >
-              {submitting ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
-              ) : (
-                <Send className="mr-2 h-4 w-4" aria-hidden="true" />
-              )}
-              {submitting ? "Envoi en cours…" : "Envoyer à l'équipe Lucie"}
+              <Eye className="mr-2 h-4 w-4" aria-hidden="true" />
+              Vérifier le récapitulatif
             </Button>
           </div>
+        </div>
         </div>
       </form>
       )}
