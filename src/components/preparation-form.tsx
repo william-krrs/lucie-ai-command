@@ -26,6 +26,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { submitPreparation } from "@/lib/preparation.functions";
 import { upsertBooking } from "@/lib/bookings.functions";
@@ -41,6 +49,18 @@ import {
 
 const CONTACT_EMAIL = "contact@lucieassistant.fr";
 const STORAGE_KEY = "lucie:preparation";
+const HISTORY_KEY = "lucie:preparation:history";
+const HISTORY_LIMIT = 20;
+// Espacement mini entre deux snapshots pour éviter de saturer l'historique
+// pendant la frappe (une entrée toutes les ~15s max).
+const HISTORY_MIN_INTERVAL_MS = 15_000;
+
+type HistorySnapshot = {
+  at: string;
+  form: FormState;
+  plan: string | null;
+  filled: number;
+};
 
 function formatWhen(iso: string): string {
   if (!iso) return "";
@@ -127,6 +147,8 @@ export function PreparationForm({
     status: "idle" | "pending" | "saved" | "error";
     at: string | null;
   }>({ status: "idle", at: null });
+  const [history, setHistory] = useState<HistorySnapshot[]>([]);
+  const [historyOpen, setHistoryOpen] = useState(false);
   const hydrated = useRef(false);
   const saveTimerRef = useRef<number | null>(null);
   const pendingRef = useRef(false);
@@ -212,6 +234,22 @@ export function PreparationForm({
     }
   }, [plan, SECTIONS]);
 
+  // Historique des sauvegardes (horodaté) — hydraté au montage.
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(HISTORY_KEY);
+      if (!raw) return;
+      const parsed = JSON.parse(raw) as HistorySnapshot[] | null;
+      if (!Array.isArray(parsed)) return;
+      const filtered = plan
+        ? parsed.filter((s) => !s.plan || s.plan === plan)
+        : parsed;
+      setHistory(filtered.slice(0, HISTORY_LIMIT));
+    } catch {
+      /* ignore malformed history */
+    }
+  }, [plan]);
+
   // Sauvegarde incrémentale : à chaque frappe on planifie une écriture
   // localStorage debouncée (~600 ms). L'état d'enregistrement est exposé
   // dans une pastille visible en haut du formulaire pour rassurer le
@@ -245,6 +283,43 @@ export function PreparationForm({
         );
         pendingRef.current = false;
         setSaveState({ status: "saved", at });
+        // Historique : on empile un snapshot horodaté si le contenu a
+        // changé et si le dernier point date d'au moins HISTORY_MIN_INTERVAL_MS.
+        setHistory((prev) => {
+          const filled = Object.values(form).filter(
+            (v) => typeof v === "string" && v.trim().length > 0,
+          ).length;
+          const last = prev[0];
+          if (last) {
+            const sameContent =
+              JSON.stringify(last.form) === JSON.stringify(form);
+            if (sameContent) return prev;
+            const dt = Date.parse(at) - Date.parse(last.at);
+            if (Number.isFinite(dt) && dt < HISTORY_MIN_INTERVAL_MS) {
+              // Remplace le dernier point (trop récent) plutôt que d'en ajouter un.
+              const replaced = [
+                { at, form: { ...form }, plan: plan ?? null, filled },
+                ...prev.slice(1),
+              ];
+              try {
+                localStorage.setItem(HISTORY_KEY, JSON.stringify(replaced));
+              } catch {
+                /* ignore */
+              }
+              return replaced;
+            }
+          }
+          const next = [
+            { at, form: { ...form }, plan: plan ?? null, filled },
+            ...prev,
+          ].slice(0, HISTORY_LIMIT);
+          try {
+            localStorage.setItem(HISTORY_KEY, JSON.stringify(next));
+          } catch {
+            /* ignore */
+          }
+          return next;
+        });
       } catch {
         pendingRef.current = false;
         setSaveState({ status: "error", at: null });
@@ -305,6 +380,40 @@ export function PreparationForm({
     setSaveState({ status: "idle", at: null });
     pendingRef.current = false;
     toast.success("Formulaire réinitialisé.");
+  };
+
+  const restoreSnapshot = (snapshot: HistorySnapshot) => {
+    setForm({ ...EMPTY, ...snapshot.form });
+    setResumed(null);
+    setHistoryOpen(false);
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      const previous = raw ? (JSON.parse(raw) as Record<string, unknown>) : {};
+      localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({
+          ...previous,
+          ...snapshot.form,
+          plan: plan ?? previous.plan ?? null,
+          updatedAt: new Date().toISOString(),
+          restoredFrom: snapshot.at,
+        }),
+      );
+    } catch {
+      /* ignore */
+    }
+    setSaveState({ status: "saved", at: new Date().toISOString() });
+    toast.success(`Version du ${formatWhen(snapshot.at)} restaurée.`);
+  };
+
+  const clearHistory = () => {
+    try {
+      localStorage.removeItem(HISTORY_KEY);
+    } catch {
+      /* ignore */
+    }
+    setHistory([]);
+    toast.success("Historique effacé.");
   };
 
   const planLabel = plan ? PLAN_LABELS[plan] : "Non précisée";
@@ -592,6 +701,102 @@ export function PreparationForm({
               {completion.filled}/{completion.total}
             </span>
           </div>
+        </div>
+
+        {/* Historique des sauvegardes (horodaté, restaurable). */}
+        <div className="-mt-4 flex justify-end">
+          <Dialog open={historyOpen} onOpenChange={setHistoryOpen}>
+            <DialogTrigger asChild>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="h-8 gap-1.5 rounded-lg text-xs text-muted-foreground hover:text-foreground"
+                disabled={history.length === 0}
+                aria-label="Voir l'historique des sauvegardes"
+              >
+                <History className="h-3.5 w-3.5" aria-hidden="true" />
+                Historique
+                <span className="tabular-nums">({history.length})</span>
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-lg">
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  <History className="h-4 w-4 text-primary" aria-hidden="true" />
+                  Historique des sauvegardes
+                </DialogTitle>
+                <DialogDescription>
+                  Chaque enregistrement automatique crée un point de restauration
+                  horodaté. Sélectionnez une version pour la recharger dans le
+                  formulaire — vos réponses actuelles seront remplacées.
+                </DialogDescription>
+              </DialogHeader>
+              {history.length === 0 ? (
+                <p className="rounded-lg border border-dashed border-border/60 p-4 text-center text-sm text-muted-foreground">
+                  Aucun point de restauration pour l'instant.
+                </p>
+              ) : (
+                <>
+                  <ul className="max-h-[60vh] space-y-2 overflow-y-auto pr-1">
+                    {history.map((snapshot, idx) => {
+                      const total = Object.keys(EMPTY).length;
+                      return (
+                        <li
+                          key={`${snapshot.at}-${idx}`}
+                          className="flex items-center justify-between gap-3 rounded-lg border border-border/60 bg-muted/20 px-3 py-2 text-sm"
+                        >
+                          <div className="min-w-0">
+                            <p className="truncate font-medium text-foreground">
+                              {formatWhen(snapshot.at)}
+                              {idx === 0 && (
+                                <span className="ml-2 rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-primary">
+                                  Actuelle
+                                </span>
+                              )}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {snapshot.filled}/{total} champ
+                              {snapshot.filled > 1 ? "s" : ""} rempli
+                              {snapshot.filled > 1 ? "s" : ""}
+                              {snapshot.form.contactName && (
+                                <> · {snapshot.form.contactName}</>
+                              )}
+                            </p>
+                          </div>
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant={idx === 0 ? "ghost" : "outline"}
+                            className="h-8 shrink-0 rounded-lg text-xs"
+                            onClick={() => restoreSnapshot(snapshot)}
+                            disabled={idx === 0}
+                          >
+                            <RotateCcw
+                              className="mr-1.5 h-3.5 w-3.5"
+                              aria-hidden="true"
+                            />
+                            Restaurer
+                          </Button>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                  <div className="flex justify-end pt-2">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 rounded-lg text-xs text-muted-foreground hover:text-destructive"
+                      onClick={clearHistory}
+                    >
+                      Effacer l'historique
+                    </Button>
+                  </div>
+                </>
+              )}
+            </DialogContent>
+          </Dialog>
         </div>
 
         {resumed && (
