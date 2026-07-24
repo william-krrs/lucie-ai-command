@@ -357,7 +357,7 @@ function Home() {
         </div>
       </section>
 
-      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <section data-vr="kpi-grid" className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {STATS.map((s) => {
           const Icon = s.icon;
           return (

@@ -62,6 +62,7 @@ function Faq() {
       />
 
       <section
+        data-vr="faq"
         aria-label="Liste des questions fréquentes"
         className="rounded-3xl border border-border bg-card p-4 md:p-6 shadow-[var(--shadow-card)]"
       >

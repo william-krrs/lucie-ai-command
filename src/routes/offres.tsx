@@ -208,7 +208,7 @@ function Offres() {
         </div>
       </section>
 
-      <div className="grid items-stretch gap-6 lg:grid-cols-3">
+      <div data-vr="pricing-cards" className="grid items-stretch gap-6 lg:grid-cols-3">
         {PLANS.map((p) => {
           const active = selected === p.key;
           const Icon = p.icon;
@@ -414,7 +414,7 @@ function Offres() {
           </div>
         </div>
 
-        <div className="relative -mx-4 sm:mx-0">
+        <div data-vr="comparison-table" className="relative -mx-4 sm:mx-0">
           <div className="overflow-x-auto overscroll-x-contain rounded-3xl border border-border bg-card shadow-[var(--shadow-card)]">
             <table className="w-full min-w-[520px] border-collapse text-sm">
               <thead>
