@@ -1613,3 +1613,198 @@ function Field({
     </div>
   );
 }
+
+function ReviewPanel({
+  form,
+  planLabel,
+  booking,
+  diagnostic,
+  onEdit,
+  submitting,
+}: {
+  form: FormState;
+  planLabel: string;
+  booking: Booking | null;
+  diagnostic: {
+    score: number;
+    tierLabel: string;
+    recommendedPlanLabel: string;
+    priorityLabel: string;
+    priorityEmoji: string;
+  };
+  onEdit: () => void;
+  submitting: boolean;
+}) {
+  const toneLabel =
+    form.tone === "formel"
+      ? "Très formel (vouvoiement strict)"
+      : form.tone === "chaleureux"
+        ? "Professionnel chaleureux"
+        : form.tone === "decontracte"
+          ? "Décontracté (tutoiement)"
+          : "—";
+
+  const groups: {
+    n: string;
+    title: string;
+    rows: [string, string][];
+  }[] = [
+    {
+      n: "1",
+      title: "Informations générales",
+      rows: [
+        ["Contact", `${form.contactName} · ${form.contactEmail}`],
+        ["Entreprise", form.companyName],
+        ["Téléphone", form.companyPhone],
+        ["Site internet", form.website || "—"],
+        ["Volume d'appels", form.callVolume],
+        ["Interlocuteur", form.interlocutor],
+      ],
+    },
+    {
+      n: "2",
+      title: "Accueil vocal",
+      rows: [
+        ["Phrase d'accroche", form.greeting],
+        ["Localisation", form.location],
+        ["Ton de l'IA", toneLabel],
+      ],
+    },
+    { n: "3", title: "Expertise et services", rows: [["Services", form.services]] },
+    {
+      n: "4",
+      title: "Appels et urgences",
+      rows: [
+        ["Numéro d'urgence", form.emergencyNumber],
+        ["Critères d'urgence", form.emergencyCriteria || "—"],
+        ["Horaires d'ouverture", form.openingHours],
+      ],
+    },
+    {
+      n: "5",
+      title: "Prise de RDV",
+      rows: [
+        ["Lien RDV", form.rdvLink],
+        ["Infos à collecter", form.requiredInfo],
+      ],
+    },
+    { n: "6", title: "Accès technique", rows: [["Outils", form.techAccess || "—"]] },
+    { n: "7", title: "Notes complémentaires", rows: [["Demande particulière", form.extra || "—"]] },
+  ];
+
+  return (
+    <section
+      aria-labelledby="review-title"
+      className="rounded-3xl border border-primary/30 bg-primary/[0.04] p-6 shadow-[var(--shadow-elevated)] sm:p-8"
+    >
+      <header className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="flex items-start gap-3">
+          <span
+            aria-hidden="true"
+            className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-primary text-primary-foreground shadow-[var(--shadow-elevated)]"
+          >
+            <Eye className="h-5 w-5" />
+          </span>
+          <div>
+            <div className="text-[11px] font-medium uppercase tracking-widest text-primary">
+              Dernière étape · Vérification
+            </div>
+            <h2 id="review-title" className="mt-1 text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
+              Récapitulatif de vos réponses
+            </h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Vérifiez que tout est correct avant l'envoi à l'équipe Lucie. Vous pouvez encore modifier vos réponses.
+            </p>
+          </div>
+        </div>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={onEdit}
+          disabled={submitting}
+          className="h-10 shrink-0 rounded-xl"
+        >
+          <Pencil className="mr-2 h-4 w-4" aria-hidden="true" />
+          Modifier mes réponses
+        </Button>
+      </header>
+
+      <div className="mb-6 grid gap-3 rounded-2xl border border-border bg-card p-4 sm:grid-cols-3 sm:p-5">
+        <div>
+          <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Formule</div>
+          <div className="mt-1 text-sm font-semibold text-foreground">{planLabel}</div>
+        </div>
+        <div>
+          <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Score diagnostic</div>
+          <div className="mt-1 text-sm font-semibold text-foreground tabular-nums">
+            {diagnostic.score}/100 · {diagnostic.tierLabel}
+          </div>
+        </div>
+        <div>
+          <div className="text-[10px] uppercase tracking-widest text-muted-foreground">RDV</div>
+          <div className="mt-1 text-sm font-semibold text-foreground">
+            {booking
+              ? `${formatBookingDate(booking.date)}${booking.time ? ` · ${booking.time}` : ""}`
+              : "Non confirmé"}
+          </div>
+        </div>
+      </div>
+
+      <div className="space-y-4">
+        {groups.map((g) => (
+          <div
+            key={g.n}
+            className="rounded-2xl border border-border bg-card p-4 sm:p-5"
+          >
+            <div className="mb-3 flex items-center gap-2">
+              <span
+                aria-hidden="true"
+                className="grid h-6 w-6 place-items-center rounded-md bg-primary/10 text-xs font-semibold text-primary"
+              >
+                {g.n}
+              </span>
+              <h3 className="text-sm font-semibold tracking-tight text-foreground">
+                {g.title}
+              </h3>
+            </div>
+            <dl className="grid gap-x-6 gap-y-2 sm:grid-cols-[minmax(140px,180px)_1fr]">
+              {g.rows.map(([k, v]) => (
+                <div key={k} className="contents">
+                  <dt className="text-xs uppercase tracking-wide text-muted-foreground">{k}</dt>
+                  <dd className="whitespace-pre-wrap text-sm text-foreground/90">
+                    {v && v.trim().length > 0 ? v : <span className="text-muted-foreground">—</span>}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          </div>
+        ))}
+      </div>
+
+      <div className="mt-8 flex flex-col-reverse gap-3 border-t border-primary/15 pt-6 sm:flex-row sm:items-center sm:justify-between">
+        <Button
+          type="button"
+          variant="ghost"
+          onClick={onEdit}
+          disabled={submitting}
+          className="h-11 rounded-xl"
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" aria-hidden="true" />
+          Revenir au questionnaire
+        </Button>
+        <Button
+          type="submit"
+          disabled={submitting}
+          className="h-11 rounded-xl bg-primary px-6 text-primary-foreground shadow-[var(--shadow-elevated)] hover:bg-primary/90"
+        >
+          {submitting ? (
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
+          ) : (
+            <Send className="mr-2 h-4 w-4" aria-hidden="true" />
+          )}
+          {submitting ? "Envoi en cours…" : "Confirmer et envoyer à l'équipe Lucie"}
+        </Button>
+      </div>
+    </section>
+  );
+}
