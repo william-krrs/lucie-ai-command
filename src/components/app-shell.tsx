@@ -282,8 +282,8 @@ export function PageHeader({
   actions?: ReactNode;
 }) {
   return (
-    <header className="mb-6 sm:mb-8 md:mb-10 flex flex-col gap-4 sm:gap-6 sm:flex-row sm:items-end sm:justify-between">
-      <div className="min-w-0">
+    <header className="mb-6 sm:mb-8 md:mb-10 flex w-full flex-col gap-4 sm:gap-6 sm:flex-row sm:items-end sm:justify-between">
+      <div className="min-w-0 flex-1">
         {eyebrow && (
           <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-border bg-card px-2.5 py-1 text-[10px] sm:text-[11px] font-medium uppercase tracking-[0.16em] sm:tracking-widest text-muted-foreground">
             <span className="h-1.5 w-1.5 rounded-full bg-primary" />
