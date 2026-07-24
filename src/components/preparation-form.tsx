@@ -234,6 +234,22 @@ export function PreparationForm({
     }
   }, [plan, SECTIONS]);
 
+  // Historique des sauvegardes (horodaté) — hydraté au montage.
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(HISTORY_KEY);
+      if (!raw) return;
+      const parsed = JSON.parse(raw) as HistorySnapshot[] | null;
+      if (!Array.isArray(parsed)) return;
+      const filtered = plan
+        ? parsed.filter((s) => !s.plan || s.plan === plan)
+        : parsed;
+      setHistory(filtered.slice(0, HISTORY_LIMIT));
+    } catch {
+      /* ignore malformed history */
+    }
+  }, [plan]);
+
   // Sauvegarde incrémentale : à chaque frappe on planifie une écriture
   // localStorage debouncée (~600 ms). L'état d'enregistrement est exposé
   // dans une pastille visible en haut du formulaire pour rassurer le
@@ -267,6 +283,43 @@ export function PreparationForm({
         );
         pendingRef.current = false;
         setSaveState({ status: "saved", at });
+        // Historique : on empile un snapshot horodaté si le contenu a
+        // changé et si le dernier point date d'au moins HISTORY_MIN_INTERVAL_MS.
+        setHistory((prev) => {
+          const filled = Object.values(form).filter(
+            (v) => typeof v === "string" && v.trim().length > 0,
+          ).length;
+          const last = prev[0];
+          if (last) {
+            const sameContent =
+              JSON.stringify(last.form) === JSON.stringify(form);
+            if (sameContent) return prev;
+            const dt = Date.parse(at) - Date.parse(last.at);
+            if (Number.isFinite(dt) && dt < HISTORY_MIN_INTERVAL_MS) {
+              // Remplace le dernier point (trop récent) plutôt que d'en ajouter un.
+              const replaced = [
+                { at, form: { ...form }, plan: plan ?? null, filled },
+                ...prev.slice(1),
+              ];
+              try {
+                localStorage.setItem(HISTORY_KEY, JSON.stringify(replaced));
+              } catch {
+                /* ignore */
+              }
+              return replaced;
+            }
+          }
+          const next = [
+            { at, form: { ...form }, plan: plan ?? null, filled },
+            ...prev,
+          ].slice(0, HISTORY_LIMIT);
+          try {
+            localStorage.setItem(HISTORY_KEY, JSON.stringify(next));
+          } catch {
+            /* ignore */
+          }
+          return next;
+        });
       } catch {
         pendingRef.current = false;
         setSaveState({ status: "error", at: null });
@@ -327,6 +380,40 @@ export function PreparationForm({
     setSaveState({ status: "idle", at: null });
     pendingRef.current = false;
     toast.success("Formulaire réinitialisé.");
+  };
+
+  const restoreSnapshot = (snapshot: HistorySnapshot) => {
+    setForm({ ...EMPTY, ...snapshot.form });
+    setResumed(null);
+    setHistoryOpen(false);
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      const previous = raw ? (JSON.parse(raw) as Record<string, unknown>) : {};
+      localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({
+          ...previous,
+          ...snapshot.form,
+          plan: plan ?? previous.plan ?? null,
+          updatedAt: new Date().toISOString(),
+          restoredFrom: snapshot.at,
+        }),
+      );
+    } catch {
+      /* ignore */
+    }
+    setSaveState({ status: "saved", at: new Date().toISOString() });
+    toast.success(`Version du ${formatWhen(snapshot.at)} restaurée.`);
+  };
+
+  const clearHistory = () => {
+    try {
+      localStorage.removeItem(HISTORY_KEY);
+    } catch {
+      /* ignore */
+    }
+    setHistory([]);
+    toast.success("Historique effacé.");
   };
 
   const planLabel = plan ? PLAN_LABELS[plan] : "Non précisée";
