@@ -15,7 +15,6 @@ import {
 } from "lucide-react";
 import { PageHeader } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
-import { PreparationForm } from "@/components/preparation-form";
 import { ExportHistory } from "@/components/export-history";
 import { CrmExport } from "@/components/crm-export";
 import { cn } from "@/lib/utils";
@@ -309,37 +308,6 @@ function Merci() {
             );
           })}
         </div>
-      </section>
-
-      <section
-        id="questionnaire"
-        aria-labelledby="questionnaire-title"
-        className="rounded-3xl border border-border bg-card p-6 shadow-[var(--shadow-card)] sm:p-8"
-      >
-        <header className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-start gap-3">
-            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-primary text-primary-foreground">
-              <ClipboardList className="h-5 w-5" aria-hidden="true" />
-            </div>
-            <div>
-              <div className="text-[11px] font-medium uppercase tracking-widest text-primary">
-                Étape 2 — Questionnaire de configuration
-              </div>
-              <h3
-                id="questionnaire-title"
-                className="mt-1 text-xl font-semibold tracking-tight text-foreground sm:text-2xl"
-              >
-                Configurez votre assistante Lucie
-              </h3>
-              <p className="mt-1 max-w-xl text-sm text-muted-foreground">
-                Remplissez ce formulaire directement ci-dessous — 5 minutes.
-                Vos réponses lancent l'installation sous 72 h ouvrées.
-              </p>
-            </div>
-          </div>
-        </header>
-
-        <PreparationForm plan={plan} intro={false} />
       </section>
 
       <ExportHistory />
