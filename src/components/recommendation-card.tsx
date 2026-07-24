@@ -42,7 +42,7 @@ const TIER_STYLES: Record<
   limited: {
     ring: "border-[oklch(0.75_0.15_60)]/40 bg-[oklch(0.75_0.15_60)]/[0.08]",
     bar: "bg-[oklch(0.7_0.16_60)]",
-    badge: "bg-[oklch(0.75_0.15_60)]/15 text-[oklch(0.5_0.15_60)]",
+    badge: "bg-[oklch(0.75_0.15_60)]/15 text-[oklch(0.82_0.15_60)]",
     icon: AlertTriangle,
     message:
       "Lucie peut apporter de la valeur, mais l'impact dépendra fortement de vos objectifs à court terme.",
@@ -69,7 +69,7 @@ const PRIORITY_STYLES: Record<
   medium: {
     icon: Circle,
     className:
-      "border-[oklch(0.75_0.15_60)]/40 bg-[oklch(0.75_0.15_60)]/10 text-[oklch(0.5_0.15_60)]",
+      "border-[oklch(0.75_0.15_60)]/40 bg-[oklch(0.75_0.15_60)]/10 text-[oklch(0.82_0.15_60)]",
   },
   low: {
     icon: Circle,
