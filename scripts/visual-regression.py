@@ -167,6 +167,27 @@ async def run(update: bool, only: list[str]) -> int:
             color_scheme="dark",
             device_scale_factor=1,
         )
+        # Pre-seed the booking store so gated routes (/offres etc.)
+        # render their real UI instead of the LockedPage.
+        await context.add_init_script(
+            """
+            (() => {
+              try {
+                const past = new Date();
+                past.setDate(past.getDate() - 1);
+                const iso = past.toISOString();
+                localStorage.setItem('lucie:booking:clientRef', 'vr-fixture');
+                localStorage.setItem('lucie:booking:v2', JSON.stringify({
+                  status: 'confirmed',
+                  date: iso,
+                  createdAt: iso,
+                  eventUri: 'vr://fixture',
+                  clientRef: 'vr-fixture',
+                }));
+              } catch (_) {}
+            })();
+            """
+        )
         page = await context.new_page()
 
         for t in selected:
