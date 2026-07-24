@@ -229,10 +229,76 @@
     outline: none;
   }
 
+  /* ── Premium focus-visible system ─────────────────────────
+     A single, tokenized ring shared by every interactive element:
+     buttons, links, inputs, selects, tabs, checkboxes, radios,
+     switches, cards with role="button", menu items, etc.        */
+  :root {
+    --focus-ring-color: var(--color-ring, var(--ring));
+    --focus-ring-width: 2px;
+    --focus-ring-offset: 2px;
+    --focus-ring-halo: 0 0 0 4px color-mix(in oklab, var(--focus-ring-color) 28%, transparent);
+  }
+
   :focus-visible {
-    outline: 2px solid var(--color-ring, var(--ring));
-    outline-offset: 2px;
-    border-radius: 6px;
+    outline: var(--focus-ring-width) solid var(--focus-ring-color);
+    outline-offset: var(--focus-ring-offset);
+    border-radius: 8px;
+    box-shadow: var(--focus-ring-halo);
+    transition: box-shadow 0.15s ease, outline-offset 0.15s ease;
+  }
+
+  /* Form controls keep their own border-radius; inset halo reads
+     better than an outer outline for inputs/selects/textareas.   */
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible,
+  [role="combobox"]:focus-visible,
+  [role="textbox"]:focus-visible {
+    outline-offset: 0;
+    border-color: var(--focus-ring-color);
+    box-shadow:
+      0 0 0 1px var(--focus-ring-color),
+      var(--focus-ring-halo);
+  }
+
+  /* Compact halo on inline links to avoid overlapping neighbours */
+  a:focus-visible {
+    outline-offset: 3px;
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--focus-ring-color) 22%, transparent);
+  }
+
+  /* Non-standard interactive surfaces (cards, list rows) */
+  [role="button"]:focus-visible,
+  [role="tab"]:focus-visible,
+  [role="menuitem"]:focus-visible,
+  [role="option"]:focus-visible,
+  [tabindex="0"]:focus-visible {
+    outline-offset: 3px;
+  }
+
+  /* Respect reduced-motion users */
+  @media (prefers-reduced-motion: reduce) {
+    :focus-visible { transition: none; }
+  }
+
+  /* Higher-contrast ring for forced-colors mode */
+  @media (forced-colors: active) {
+    :focus-visible {
+      outline: 3px solid CanvasText;
+      box-shadow: none;
+    }
+  }
+
+  /* Utility for opt-in overrides on custom widgets */
+  .focus-ring {
+    outline: none;
+  }
+  .focus-ring:focus-visible {
+    outline: var(--focus-ring-width) solid var(--focus-ring-color);
+    outline-offset: var(--focus-ring-offset);
+    box-shadow: var(--focus-ring-halo);
+    border-radius: 10px;
   }
 
   .skip-link {
