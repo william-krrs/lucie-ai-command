@@ -34,6 +34,16 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import { submitPreparation } from "@/lib/preparation.functions";
 import { upsertBooking } from "@/lib/bookings.functions";
@@ -149,6 +159,9 @@ export function PreparationForm({
   }>({ status: "idle", at: null });
   const [history, setHistory] = useState<HistorySnapshot[]>([]);
   const [historyOpen, setHistoryOpen] = useState(false);
+  const [confirmRestore, setConfirmRestore] = useState<HistorySnapshot | null>(
+    null,
+  );
   const hydrated = useRef(false);
   const saveTimerRef = useRef<number | null>(null);
   const pendingRef = useRef(false);
@@ -386,6 +399,7 @@ export function PreparationForm({
     setForm({ ...EMPTY, ...snapshot.form });
     setResumed(null);
     setHistoryOpen(false);
+    setConfirmRestore(null);
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       const previous = raw ? (JSON.parse(raw) as Record<string, unknown>) : {};
@@ -769,8 +783,9 @@ export function PreparationForm({
                             size="sm"
                             variant={idx === 0 ? "ghost" : "outline"}
                             className="h-8 shrink-0 rounded-lg text-xs"
-                            onClick={() => restoreSnapshot(snapshot)}
+                            onClick={() => setConfirmRestore(snapshot)}
                             disabled={idx === 0}
+                            aria-haspopup="dialog"
                           >
                             <RotateCcw
                               className="mr-1.5 h-3.5 w-3.5"
@@ -798,6 +813,44 @@ export function PreparationForm({
             </DialogContent>
           </Dialog>
         </div>
+
+        <AlertDialog
+          open={!!confirmRestore}
+          onOpenChange={(open) => {
+            if (!open) setConfirmRestore(null);
+          }}
+        >
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Restaurer cette version ?</AlertDialogTitle>
+              <AlertDialogDescription asChild>
+                <div className="space-y-2">
+                  <p>
+                    Vous allez remplacer votre brouillon actuel par la version
+                    du{" "}
+                    <strong>{formatWhen(confirmRestore?.at ?? "")}</strong>.
+                  </p>
+                  <p className="text-destructive font-medium">
+                    Cette action écrasera les réponses non sauvegardées et ne
+                    peut pas être annulée.
+                  </p>
+                </div>
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={() => setConfirmRestore(null)}>
+                Annuler
+              </AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => {
+                  if (confirmRestore) restoreSnapshot(confirmRestore);
+                }}
+              >
+                Confirmer la restauration
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
 
         {resumed && (
           <details
