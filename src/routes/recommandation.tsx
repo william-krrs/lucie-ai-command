@@ -601,7 +601,7 @@ function NextStep() {
       : rec.priority === "medium"
         ? {
             wrap: "border-[oklch(0.75_0.15_60)]/35 bg-gradient-to-br from-[oklch(0.75_0.15_60)]/[0.08] to-transparent",
-            eyebrow: "text-[oklch(0.5_0.15_60)]",
+            eyebrow: "text-[oklch(0.82_0.15_60)]",
           }
         : {
             wrap: "border-border bg-gradient-to-br from-muted/60 to-transparent",
