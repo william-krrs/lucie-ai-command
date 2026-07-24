@@ -287,23 +287,23 @@ function Kpi({
   const toneMap: Record<string, string> = {
     neutral: "bg-muted text-foreground",
     alert: "bg-destructive/10 text-destructive",
-    success: "bg-[oklch(0.65_0.17_155)]/10 text-[oklch(0.55_0.17_155)]",
+    success: "bg-success/15 text-success",
     brand: "bg-primary/10 text-primary",
   };
   return (
-    <div className={"rounded-2xl border border-border bg-card p-5 shadow-[var(--shadow-card)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[var(--shadow-elevated)] " + (big ? "sm:col-span-2" : "")}>
+    <div className={"rounded-2xl border border-border bg-card p-4 sm:p-5 shadow-[var(--shadow-card)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[var(--shadow-elevated)] " + (big ? "sm:col-span-2" : "")}>
       <div className="flex items-center justify-between">
-        <div className={"grid h-9 w-9 place-items-center rounded-lg " + toneMap[tone]}>
+        <div className={"grid h-9 w-9 shrink-0 place-items-center rounded-lg " + toneMap[tone]}>
           <Icon className="h-4 w-4" />
         </div>
-        <span className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
+        <span className="text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
           Live
         </span>
       </div>
-      <div className={"mt-6 font-semibold tracking-tight tabular-nums " + (big ? "text-4xl" : "text-2xl")}>
+      <div className={"mt-5 sm:mt-6 break-words " + (big ? "kpi-value-xl text-foreground" : "kpi-value-lg text-foreground")}>
         {value}
       </div>
-      <div className="mt-1 text-xs text-muted-foreground">{label}</div>
+      <div className="mt-1.5 kpi-label">{label}</div>
       {typeof progress === "number" && (
         <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-muted">
           <div
