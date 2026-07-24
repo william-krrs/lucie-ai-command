@@ -1,0 +1,68 @@
+import { createFileRoute } from "@tanstack/react-router";
+import { PageHeader } from "@/components/app-shell";
+import { StepNav } from "@/components/step-nav";
+import { CalendlyEmbed } from "@/components/calendly-embed";
+import { LockedPage } from "@/components/locked-page";
+import { useBooking } from "@/lib/booking-store";
+import { CALENDLY_URL_SETUP } from "@/lib/config";
+
+export const Route = createFileRoute("/rdv-test")({
+  head: () => ({
+    meta: [
+      { title: "RDV Test & paramétrage — Lucie" },
+      {
+        name: "description",
+        content:
+          "Réservez le rendez-vous de test et de paramétrage de Lucie après l'installation.",
+      },
+      { property: "og:title", content: "RDV Test & paramétrage — Lucie" },
+      {
+        property: "og:description",
+        content: "Validez la configuration finale de votre assistante Lucie.",
+      },
+      {
+        property: "og:url",
+        content: "https://lucie-ai-command.lovable.app/rdv-test",
+      },
+      { name: "robots", content: "noindex" },
+    ],
+    links: [
+      {
+        rel: "canonical",
+        href: "https://lucie-ai-command.lovable.app/rdv-test",
+      },
+    ],
+  }),
+  component: RdvTest,
+});
+
+function RdvTest() {
+  const { isUnlocked } = useBooking();
+  if (!isUnlocked) {
+    return (
+      <LockedPage
+        title="RDV Test & paramétrage verrouillé"
+        step="RDV Test & paramétrage"
+        description="Ce rendez-vous se débloque après votre RDV de démarrage et une fois l'installation lancée."
+      />
+    );
+  }
+  return (
+    <div className="space-y-10">
+      <PageHeader
+        eyebrow="Étape finale · Test & paramétrage"
+        title="Réservez votre RDV de mise en service"
+        description="Une session dédiée avec l'équipe Lucie pour tester votre assistante en conditions réelles, valider les scénarios et finaliser le paramétrage."
+      />
+      <CalendlyEmbed
+        url={CALENDLY_URL_SETUP}
+        eyebrow="RDV Test & paramétrage"
+        title="Choisissez un créneau pour la mise en service"
+        description="Ce rendez-vous a lieu après l'installation. Nous testons ensemble le comportement de Lucie, ajustons les réponses et validons les scénarios critiques."
+        bookedTitle="RDV Test & paramétrage confirmé"
+        bookedDescription="Nous nous retrouverons ce jour-là pour valider ensemble la mise en service de votre assistante."
+      />
+      <StepNav current="/rdv-test" />
+    </div>
+  );
+}

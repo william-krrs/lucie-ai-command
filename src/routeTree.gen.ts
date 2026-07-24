@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as RoiRouteImport } from './routes/roi'
 import { Route as RecommandationRouteImport } from './routes/recommandation'
+import { Route as RdvTestRouteImport } from './routes/rdv-test'
 import { Route as PreparationRouteImport } from './routes/preparation'
 import { Route as OffresRouteImport } from './routes/offres'
 import { Route as MerciRouteImport } from './routes/merci'
@@ -36,6 +37,11 @@ const RoiRoute = RoiRouteImport.update({
 const RecommandationRoute = RecommandationRouteImport.update({
   id: '/recommandation',
   path: '/recommandation',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RdvTestRoute = RdvTestRouteImport.update({
+  id: '/rdv-test',
+  path: '/rdv-test',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PreparationRoute = PreparationRouteImport.update({
@@ -99,6 +105,7 @@ export interface FileRoutesByFullPath {
   '/merci': typeof MerciRoute
   '/offres': typeof OffresRoute
   '/preparation': typeof PreparationRoute
+  '/rdv-test': typeof RdvTestRoute
   '/recommandation': typeof RecommandationRoute
   '/roi': typeof RoiRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -114,6 +121,7 @@ export interface FileRoutesByTo {
   '/merci': typeof MerciRoute
   '/offres': typeof OffresRoute
   '/preparation': typeof PreparationRoute
+  '/rdv-test': typeof RdvTestRoute
   '/recommandation': typeof RecommandationRoute
   '/roi': typeof RoiRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -130,6 +138,7 @@ export interface FileRoutesById {
   '/merci': typeof MerciRoute
   '/offres': typeof OffresRoute
   '/preparation': typeof PreparationRoute
+  '/rdv-test': typeof RdvTestRoute
   '/recommandation': typeof RecommandationRoute
   '/roi': typeof RoiRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -147,6 +156,7 @@ export interface FileRouteTypes {
     | '/merci'
     | '/offres'
     | '/preparation'
+    | '/rdv-test'
     | '/recommandation'
     | '/roi'
     | '/sitemap.xml'
@@ -162,6 +172,7 @@ export interface FileRouteTypes {
     | '/merci'
     | '/offres'
     | '/preparation'
+    | '/rdv-test'
     | '/recommandation'
     | '/roi'
     | '/sitemap.xml'
@@ -177,6 +188,7 @@ export interface FileRouteTypes {
     | '/merci'
     | '/offres'
     | '/preparation'
+    | '/rdv-test'
     | '/recommandation'
     | '/roi'
     | '/sitemap.xml'
@@ -193,6 +205,7 @@ export interface RootRouteChildren {
   MerciRoute: typeof MerciRoute
   OffresRoute: typeof OffresRoute
   PreparationRoute: typeof PreparationRoute
+  RdvTestRoute: typeof RdvTestRoute
   RecommandationRoute: typeof RecommandationRoute
   RoiRoute: typeof RoiRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
@@ -221,6 +234,13 @@ declare module '@tanstack/react-router' {
       path: '/recommandation'
       fullPath: '/recommandation'
       preLoaderRoute: typeof RecommandationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/rdv-test': {
+      id: '/rdv-test'
+      path: '/rdv-test'
+      fullPath: '/rdv-test'
+      preLoaderRoute: typeof RdvTestRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/preparation': {
@@ -305,6 +325,7 @@ const rootRouteChildren: RootRouteChildren = {
   MerciRoute: MerciRoute,
   OffresRoute: OffresRoute,
   PreparationRoute: PreparationRoute,
+  RdvTestRoute: RdvTestRoute,
   RecommandationRoute: RecommandationRoute,
   RoiRoute: RoiRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,

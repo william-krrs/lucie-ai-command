@@ -11,3 +11,10 @@ export const SOCIAL_PROOF_COMPANY_COUNT = 25;
  * Remplacez ce lien par votre URL Calendly personnelle (ex: https://calendly.com/mon-compte/decouverte).
  */
 export const CALENDLY_URL = "https://calendly.com/lucie-sparkmedia/decouverte";
+
+/**
+ * URL Calendly du RDV « Test & paramétrage » (post-installation).
+ * Remplacez ce lien par votre URL Calendly dédiée à la mise en service.
+ */
+export const CALENDLY_URL_SETUP =
+  "https://calendly.com/lucie-sparkmedia/parametrage";

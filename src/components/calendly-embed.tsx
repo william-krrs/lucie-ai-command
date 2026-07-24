@@ -29,7 +29,24 @@ function todayISO() {
   ).padStart(2, "0")}`;
 }
 
-export function CalendlyEmbed() {
+export type CalendlyEmbedProps = {
+  url?: string;
+  eyebrow?: string;
+  title?: string;
+  description?: string;
+  bookedTitle?: string;
+  bookedDescription?: string;
+};
+
+export function CalendlyEmbed({
+  url,
+  eyebrow,
+  title,
+  description,
+  bookedTitle,
+  bookedDescription,
+}: CalendlyEmbedProps = {}) {
+  const calendlyUrl = url ?? CALENDLY_URL;
   const { booking, setBooking, clearBooking } = useBooking();
   const [awaitingConfirm, setAwaitingConfirm] = useState(false);
   const [rescheduling, setRescheduling] = useState(false);
@@ -271,12 +288,13 @@ export function CalendlyEmbed() {
                 id="calendly-booked-title"
                 className="mt-1 text-lg font-semibold tracking-tight text-foreground sm:text-xl"
               >
-                {formatBookingDate(booking.date)}
-                {booking.time ? ` · ${booking.time}` : ""}
+                {bookedTitle
+                  ? bookedTitle
+                  : `${formatBookingDate(booking.date)}${booking.time ? ` · ${booking.time}` : ""}`}
               </h2>
               <p className="mt-1 max-w-xl text-sm text-muted-foreground">
-                La démonstration, les offres, l'installation et le questionnaire seront
-                automatiquement débloqués le jour de votre rendez-vous.
+                {bookedDescription ??
+                  "La démonstration, les offres, l'installation et le questionnaire seront automatiquement débloqués le jour de votre rendez-vous."}
               </p>
             </div>
           </div>
@@ -390,18 +408,17 @@ export function CalendlyEmbed() {
         </span>
         <div className="min-w-0">
           <div className="text-[11px] font-medium uppercase tracking-widest text-primary">
-            Étape suivante · Réservez votre rendez-vous
+            {eyebrow ?? "Étape suivante · Réservez votre rendez-vous"}
           </div>
           <h2
             id="calendly-title"
             className="mt-1 text-lg font-semibold tracking-tight text-foreground sm:text-xl"
           >
-            Choisissez un créneau avec l'équipe Lucie
+            {title ?? "Choisissez un créneau avec l'équipe Lucie"}
           </h2>
           <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-            Sélectionnez directement votre horaire ci-dessous. La démonstration, les
-            offres, l'installation et le questionnaire de préparation resteront
-            verrouillés jusqu'au jour de votre rendez-vous.
+            {description ??
+              "Sélectionnez directement votre horaire ci-dessous. La démonstration, les offres, l'installation et le questionnaire de préparation resteront verrouillés jusqu'au jour de votre rendez-vous."}
           </p>
         </div>
       </div>
@@ -442,7 +459,7 @@ export function CalendlyEmbed() {
                 Réessayer
               </Button>
               <a
-                href={CALENDLY_URL}
+                href={calendlyUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex min-h-11 items-center gap-1.5 rounded-xl border border-border bg-background px-4 text-sm font-medium text-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
@@ -459,7 +476,7 @@ export function CalendlyEmbed() {
         ) : (
           <iframe
             key={iframeKey}
-            src={CALENDLY_URL}
+            src={calendlyUrl}
             title="Prise de rendez-vous Calendly avec l'équipe Lucie"
             onLoad={() => {
               setIframeLoaded(true);
@@ -477,7 +494,7 @@ export function CalendlyEmbed() {
       <p className="mt-3 text-center text-xs text-muted-foreground">
         Le calendrier ne s'affiche pas ?{" "}
         <a
-          href={CALENDLY_URL}
+          href={calendlyUrl}
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex items-center gap-1 text-primary underline underline-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded"
