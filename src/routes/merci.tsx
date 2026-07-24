@@ -12,12 +12,14 @@ import {
   ListChecks,
   CreditCard,
   ChevronRight,
+  ExternalLink,
 } from "lucide-react";
 import { PageHeader } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
 import { ExportHistory } from "@/components/export-history";
 import { CrmExport } from "@/components/crm-export";
 import { cn } from "@/lib/utils";
+import { CALENDLY_URL_SETUP } from "@/lib/config";
 
 const planSearchSchema = z.object({
   plan: z.enum(["essential", "pro", "premium"]).optional(),

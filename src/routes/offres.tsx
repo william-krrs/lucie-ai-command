@@ -18,6 +18,7 @@ import { useRecommendation } from "@/lib/lucie-store";
 import { PLAN_LABELS, PLAN_TAGLINES, TIER_LABELS, PRIORITY_CTA } from "@/lib/recommendation";
 import { LockedPage } from "@/components/locked-page";
 import { useBooking } from "@/lib/booking-store";
+import { CALENDLY_URL_SETUP } from "@/lib/config";
 
 export const Route = createFileRoute("/offres")({
   head: () => ({
