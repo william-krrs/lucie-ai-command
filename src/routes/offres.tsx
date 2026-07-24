@@ -21,6 +21,7 @@ import { PLAN_LABELS, PLAN_TAGLINES, TIER_LABELS, PRIORITY_CTA } from "@/lib/rec
 import { LockedPage } from "@/components/locked-page";
 import { useBooking } from "@/lib/booking-store";
 import { CALENDLY_URL_SETUP } from "@/lib/config";
+import { useUniqueModule, MODULE_IDS } from "@/lib/module-registry";
 
 export const Route = createFileRoute("/offres")({
   head: () => ({
@@ -132,6 +133,7 @@ const COMPARISON: { label: string; values: Record<PlanKey, string | boolean> }[]
 ];
 
 function Offres() {
+  useUniqueModule(MODULE_IDS.paymentPlans);
   const rec = useRecommendation();
   const { isUnlocked } = useBooking();
   const recommendedPlan: PlanKey = rec.plan ?? "pro";
