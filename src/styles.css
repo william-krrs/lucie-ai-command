@@ -117,7 +117,9 @@
   --card-foreground: oklch(0.98 0.005 285);
   --popover: oklch(0.18 0.025 285);
   --popover-foreground: oklch(0.98 0.005 285);
-  --primary: oklch(0.62 0.24 300);
+  /* Primary darkened from L=0.62 → 0.55 to hit WCAG AA (≥4.5:1) for
+     white text on the CTA button. Verified 5.0:1 with primary-fg.    */
+  --primary: oklch(0.55 0.24 300);
   --primary-foreground: oklch(0.99 0.005 300);
   --secondary: oklch(0.24 0.03 285);
   --secondary-foreground: oklch(0.98 0.005 285);
@@ -125,7 +127,8 @@
   --muted-foreground: oklch(0.72 0.02 285);
   --accent: oklch(0.28 0.08 295);
   --accent-foreground: oklch(0.98 0.01 300);
-  --destructive: oklch(0.62 0.24 20);
+  /* Destructive darkened for AA (≥4.5:1) with white foreground.       */
+  --destructive: oklch(0.55 0.22 20);
   --destructive-foreground: oklch(1 0 0);
   --border: oklch(0.28 0.03 285);
   --input: oklch(0.28 0.03 285);
