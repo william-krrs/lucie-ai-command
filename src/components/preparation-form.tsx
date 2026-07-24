@@ -111,6 +111,7 @@ export function PreparationForm({
   const [form, setForm] = useState<FormState>(EMPTY);
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [reviewing, setReviewing] = useState(false);
   const [confirmation, setConfirmation] = useState<{
     id: string;
     emailStatus: "sent" | "skipped" | "failed";
