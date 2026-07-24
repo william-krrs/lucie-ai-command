@@ -703,6 +703,102 @@ export function PreparationForm({
           </div>
         </div>
 
+        {/* Historique des sauvegardes (horodaté, restaurable). */}
+        <div className="-mt-4 flex justify-end">
+          <Dialog open={historyOpen} onOpenChange={setHistoryOpen}>
+            <DialogTrigger asChild>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="h-8 gap-1.5 rounded-lg text-xs text-muted-foreground hover:text-foreground"
+                disabled={history.length === 0}
+                aria-label="Voir l'historique des sauvegardes"
+              >
+                <History className="h-3.5 w-3.5" aria-hidden="true" />
+                Historique
+                <span className="tabular-nums">({history.length})</span>
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-lg">
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  <History className="h-4 w-4 text-primary" aria-hidden="true" />
+                  Historique des sauvegardes
+                </DialogTitle>
+                <DialogDescription>
+                  Chaque enregistrement automatique crée un point de restauration
+                  horodaté. Sélectionnez une version pour la recharger dans le
+                  formulaire — vos réponses actuelles seront remplacées.
+                </DialogDescription>
+              </DialogHeader>
+              {history.length === 0 ? (
+                <p className="rounded-lg border border-dashed border-border/60 p-4 text-center text-sm text-muted-foreground">
+                  Aucun point de restauration pour l'instant.
+                </p>
+              ) : (
+                <>
+                  <ul className="max-h-[60vh] space-y-2 overflow-y-auto pr-1">
+                    {history.map((snapshot, idx) => {
+                      const total = Object.keys(EMPTY).length;
+                      return (
+                        <li
+                          key={`${snapshot.at}-${idx}`}
+                          className="flex items-center justify-between gap-3 rounded-lg border border-border/60 bg-muted/20 px-3 py-2 text-sm"
+                        >
+                          <div className="min-w-0">
+                            <p className="truncate font-medium text-foreground">
+                              {formatWhen(snapshot.at)}
+                              {idx === 0 && (
+                                <span className="ml-2 rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-primary">
+                                  Actuelle
+                                </span>
+                              )}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {snapshot.filled}/{total} champ
+                              {snapshot.filled > 1 ? "s" : ""} rempli
+                              {snapshot.filled > 1 ? "s" : ""}
+                              {snapshot.form.contactName && (
+                                <> · {snapshot.form.contactName}</>
+                              )}
+                            </p>
+                          </div>
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant={idx === 0 ? "ghost" : "outline"}
+                            className="h-8 shrink-0 rounded-lg text-xs"
+                            onClick={() => restoreSnapshot(snapshot)}
+                            disabled={idx === 0}
+                          >
+                            <RotateCcw
+                              className="mr-1.5 h-3.5 w-3.5"
+                              aria-hidden="true"
+                            />
+                            Restaurer
+                          </Button>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                  <div className="flex justify-end pt-2">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 rounded-lg text-xs text-muted-foreground hover:text-destructive"
+                      onClick={clearHistory}
+                    >
+                      Effacer l'historique
+                    </Button>
+                  </div>
+                </>
+              )}
+            </DialogContent>
+          </Dialog>
+        </div>
+
         {resumed && (
           <details
             open
