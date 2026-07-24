@@ -221,6 +221,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           {children}
         </div>
       </main>
+      <BookingSync />
     </div>
   );
 }
