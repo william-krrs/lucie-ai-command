@@ -507,7 +507,12 @@ export function PreparationForm({
       /* ignore */
     }
     setHistory([]);
-    toast.success("Historique effacé.");
+    clearRemoteDrafts({})
+      .then(() => toast.success("Historique effacé (local + cloud)."))
+      .catch((err) => {
+        console.warn("[preparation] remote clear failed", err);
+        toast.success("Historique local effacé (cloud non synchronisé).");
+      });
   };
 
   const planLabel = plan ? PLAN_LABELS[plan] : "Non précisée";
