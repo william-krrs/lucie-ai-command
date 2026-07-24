@@ -12,12 +12,14 @@ import {
   ListChecks,
   CreditCard,
   ChevronRight,
+  ExternalLink,
 } from "lucide-react";
 import { PageHeader } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
 import { ExportHistory } from "@/components/export-history";
 import { CrmExport } from "@/components/crm-export";
 import { cn } from "@/lib/utils";
+import { CALENDLY_URL_SETUP } from "@/lib/config";
 
 const planSearchSchema = z.object({
   plan: z.enum(["essential", "pro", "premium"]).optional(),
@@ -307,6 +309,47 @@ function Merci() {
               </div>
             );
           })}
+        </div>
+      </section>
+
+      <section
+        aria-labelledby="rdv-test-merci-title"
+        className="rounded-3xl border border-primary/20 bg-primary/[0.04] p-6 shadow-[var(--shadow-card)] sm:p-8"
+      >
+        <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-start gap-4">
+            <div className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-primary text-primary-foreground">
+              <Calendar className="h-5 w-5" aria-hidden="true" />
+            </div>
+            <div>
+              <div className="text-[11px] font-medium uppercase tracking-widest text-primary">
+                Prochaine étape
+              </div>
+              <h2
+                id="rdv-test-merci-title"
+                className="mt-1 text-lg font-semibold tracking-tight text-foreground sm:text-xl"
+              >
+                Réservez votre rendez-vous test & paramétrage
+              </h2>
+              <p className="mt-1.5 max-w-xl text-sm text-muted-foreground">
+                Votre paiement est confirmé. Prenez rendez-vous dès maintenant pour le test final et le paramétrage de Lucie avec votre équipe.
+              </p>
+            </div>
+          </div>
+          <Button
+            asChild
+            className="h-11 shrink-0 rounded-xl bg-primary text-primary-foreground shadow-[var(--shadow-elevated)] hover:bg-primary/90"
+          >
+            <a
+              href={CALENDLY_URL_SETUP}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Prendre rendez-vous test et paramétrage avec Lucie (ouvre un nouvel onglet)"
+            >
+              Prendre un RDV test
+              <ExternalLink className="ml-2 h-4 w-4" aria-hidden="true" />
+            </a>
+          </Button>
         </div>
       </section>
 
