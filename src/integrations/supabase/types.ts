@@ -14,6 +14,54 @@ export type Database = {
   }
   public: {
     Tables: {
+      audit_log: {
+        Row: {
+          actor_email: string | null
+          actor_role: string
+          actor_user_id: string | null
+          context: Json | null
+          id: number
+          new_data: Json | null
+          occurred_at: string
+          old_data: Json | null
+          operation: string
+          request_ip: string | null
+          request_ua: string | null
+          row_id: string | null
+          table_name: string
+        }
+        Insert: {
+          actor_email?: string | null
+          actor_role?: string
+          actor_user_id?: string | null
+          context?: Json | null
+          id?: number
+          new_data?: Json | null
+          occurred_at?: string
+          old_data?: Json | null
+          operation: string
+          request_ip?: string | null
+          request_ua?: string | null
+          row_id?: string | null
+          table_name: string
+        }
+        Update: {
+          actor_email?: string | null
+          actor_role?: string
+          actor_user_id?: string | null
+          context?: Json | null
+          id?: number
+          new_data?: Json | null
+          occurred_at?: string
+          old_data?: Json | null
+          operation?: string
+          request_ip?: string | null
+          request_ua?: string | null
+          row_id?: string | null
+          table_name?: string
+        }
+        Relationships: []
+      }
       bookings: {
         Row: {
           client_ref: string
@@ -187,7 +235,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      log_table_read: {
+        Args: { _context?: Json; _row_id: string; _table: string }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
