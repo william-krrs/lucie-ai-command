@@ -6,7 +6,7 @@ const DRAFT_LIMIT = 20;
 
 const saveDraftSchema = z.object({
   plan: z.string().max(50).nullable().optional(),
-  form: z.record(z.string(), z.unknown()),
+  form: z.record(z.string(), z.string()),
   filled: z.number().int().min(0).max(1000),
   snapshotAt: z.string().datetime(),
 });
@@ -14,7 +14,7 @@ const saveDraftSchema = z.object({
 export type PreparationDraft = {
   id: string;
   plan: string | null;
-  form: Record<string, unknown>;
+  form: Record<string, string>;
   filled: number;
   snapshotAt: string;
 };
@@ -35,7 +35,7 @@ export const listPreparationDrafts = createServerFn({ method: "GET" })
     return (data ?? []).map((r) => ({
       id: r.id as string,
       plan: (r.plan as string | null) ?? null,
-      form: (r.form as Record<string, unknown>) ?? {},
+      form: (r.form as Record<string, string>) ?? {},
       filled: Number(r.filled) || 0,
       snapshotAt: r.snapshot_at as string,
     }));
@@ -50,7 +50,7 @@ export const savePreparationDraft = createServerFn({ method: "POST" })
       .insert({
         user_id: context.userId,
         plan: data.plan ?? null,
-        form: data.form,
+        form: data.form as Record<string, string>,
         filled: data.filled,
         snapshot_at: data.snapshotAt,
       })
@@ -78,7 +78,7 @@ export const savePreparationDraft = createServerFn({ method: "POST" })
     return {
       id: row.id as string,
       plan: (row.plan as string | null) ?? null,
-      form: (row.form as Record<string, unknown>) ?? {},
+      form: (row.form as Record<string, string>) ?? {},
       filled: Number(row.filled) || 0,
       snapshotAt: row.snapshot_at as string,
     };
