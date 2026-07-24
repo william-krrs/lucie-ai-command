@@ -408,18 +408,17 @@ export function CalendlyEmbed({
         </span>
         <div className="min-w-0">
           <div className="text-[11px] font-medium uppercase tracking-widest text-primary">
-            Étape suivante · Réservez votre rendez-vous
+            {eyebrow ?? "Étape suivante · Réservez votre rendez-vous"}
           </div>
           <h2
             id="calendly-title"
             className="mt-1 text-lg font-semibold tracking-tight text-foreground sm:text-xl"
           >
-            Choisissez un créneau avec l'équipe Lucie
+            {title ?? "Choisissez un créneau avec l'équipe Lucie"}
           </h2>
           <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-            Sélectionnez directement votre horaire ci-dessous. La démonstration, les
-            offres, l'installation et le questionnaire de préparation resteront
-            verrouillés jusqu'au jour de votre rendez-vous.
+            {description ??
+              "Sélectionnez directement votre horaire ci-dessous. La démonstration, les offres, l'installation et le questionnaire de préparation resteront verrouillés jusqu'au jour de votre rendez-vous."}
           </p>
         </div>
       </div>
