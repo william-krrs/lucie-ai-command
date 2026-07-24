@@ -192,7 +192,7 @@ function ScoreBlock({ snap }: { snap: DiagnosticSnapshot }) {
         </div>
         <div className="text-right">
           <div className="text-[11px] uppercase tracking-widest text-muted-foreground">Score</div>
-          <div className="text-3xl font-semibold tabular-nums text-foreground">
+          <div className="kpi-value-xl text-foreground">
             {r.score}
             <span className="text-base font-normal text-muted-foreground"> / 100</span>
           </div>
