@@ -814,6 +814,44 @@ export function PreparationForm({
           </Dialog>
         </div>
 
+        <AlertDialog
+          open={!!confirmRestore}
+          onOpenChange={(open) => {
+            if (!open) setConfirmRestore(null);
+          }}
+        >
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Restaurer cette version ?</AlertDialogTitle>
+              <AlertDialogDescription asChild>
+                <div className="space-y-2">
+                  <p>
+                    Vous allez remplacer votre brouillon actuel par la version
+                    du{" "}
+                    <strong>{formatWhen(confirmRestore?.at ?? "")}</strong>.
+                  </p>
+                  <p className="text-destructive font-medium">
+                    Cette action écrasera les réponses non sauvegardées et ne
+                    peut pas être annulée.
+                  </p>
+                </div>
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={() => setConfirmRestore(null)}>
+                Annuler
+              </AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => {
+                  if (confirmRestore) restoreSnapshot(confirmRestore);
+                }}
+              >
+                Confirmer la restauration
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
         {resumed && (
           <details
             open
