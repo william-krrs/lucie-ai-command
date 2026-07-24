@@ -783,8 +783,9 @@ export function PreparationForm({
                             size="sm"
                             variant={idx === 0 ? "ghost" : "outline"}
                             className="h-8 shrink-0 rounded-lg text-xs"
-                            onClick={() => restoreSnapshot(snapshot)}
+                            onClick={() => setConfirmRestore(snapshot)}
                             disabled={idx === 0}
+                            aria-haspopup="dialog"
                           >
                             <RotateCcw
                               className="mr-1.5 h-3.5 w-3.5"
