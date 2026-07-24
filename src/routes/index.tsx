@@ -214,7 +214,7 @@ function Home() {
         <div className="pointer-events-none absolute -bottom-32 -left-20 h-80 w-80 rounded-full bg-primary/5 blur-3xl" />
 
         <div className="relative grid gap-10 md:grid-cols-[1.15fr_1fr] md:items-center">
-          <div>
+          <div className="min-w-0">
             <div className="inline-flex items-center gap-2 rounded-full border border-border bg-background/60 px-3 py-1 text-xs font-medium text-muted-foreground backdrop-blur">
               <Sparkles className="h-3.5 w-3.5 text-primary" />
               Nouvelle génération d'assistante IA
@@ -333,7 +333,7 @@ function Home() {
             </div>
           </div>
 
-          <div className="relative rounded-2xl border border-border bg-background/70 p-5 backdrop-blur">
+          <div className="relative min-w-0 rounded-2xl border border-border bg-background/70 p-5 backdrop-blur">
             <div className="flex items-center justify-between border-b border-border pb-3">
               <div className="flex items-center gap-2">
                 <div className="h-2 w-2 rounded-full bg-[oklch(0.65_0.17_155)]" />
