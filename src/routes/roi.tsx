@@ -195,10 +195,10 @@ function RoiCard({ label, value, highlight = false }: { label: string; value: st
           : "border-border bg-card text-foreground")
       }
     >
-      <div className={"text-[11px] uppercase tracking-widest " + (highlight ? "text-primary-foreground/70" : "text-muted-foreground")}>
+      <div className={"text-[11px] uppercase tracking-[0.16em] " + (highlight ? "text-primary-foreground/70" : "text-muted-foreground")}>
         {label}
       </div>
-      <div className="mt-3 text-2xl font-semibold tracking-tight tabular-nums">{value}</div>
+      <div className={"mt-3 kpi-value-lg break-words " + (highlight ? "text-primary-foreground" : "text-foreground")}>{value}</div>
     </div>
   );
 }
