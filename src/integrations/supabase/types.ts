@@ -119,6 +119,36 @@ export type Database = {
         }
         Relationships: []
       }
+      preparation_drafts: {
+        Row: {
+          created_at: string
+          filled: number
+          form: Json
+          id: string
+          plan: string | null
+          snapshot_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          filled?: number
+          form: Json
+          id?: string
+          plan?: string | null
+          snapshot_at?: string
+          user_id?: string
+        }
+        Update: {
+          created_at?: string
+          filled?: number
+          form?: Json
+          id?: string
+          plan?: string | null
+          snapshot_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       preparation_submissions: {
         Row: {
           call_volume: string

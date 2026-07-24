@@ -47,6 +47,11 @@ import {
 import { toast } from "sonner";
 import { submitPreparation } from "@/lib/preparation.functions";
 import { upsertBooking } from "@/lib/bookings.functions";
+import {
+  listPreparationDrafts,
+  savePreparationDraft,
+  clearPreparationDrafts,
+} from "@/lib/preparation-drafts.functions";
 import { useRecommendation } from "@/lib/lucie-store";
 import { useBooking, formatBookingDate, getClientRef, type Booking } from "@/lib/booking-store";
 import { useUniqueModule, MODULE_IDS } from "@/lib/module-registry";
@@ -70,6 +75,7 @@ type HistorySnapshot = {
   form: FormState;
   plan: string | null;
   filled: number;
+  remote?: boolean;
 };
 
 function formatWhen(iso: string): string {
@@ -166,6 +172,9 @@ export function PreparationForm({
   const saveTimerRef = useRef<number | null>(null);
   const pendingRef = useRef(false);
   const submit = useServerFn(submitPreparation);
+  const fetchRemoteDrafts = useServerFn(listPreparationDrafts);
+  const pushRemoteDraft = useServerFn(savePreparationDraft);
+  const clearRemoteDrafts = useServerFn(clearPreparationDrafts);
   const rec = useRecommendation();
   const { booking, updateBooking } = useBooking();
 
@@ -249,18 +258,63 @@ export function PreparationForm({
 
   // Historique des sauvegardes (horodaté) — hydraté au montage.
   useEffect(() => {
+    let cancelled = false;
     try {
       const raw = localStorage.getItem(HISTORY_KEY);
-      if (!raw) return;
-      const parsed = JSON.parse(raw) as HistorySnapshot[] | null;
-      if (!Array.isArray(parsed)) return;
-      const filtered = plan
-        ? parsed.filter((s) => !s.plan || s.plan === plan)
-        : parsed;
-      setHistory(filtered.slice(0, HISTORY_LIMIT));
+      if (raw) {
+        const parsed = JSON.parse(raw) as HistorySnapshot[] | null;
+        if (Array.isArray(parsed)) {
+          const filtered = plan
+            ? parsed.filter((s) => !s.plan || s.plan === plan)
+            : parsed;
+          setHistory(filtered.slice(0, HISTORY_LIMIT));
+        }
+      }
     } catch {
       /* ignore malformed history */
     }
+
+    // Synchronisation cloud : on récupère les points de sauvegarde stockés côté
+    // Supabase pour permettre la reprise depuis n'importe quel appareil.
+    (async () => {
+      try {
+        const remote = await fetchRemoteDrafts();
+        if (cancelled || !Array.isArray(remote)) return;
+        setHistory((prev) => {
+          const remoteSnaps: HistorySnapshot[] = remote
+            .filter((r) => !plan || !r.plan || r.plan === plan)
+            .map((r) => ({
+              at: r.snapshotAt,
+              form: { ...EMPTY, ...(r.form as Partial<FormState>) },
+              plan: r.plan,
+              filled: r.filled,
+              remote: true,
+            }));
+          const seen = new Set<string>();
+          const merged: HistorySnapshot[] = [];
+          for (const s of [...remoteSnaps, ...prev]) {
+            const key = s.at;
+            if (seen.has(key)) continue;
+            seen.add(key);
+            merged.push(s);
+          }
+          merged.sort((a, b) => (a.at < b.at ? 1 : -1));
+          const capped = merged.slice(0, HISTORY_LIMIT);
+          try {
+            localStorage.setItem(HISTORY_KEY, JSON.stringify(capped));
+          } catch {
+            /* ignore */
+          }
+          return capped;
+        });
+      } catch (err) {
+        console.warn("[preparation] fetch remote drafts failed", err);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
   }, [plan]);
 
   // Sauvegarde incrémentale : à chaque frappe on planifie une écriture
@@ -296,6 +350,7 @@ export function PreparationForm({
         );
         pendingRef.current = false;
         setSaveState({ status: "saved", at });
+        let pushSnapshot = false;
         // Historique : on empile un snapshot horodaté si le contenu a
         // changé et si le dernier point date d'au moins HISTORY_MIN_INTERVAL_MS.
         setHistory((prev) => {
@@ -319,6 +374,7 @@ export function PreparationForm({
               } catch {
                 /* ignore */
               }
+              pushSnapshot = true;
               return replaced;
             }
           }
@@ -331,8 +387,32 @@ export function PreparationForm({
           } catch {
             /* ignore */
           }
+          pushSnapshot = true;
           return next;
         });
+        // Sync cloud : envoi fire-and-forget du snapshot pour la reprise multi-appareils.
+        if (pushSnapshot) {
+          const filled = Object.values(form).filter(
+            (v) => typeof v === "string" && v.trim().length > 0,
+          ).length;
+          pushRemoteDraft({
+            data: {
+              plan: plan ?? null,
+              form: { ...form } as Record<string, string>,
+              filled,
+              snapshotAt: at,
+            },
+          })
+            .then((remote) => {
+              // Marque le point comme synchronisé pour l'afficher côté UI.
+              setHistory((prev) =>
+                prev.map((s) => (s.at === remote.snapshotAt ? { ...s, remote: true } : s)),
+              );
+            })
+            .catch((err) => {
+              console.warn("[preparation] cloud sync failed", err);
+            });
+        }
       } catch {
         pendingRef.current = false;
         setSaveState({ status: "error", at: null });
@@ -427,7 +507,12 @@ export function PreparationForm({
       /* ignore */
     }
     setHistory([]);
-    toast.success("Historique effacé.");
+    clearRemoteDrafts({})
+      .then(() => toast.success("Historique effacé (local + cloud)."))
+      .catch((err) => {
+        console.warn("[preparation] remote clear failed", err);
+        toast.success("Historique local effacé (cloud non synchronisé).");
+      });
   };
 
   const planLabel = plan ? PLAN_LABELS[plan] : "Non précisée";
@@ -766,6 +851,15 @@ export function PreparationForm({
                               {idx === 0 && (
                                 <span className="ml-2 rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-primary">
                                   Actuelle
+                                </span>
+                              )}
+                              {snapshot.remote && (
+                                <span
+                                  className="ml-2 inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-600"
+                                  title="Synchronisé sur tous vos appareils"
+                                >
+                                  <CloudUpload className="h-2.5 w-2.5" aria-hidden="true" />
+                                  Cloud
                                 </span>
                               )}
                             </p>
