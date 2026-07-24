@@ -113,7 +113,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       </a>
       <aside
         aria-label="Navigation principale"
-        className="hidden md:flex sticky top-0 h-screen w-72 shrink-0 flex-col border-r border-border bg-sidebar"
+        className="hidden lg:flex sticky top-0 h-screen w-64 xl:w-72 shrink-0 flex-col border-r border-border bg-sidebar"
       >
         <div className="flex items-center gap-3 px-6 pt-8 pb-6">
           <div className="grid h-10 w-10 place-items-center rounded-xl bg-primary text-primary-foreground shadow-[var(--shadow-elevated)]">
@@ -156,8 +156,8 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
       </aside>
 
-      <main className="flex-1 min-w-0">
-        <div className="sticky top-0 z-40 flex items-center justify-between gap-3 border-b border-border bg-background/85 px-4 py-3 backdrop-blur md:hidden">
+      <main className="flex-1 min-w-0 overflow-x-hidden">
+        <div className="sticky top-0 z-40 flex items-center justify-between gap-3 border-b border-border bg-background/85 px-4 py-3 backdrop-blur lg:hidden">
           <Link to="/" className="flex items-center gap-2 min-w-0">
             <span aria-hidden="true" className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-primary text-primary-foreground">
               <Sparkles className="h-4 w-4" />
@@ -210,10 +210,10 @@ export function AppShell({ children }: { children: ReactNode }) {
             </Sheet>
           </div>
         </div>
-        <div className="sticky top-[57px] z-30 flex items-center justify-end border-b border-border bg-background/85 px-4 py-2 backdrop-blur md:hidden">
+        <div className="sticky top-[57px] z-30 flex items-center justify-end border-b border-border bg-background/85 px-4 py-2 backdrop-blur lg:hidden overflow-x-auto">
           <TopStepBar />
         </div>
-        <div className="sticky top-0 z-30 hidden items-center justify-end gap-3 border-b border-border bg-background/85 px-6 py-3 backdrop-blur md:flex">
+        <div className="sticky top-0 z-30 hidden items-center justify-end gap-3 border-b border-border bg-background/85 px-6 py-3 backdrop-blur lg:flex">
           <TopStepBar className="mr-auto" />
           <ProspectSwitcher />
         </div>
@@ -221,7 +221,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           id="main-content"
           tabIndex={-1}
           key={pathname}
-          className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10 md:px-10 md:py-12 animate-fade-in focus:outline-none"
+          className="mx-auto w-full max-w-6xl min-w-0 px-4 py-6 sm:px-6 sm:py-8 lg:px-10 lg:py-12 animate-fade-in focus:outline-none"
         >
           {children}
         </div>
