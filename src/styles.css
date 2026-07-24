@@ -72,15 +72,11 @@
   --font-size-2xl: var(--fs-2xl);
   --font-size-3xl: var(--fs-3xl);
   --font-size-4xl: var(--fs-4xl);
-  /* ── Spacing scale ────────────────────────────────────── */
-  --spacing-3xs: var(--space-3xs);
-  --spacing-2xs: var(--space-2xs);
-  --spacing-xs:  var(--space-xs);
-  --spacing-sm:  var(--space-sm);
-  --spacing-md:  var(--space-md);
-  --spacing-lg:  var(--space-lg);
-  --spacing-xl:  var(--space-xl);
-  --spacing-2xl: var(--space-2xl);
+  /* ── Spacing scale ─────────────────────────────────────
+     NOTE: do not expose these under Tailwind's --spacing-*
+     namespace — named sizes collide with max-w-{xs..2xl},
+     w-{xs..2xl}, gap-{xs..2xl}, etc. Use the raw --space-*
+     custom properties in bespoke rules if needed. */
   /* ── Restore Tailwind default container sizes ─────────────
      Custom --spacing-* tokens above would otherwise shadow
      max-w-{xs..2xl} through v4's shared size namespace. */
