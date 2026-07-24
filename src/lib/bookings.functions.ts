@@ -79,3 +79,53 @@ export const cancelBooking = createServerFn({ method: "POST" })
     }
     return { ok: true };
   });
+
+export type ServerBooking = {
+  email: string;
+  name: string | null;
+  phone: string | null;
+  meetingDate: string;
+  meetingTime: string | null;
+  meetingAt: string;
+  timezone: string;
+  status: string;
+  updatedAt: string;
+  createdAt: string;
+};
+
+export const getBookingByRef = createServerFn({ method: "GET" })
+  .inputValidator((input: unknown) => {
+    if (!input || typeof input !== "object") throw new Error("invalid input");
+    const clientRef = (input as { clientRef?: unknown }).clientRef;
+    if (typeof clientRef !== "string" || clientRef.length < 10) throw new Error("clientRef required");
+    return { clientRef };
+  })
+  .handler(async ({ data }): Promise<{ booking: ServerBooking | null }> => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: row, error } = await supabaseAdmin
+      .from("bookings")
+      .select(
+        "email, name, phone, meeting_date, meeting_time, meeting_at, timezone, status, updated_at, created_at",
+      )
+      .eq("client_ref", data.clientRef)
+      .maybeSingle();
+    if (error) {
+      console.error("[getBookingByRef] error", error);
+      throw new Error(error.message);
+    }
+    if (!row) return { booking: null };
+    return {
+      booking: {
+        email: row.email,
+        name: row.name,
+        phone: row.phone,
+        meetingDate: row.meeting_date,
+        meetingTime: row.meeting_time,
+        meetingAt: row.meeting_at,
+        timezone: row.timezone,
+        status: row.status,
+        updatedAt: row.updated_at,
+        createdAt: row.created_at,
+      },
+    };
+  });
