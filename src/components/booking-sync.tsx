@@ -187,7 +187,7 @@ export function BookingSync() {
     <Dialog open onOpenChange={(o) => !o && !applying && setConflict(null)}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <div className="mb-2 inline-flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500/15 text-amber-600">
+          <div className="mb-2 inline-flex h-10 w-10 items-center justify-center rounded-xl bg-warning/20 text-warning">
             <AlertTriangle className="h-5 w-5" aria-hidden="true" />
           </div>
           <DialogTitle>Conflit de rendez-vous détecté</DialogTitle>

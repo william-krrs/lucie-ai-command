@@ -762,7 +762,7 @@ export function PreparationForm({
               </>
             ) : saveState.status === "saved" && saveState.at ? (
               <>
-                <Save className="h-4 w-4 text-emerald-500" aria-hidden="true" />
+                <Save className="h-4 w-4 text-success" aria-hidden="true" />
                 <span className="font-medium text-foreground">
                   Sauvegardé automatiquement
                 </span>
@@ -855,7 +855,7 @@ export function PreparationForm({
                               )}
                               {snapshot.remote && (
                                 <span
-                                  className="ml-2 inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-600"
+                                  className="ml-2 inline-flex items-center gap-1 rounded-full bg-success/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-success"
                                   title="Synchronisé sur tous vos appareils"
                                 >
                                   <CloudUpload className="h-2.5 w-2.5" aria-hidden="true" />
@@ -1003,7 +1003,7 @@ export function PreparationForm({
                     <div className="flex items-center gap-2">
                       {complete ? (
                         <CheckCircle2
-                          className="h-3.5 w-3.5 text-emerald-500"
+                          className="h-3.5 w-3.5 text-success"
                           aria-hidden="true"
                         />
                       ) : empty ? (
@@ -1322,7 +1322,7 @@ export function PreparationForm({
         {requiredMissing.length > 0 && (
           <div
             role="status"
-            className="flex items-start gap-2 rounded-xl border border-amber-500/30 bg-amber-500/[0.06] p-3 text-xs text-amber-900 dark:text-amber-200"
+            className="flex items-start gap-2 rounded-xl border border-warning/40 bg-warning/10 p-3 text-xs text-warning-foreground"
           >
             <AlertCircle
               className="mt-0.5 h-4 w-4 shrink-0"

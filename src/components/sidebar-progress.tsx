@@ -136,7 +136,7 @@ export function SidebarProgress({ onNavigate }: { onNavigate?: () => void }) {
                   className={cn(
                     "grid h-5 w-5 shrink-0 place-items-center rounded-full border transition-colors",
                     step.done
-                      ? "border-[oklch(0.65_0.17_155)] bg-[oklch(0.65_0.17_155)] text-white"
+                      ? "border-success bg-success text-success-foreground"
                       : step.pending
                         ? "border-primary/60 bg-primary/10 text-primary"
                         : "border-border bg-background text-muted-foreground",
