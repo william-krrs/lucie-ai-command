@@ -20,6 +20,7 @@ import { Route as InstallationRouteImport } from './routes/installation'
 import { Route as FaqRouteImport } from './routes/faq'
 import { Route as DiagnosticRouteImport } from './routes/diagnostic'
 import { Route as DemonstrationRouteImport } from './routes/demonstration'
+import { Route as DemoRouteImport } from './routes/demo'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DTokenRouteImport } from './routes/d.$token'
 import { Route as ApiPublicHooksSendRemindersRouteImport } from './routes/api/public/hooks/send-reminders'
@@ -79,6 +80,11 @@ const DemonstrationRoute = DemonstrationRouteImport.update({
   path: '/demonstration',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DemoRoute = DemoRouteImport.update({
+  id: '/demo',
+  path: '/demo',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -98,6 +104,7 @@ const ApiPublicHooksSendRemindersRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/demo': typeof DemoRoute
   '/demonstration': typeof DemonstrationRoute
   '/diagnostic': typeof DiagnosticRoute
   '/faq': typeof FaqRoute
@@ -114,6 +121,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/demo': typeof DemoRoute
   '/demonstration': typeof DemonstrationRoute
   '/diagnostic': typeof DiagnosticRoute
   '/faq': typeof FaqRoute
@@ -131,6 +139,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/demo': typeof DemoRoute
   '/demonstration': typeof DemonstrationRoute
   '/diagnostic': typeof DiagnosticRoute
   '/faq': typeof FaqRoute
@@ -149,6 +158,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/demo'
     | '/demonstration'
     | '/diagnostic'
     | '/faq'
@@ -165,6 +175,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/demo'
     | '/demonstration'
     | '/diagnostic'
     | '/faq'
@@ -181,6 +192,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/demo'
     | '/demonstration'
     | '/diagnostic'
     | '/faq'
@@ -198,6 +210,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  DemoRoute: typeof DemoRoute
   DemonstrationRoute: typeof DemonstrationRoute
   DiagnosticRoute: typeof DiagnosticRoute
   FaqRoute: typeof FaqRoute
@@ -292,6 +305,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DemonstrationRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/demo': {
+      id: '/demo'
+      path: '/demo'
+      fullPath: '/demo'
+      preLoaderRoute: typeof DemoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -318,6 +338,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  DemoRoute: DemoRoute,
   DemonstrationRoute: DemonstrationRoute,
   DiagnosticRoute: DiagnosticRoute,
   FaqRoute: FaqRoute,

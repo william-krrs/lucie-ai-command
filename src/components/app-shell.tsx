@@ -16,6 +16,7 @@ import {
   CalendarCheck2,
   CheckCircle2,
   CalendarClock,
+  Presentation,
 } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
@@ -215,6 +216,15 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
         <div className="sticky top-0 z-30 hidden items-center justify-end gap-3 border-b border-border bg-background/85 px-6 py-3 backdrop-blur lg:flex">
           <TopStepBar className="mr-auto" />
+          <Link
+            to="/demo"
+            aria-label="Ouvrir le mode Démo plein écran"
+            title="Mode Démo — présentation plein écran pour rendez-vous commercial"
+            className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-primary/40 bg-primary/10 px-3 text-xs font-medium text-primary transition-colors hover:bg-primary/15"
+          >
+            <Presentation className="h-3.5 w-3.5" aria-hidden="true" />
+            Mode Démo
+          </Link>
           <ProspectSwitcher />
         </div>
         <div

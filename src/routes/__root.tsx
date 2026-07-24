@@ -148,7 +148,9 @@ function RootShell({ children }: { children: ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const matches = useMatches();
-  const isStandalone = matches.some((m) => m.routeId?.startsWith("/d/"));
+  const isStandalone = matches.some(
+    (m) => m.routeId?.startsWith("/d/") || m.routeId === "/demo",
+  );
 
   return (
     <QueryClientProvider client={queryClient}>
