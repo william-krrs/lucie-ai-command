@@ -46,7 +46,6 @@ export function CalendlyEmbed({
   bookedTitle,
   bookedDescription,
 }: CalendlyEmbedProps = {}) {
-  const calendlyUrl = url ?? CALENDLY_URL;
   const { booking, setBooking, clearBooking } = useBooking();
   const [awaitingConfirm, setAwaitingConfirm] = useState(false);
   const [rescheduling, setRescheduling] = useState(false);
@@ -65,6 +64,43 @@ export function CalendlyEmbed({
   const { state } = useLucie();
   const metrics = useMetrics();
   const recommendation = useRecommendation();
+
+  // Build a Calendly URL prefilled with prospect information so the invitee
+  // doesn't have to retype what we already know (name, email, company, phone,
+  // and a summary of the diagnostic).
+  const calendlyUrl = (() => {
+    const base = url ?? CALENDLY_URL;
+    try {
+      const u = new URL(base);
+      const name = booking?.user?.name?.trim();
+      const email = booking?.user?.email?.trim();
+      const company = state.companyName?.trim();
+      const phone = (state as unknown as { phone?: string }).phone?.trim();
+      if (name) u.searchParams.set("name", name);
+      if (email) u.searchParams.set("email", email);
+      // Custom Calendly questions map to a1, a2, a3… in order of appearance.
+      const answers: string[] = [];
+      if (company) answers.push(`Entreprise : ${company}`);
+      if (state.activity) answers.push(`Activité : ${state.activity}`);
+      if (state.city) answers.push(`Ville : ${state.city}`);
+      if (state.missedCalls)
+        answers.push(`Appels manqués / semaine : ${state.missedCalls}`);
+      if (recommendation.plan)
+        answers.push(
+          `Recommandation Lucie : ${recommendation.plan} (score ${recommendation.score}/100)`,
+        );
+      if (answers.length) u.searchParams.set("a1", answers.join(" · "));
+      if (phone) u.searchParams.set("a2", phone);
+      // Hidden UTM-like tracking so contact@lucieassistant.fr sees the source.
+      u.searchParams.set("utm_source", "lucie-command-center");
+      u.searchParams.set("utm_medium", "recommandation");
+      if (company) u.searchParams.set("utm_campaign", company);
+      return u.toString();
+    } catch {
+      return base;
+    }
+  })();
+
   const [recapUrl, setRecapUrl] = useState<string | null>(null);
   const [sharing, setSharing] = useState(false);
 
