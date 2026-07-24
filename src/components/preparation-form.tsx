@@ -147,6 +147,8 @@ export function PreparationForm({
     status: "idle" | "pending" | "saved" | "error";
     at: string | null;
   }>({ status: "idle", at: null });
+  const [history, setHistory] = useState<HistorySnapshot[]>([]);
+  const [historyOpen, setHistoryOpen] = useState(false);
   const hydrated = useRef(false);
   const saveTimerRef = useRef<number | null>(null);
   const pendingRef = useRef(false);
