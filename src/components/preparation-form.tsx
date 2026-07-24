@@ -399,6 +399,7 @@ export function PreparationForm({
     setForm({ ...EMPTY, ...snapshot.form });
     setResumed(null);
     setHistoryOpen(false);
+    setConfirmRestore(null);
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       const previous = raw ? (JSON.parse(raw) as Record<string, unknown>) : {};
