@@ -207,3 +207,33 @@
   content-visibility: auto;
   contain-intrinsic-size: 1px 600px;
 }
+
+/* KPI numeric hierarchy — fluid, safe on 320px+ */
+@utility kpi-value-xl {
+  font-size: clamp(1.75rem, 6vw, 2.5rem);
+  line-height: 1.1;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+@utility kpi-value-lg {
+  font-size: clamp(1.35rem, 4.5vw, 1.75rem);
+  line-height: 1.15;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  font-variant-numeric: tabular-nums;
+}
+@utility kpi-value-md {
+  font-size: clamp(1.15rem, 3.6vw, 1.4rem);
+  line-height: 1.2;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+}
+@utility kpi-label {
+  font-size: 0.72rem;
+  line-height: 1.35;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-muted-foreground);
+}
