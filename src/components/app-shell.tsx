@@ -24,6 +24,7 @@ import { useBooking } from "@/lib/booking-store";
 import { SidebarProgress } from "@/components/sidebar-progress";
 import { ProspectSwitcher } from "@/components/prospect-switcher";
 import { BookingSync } from "@/components/booking-sync";
+import { TopStepBar } from "@/components/top-step-bar";
 
 const NAV = [
   { to: "/", label: "Accueil", icon: Home },
@@ -209,7 +210,11 @@ export function AppShell({ children }: { children: ReactNode }) {
             </Sheet>
           </div>
         </div>
+        <div className="sticky top-[57px] z-30 flex items-center justify-end border-b border-border bg-background/85 px-4 py-2 backdrop-blur md:hidden">
+          <TopStepBar />
+        </div>
         <div className="sticky top-0 z-30 hidden items-center justify-end gap-3 border-b border-border bg-background/85 px-6 py-3 backdrop-blur md:flex">
+          <TopStepBar className="mr-auto" />
           <ProspectSwitcher />
         </div>
         <div
