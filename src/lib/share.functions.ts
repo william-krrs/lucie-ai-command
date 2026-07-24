@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 const snapshotSchema = z.object({
   companyName: z.string().max(200).default(""),
@@ -48,13 +49,13 @@ function randomToken(): string {
 }
 
 export const createSharedDiagnostic = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((input) => snapshotSchema.parse(input))
-  .handler(async ({ data }) => {
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  .handler(async ({ data, context }) => {
     const token = randomToken();
-    const { error } = await supabaseAdmin
+    const { error } = await context.supabase
       .from("shared_diagnostics")
-      .insert({ token, snapshot: data });
+      .insert({ token, snapshot: data, owner_id: context.userId });
     if (error) throw new Error(error.message);
     return { token };
   });

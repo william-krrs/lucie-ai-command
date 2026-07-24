@@ -79,6 +79,7 @@ export type Database = {
           status: string
           timezone: string
           updated_at: string
+          user_id: string | null
         }
         Insert: {
           client_ref: string
@@ -96,6 +97,7 @@ export type Database = {
           status?: string
           timezone?: string
           updated_at?: string
+          user_id?: string | null
         }
         Update: {
           client_ref?: string
@@ -113,6 +115,7 @@ export type Database = {
           status?: string
           timezone?: string
           updated_at?: string
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -144,6 +147,7 @@ export type Database = {
           summary: string
           tech_access: string | null
           tone: string
+          user_id: string | null
           website: string | null
         }
         Insert: {
@@ -173,6 +177,7 @@ export type Database = {
           summary: string
           tech_access?: string | null
           tone: string
+          user_id?: string | null
           website?: string | null
         }
         Update: {
@@ -202,6 +207,7 @@ export type Database = {
           summary?: string
           tech_access?: string | null
           tone?: string
+          user_id?: string | null
           website?: string | null
         }
         Relationships: []
@@ -211,6 +217,7 @@ export type Database = {
           created_at: string
           expires_at: string
           id: string
+          owner_id: string | null
           snapshot: Json
           token: string
         }
@@ -218,6 +225,7 @@ export type Database = {
           created_at?: string
           expires_at?: string
           id?: string
+          owner_id?: string | null
           snapshot: Json
           token: string
         }
@@ -225,6 +233,7 @@ export type Database = {
           created_at?: string
           expires_at?: string
           id?: string
+          owner_id?: string | null
           snapshot?: Json
           token?: string
         }

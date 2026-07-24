@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 const submissionSchema = z.object({
   plan: z.string().max(50).optional().nullable(),
@@ -31,13 +32,13 @@ const submissionSchema = z.object({
 export type PreparationSubmissionInput = z.infer<typeof submissionSchema>;
 
 export const submitPreparation = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((data: unknown) => submissionSchema.parse(data))
-  .handler(async ({ data }) => {
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-
-    const { data: row, error } = await supabaseAdmin
+  .handler(async ({ data, context }) => {
+    const { data: row, error } = await context.supabase
       .from("preparation_submissions")
       .insert({
+        user_id: context.userId,
         plan: data.plan ?? null,
         compatibility_score: data.compatibilityScore ?? null,
         compatibility_tier: data.compatibilityTier ?? null,
@@ -73,7 +74,7 @@ export const submitPreparation = createServerFn({ method: "POST" })
 
     // Email dispatch is wired once the sender domain is configured.
     const emailStatus: "sent" | "skipped" | "failed" = "skipped";
-    await supabaseAdmin
+    await context.supabase
       .from("preparation_submissions")
       .update({ email_status: emailStatus })
       .eq("id", row.id);

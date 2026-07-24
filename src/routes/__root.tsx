@@ -15,6 +15,7 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { LucieProvider } from "@/lib/lucie-store";
 import { BookingProvider } from "@/lib/booking-store";
 import { AppShell } from "@/components/app-shell";
+import { AnonAuthBootstrap } from "@/components/anon-auth-bootstrap";
 
 function NotFoundComponent() {
   return (
@@ -153,6 +154,7 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <LucieProvider>
         <BookingProvider>
+          <AnonAuthBootstrap />
           {isStandalone ? (
             <Outlet />
           ) : (

@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 export type UpsertBookingInput = {
   clientRef: string;
@@ -31,14 +32,15 @@ function validate(input: unknown): UpsertBookingInput {
 }
 
 export const upsertBooking = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator(validate)
-  .handler(async ({ data }) => {
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { error } = await supabaseAdmin
+  .handler(async ({ data, context }) => {
+    const { error } = await context.supabase
       .from("bookings")
       .upsert(
         {
           client_ref: data.clientRef,
+          user_id: context.userId,
           email: data.email,
           name: data.name ?? null,
           phone: data.phone ?? null,
@@ -61,18 +63,19 @@ export const upsertBooking = createServerFn({ method: "POST" })
   });
 
 export const cancelBooking = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => {
     if (!input || typeof input !== "object") throw new Error("invalid input");
     const clientRef = (input as { clientRef?: unknown }).clientRef;
     if (typeof clientRef !== "string" || clientRef.length < 10) throw new Error("clientRef required");
     return { clientRef };
   })
-  .handler(async ({ data }) => {
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { error } = await supabaseAdmin
+  .handler(async ({ data, context }) => {
+    const { error } = await context.supabase
       .from("bookings")
       .update({ status: "cancelled" })
-      .eq("client_ref", data.clientRef);
+      .eq("client_ref", data.clientRef)
+      .eq("user_id", context.userId);
     if (error) {
       console.error("[cancelBooking] error", error);
       throw new Error(error.message);
@@ -94,20 +97,21 @@ export type ServerBooking = {
 };
 
 export const getBookingByRef = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => {
     if (!input || typeof input !== "object") throw new Error("invalid input");
     const clientRef = (input as { clientRef?: unknown }).clientRef;
     if (typeof clientRef !== "string" || clientRef.length < 10) throw new Error("clientRef required");
     return { clientRef };
   })
-  .handler(async ({ data }): Promise<{ booking: ServerBooking | null }> => {
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: row, error } = await supabaseAdmin
+  .handler(async ({ data, context }): Promise<{ booking: ServerBooking | null }> => {
+    const { data: row, error } = await context.supabase
       .from("bookings")
       .select(
         "email, name, phone, meeting_date, meeting_time, meeting_at, timezone, status, updated_at, created_at",
       )
       .eq("client_ref", data.clientRef)
+      .eq("user_id", context.userId)
       .maybeSingle();
     if (error) {
       console.error("[getBookingByRef] error", error);
