@@ -113,6 +113,9 @@ export function PreparationForm({
   const [resumed, setResumed] = useState<{
     at: string;
     submissionId?: string;
+    restoredCount: number;
+    sections: { label: string; filled: number; total: number }[];
+    toast?: boolean;
   } | null>(null);
   const [saveState, setSaveState] = useState<{
     status: "idle" | "pending" | "saved" | "error";
@@ -124,6 +127,34 @@ export function PreparationForm({
   const submit = useServerFn(submitPreparation);
   const rec = useRecommendation();
   const { booking, updateBooking } = useBooking();
+
+  // Regroupement des champs par section — utilisé pour l'aperçu de reprise.
+  const SECTIONS: { label: string; keys: (keyof FormState)[] }[] = useMemo(
+    () => [
+      {
+        label: "Informations générales",
+        keys: [
+          "contactName",
+          "contactEmail",
+          "companyName",
+          "companyPhone",
+          "website",
+          "callVolume",
+          "interlocutor",
+        ],
+      },
+      { label: "Accueil vocal", keys: ["greeting", "location", "tone"] },
+      { label: "Expertise et services", keys: ["services"] },
+      {
+        label: "Appels et urgences",
+        keys: ["emergencyNumber", "emergencyCriteria", "openingHours"],
+      },
+      { label: "Prise de RDV", keys: ["rdvLink", "requiredInfo"] },
+      { label: "Accès technique", keys: ["techAccess"] },
+      { label: "Notes complémentaires", keys: ["extra"] },
+    ],
+    [],
+  );
 
   // Auto-hydrate from localStorage if the prospect comes back later.
   useEffect(() => {
@@ -141,24 +172,39 @@ export function PreparationForm({
       // Only prefill when it matches the current plan (or when no plan filter applies).
       if (plan && saved.plan && saved.plan !== plan) return;
       const next: FormState = { ...EMPTY };
-      let hasValue = false;
+      let restoredCount = 0;
       (Object.keys(EMPTY) as (keyof FormState)[]).forEach((k) => {
         const v = saved[k];
         if (typeof v === "string" && v.length > 0) {
           (next[k] as string) = v;
-          hasValue = true;
+          restoredCount += 1;
         }
       });
-      if (!hasValue) return;
+      if (restoredCount === 0) return;
       setForm(next);
-      setResumed({ at: saved.sentAt ?? "", submissionId: saved.submissionId });
+      const sections = SECTIONS.map((s) => ({
+        label: s.label,
+        total: s.keys.length,
+        filled: s.keys.filter((k) => String(next[k]).trim().length > 0).length,
+      }));
+      setResumed({
+        at: saved.updatedAt ?? saved.sentAt ?? "",
+        submissionId: saved.submissionId,
+        restoredCount,
+        sections,
+      });
       if (saved.updatedAt) {
         setSaveState({ status: "saved", at: saved.updatedAt });
       }
+      // Toast discret pour signaler la reprise après un refresh / reconnexion.
+      toast.success(
+        `Brouillon restauré · ${restoredCount} champ${restoredCount > 1 ? "s" : ""} récupéré${restoredCount > 1 ? "s" : ""}.`,
+        { duration: 4000 },
+      );
     } catch {
       /* ignore malformed storage */
     }
-  }, [plan]);
+  }, [plan, SECTIONS]);
 
   // Sauvegarde incrémentale : à chaque frappe on planifie une écriture
   // localStorage debouncée (~600 ms). L'état d'enregistrement est exposé
@@ -536,42 +582,95 @@ export function PreparationForm({
         </div>
 
         {resumed && (
-          <div
+          <details
+            open
             role="status"
-            className="flex flex-col gap-3 rounded-2xl border border-primary/25 bg-primary/[0.05] p-4 text-sm sm:flex-row sm:items-center sm:justify-between"
+            className="group rounded-2xl border border-primary/25 bg-primary/[0.05] p-4 text-sm"
           >
-            <div className="flex items-start gap-3">
-              <History
-                className="mt-0.5 h-5 w-5 shrink-0 text-primary"
-                aria-hidden="true"
-              />
-              <div>
-                <p className="font-semibold text-foreground">
-                  Reprise automatique de votre questionnaire
-                </p>
-                <p className="mt-0.5 text-xs text-muted-foreground">
-                  {resumed.submissionId
-                    ? "Vous aviez déjà envoyé un premier questionnaire. Ajustez vos réponses et renvoyez si besoin."
-                    : "Vos réponses précédentes ont été rechargées. Continuez là où vous vous étiez arrêté."}
-                  {resumed.at && (
-                    <>
-                      {" "}Dernière sauvegarde&nbsp;: {formatWhen(resumed.at)}.
-                    </>
-                  )}
-                </p>
+            <summary className="flex cursor-pointer list-none flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-start gap-3">
+                <History
+                  className="mt-0.5 h-5 w-5 shrink-0 text-primary"
+                  aria-hidden="true"
+                />
+                <div>
+                  <p className="font-semibold text-foreground">
+                    Reprise automatique · {resumed.restoredCount} champ
+                    {resumed.restoredCount > 1 ? "s" : ""} restauré
+                    {resumed.restoredCount > 1 ? "s" : ""}
+                  </p>
+                  <p className="mt-0.5 text-xs text-muted-foreground">
+                    {resumed.submissionId
+                      ? "Vous aviez déjà envoyé un premier questionnaire. Ajustez vos réponses et renvoyez si besoin."
+                      : "Vos réponses précédentes ont été rechargées depuis le brouillon local. Continuez là où vous vous étiez arrêté."}
+                    {resumed.at && (
+                      <>
+                        {" "}Dernière sauvegarde&nbsp;: {formatWhen(resumed.at)}.
+                      </>
+                    )}
+                  </p>
+                </div>
               </div>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="h-9 self-start rounded-lg text-xs sm:self-auto"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleReset();
+                }}
+              >
+                <RotateCcw className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
+                Repartir de zéro
+              </Button>
+            </summary>
+            <div className="mt-4 grid gap-2 border-t border-primary/15 pt-4 sm:grid-cols-2">
+              {resumed.sections.map((s) => {
+                const pct = s.total === 0 ? 0 : Math.round((s.filled / s.total) * 100);
+                const complete = s.filled === s.total;
+                const empty = s.filled === 0;
+                return (
+                  <div
+                    key={s.label}
+                    className="flex items-center justify-between gap-3 rounded-lg bg-background/60 px-3 py-2 text-xs"
+                  >
+                    <div className="flex items-center gap-2">
+                      {complete ? (
+                        <CheckCircle2
+                          className="h-3.5 w-3.5 text-emerald-500"
+                          aria-hidden="true"
+                        />
+                      ) : empty ? (
+                        <AlertCircle
+                          className="h-3.5 w-3.5 text-muted-foreground/60"
+                          aria-hidden="true"
+                        />
+                      ) : (
+                        <CloudUpload
+                          className="h-3.5 w-3.5 text-primary"
+                          aria-hidden="true"
+                        />
+                      )}
+                      <span
+                        className={
+                          empty
+                            ? "text-muted-foreground"
+                            : "font-medium text-foreground"
+                        }
+                      >
+                        {s.label}
+                      </span>
+                    </div>
+                    <span className="tabular-nums text-muted-foreground">
+                      {s.filled}/{s.total}
+                      <span className="ml-1 text-muted-foreground/60">· {pct}%</span>
+                    </span>
+                  </div>
+                );
+              })}
             </div>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              className="h-9 self-start rounded-lg text-xs sm:self-auto"
-              onClick={handleReset}
-            >
-              <RotateCcw className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
-              Repartir de zéro
-            </Button>
-          </div>
+          </details>
         )}
 
         <Section n="1" title="Informations générales">
