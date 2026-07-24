@@ -14,12 +14,15 @@ import {
   FileText,
   Lock,
   CalendarCheck2,
+  CheckCircle2,
+  CalendarClock,
 } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { useBooking } from "@/lib/booking-store";
 import { SidebarProgress } from "@/components/sidebar-progress";
+import { ProspectSwitcher } from "@/components/prospect-switcher";
 
 const NAV = [
   { to: "/", label: "Accueil", icon: Home },
@@ -28,8 +31,10 @@ const NAV = [
   { to: "/recommandation", label: "Recommandation", icon: Gauge },
   { to: "/demonstration", label: "Démonstration", icon: PlayCircle, gated: true },
   { to: "/offres", label: "Offres", icon: Package, gated: true },
-  { to: "/installation", label: "Installation", icon: Rocket, gated: true },
+  { to: "/merci", label: "Paiement", icon: CheckCircle2 },
   { to: "/preparation", label: "Questionnaire", icon: FileText, gated: true },
+  { to: "/installation", label: "Installation", icon: Rocket, gated: true },
+  { to: "/rdv-test", label: "RDV Test & paramétrage", icon: CalendarClock, gated: true },
   { to: "/faq", label: "Questions fréquentes", icon: HelpCircle },
 ] as const;
 
