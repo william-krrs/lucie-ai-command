@@ -1,4 +1,4 @@
-import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { computeRecommendation, type Recommendation } from "@/lib/recommendation";
 
 export type AcquisitionChannel =
@@ -45,13 +45,65 @@ type Ctx = {
 
 const LucieCtx = createContext<Ctx | null>(null);
 
+const DIAGNOSTIC_KEY = "lucie:diagnostic:v1";
+
+function readPersisted(): DiagnosticState | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.localStorage.getItem(DIAGNOSTIC_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed !== "object") return null;
+    return { ...DEFAULT_STATE, ...(parsed as Partial<DiagnosticState>) };
+  } catch {
+    return null;
+  }
+}
+
 export function LucieProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<DiagnosticState>(DEFAULT_STATE);
+  const hydrated = useRef(false);
+
+  // Hydrate from localStorage after mount to avoid SSR mismatches.
+  useEffect(() => {
+    const persisted = readPersisted();
+    if (persisted) setState(persisted);
+    hydrated.current = true;
+
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === DIAGNOSTIC_KEY) {
+        const next = readPersisted();
+        if (next) setState(next);
+      }
+    };
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, []);
+
+  // Persist any change once hydrated.
+  useEffect(() => {
+    if (!hydrated.current || typeof window === "undefined") return;
+    try {
+      window.localStorage.setItem(DIAGNOSTIC_KEY, JSON.stringify(state));
+    } catch {
+      // Storage quota / disabled — silently ignore.
+    }
+  }, [state]);
+
   const value = useMemo<Ctx>(
     () => ({
       state,
       update: (key, value) => setState((s) => ({ ...s, [key]: value })),
-      reset: () => setState(DEFAULT_STATE),
+      reset: () => {
+        setState(DEFAULT_STATE);
+        if (typeof window !== "undefined") {
+          try {
+            window.localStorage.removeItem(DIAGNOSTIC_KEY);
+          } catch {
+            // ignore
+          }
+        }
+      },
     }),
     [state],
   );
