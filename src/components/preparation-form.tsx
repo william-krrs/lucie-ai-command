@@ -28,6 +28,7 @@ import { submitPreparation } from "@/lib/preparation.functions";
 import { upsertBooking } from "@/lib/bookings.functions";
 import { useRecommendation } from "@/lib/lucie-store";
 import { useBooking, formatBookingDate, getClientRef, type Booking } from "@/lib/booking-store";
+import { useUniqueModule, MODULE_IDS } from "@/lib/module-registry";
 import {
   PLAN_LABELS as REC_PLAN_LABELS,
   PRIORITY_EMOJI,
@@ -103,6 +104,7 @@ export function PreparationForm({
   plan?: "essential" | "pro" | "premium";
   intro?: boolean;
 }) {
+  useUniqueModule(MODULE_IDS.preparationForm);
   const [form, setForm] = useState<FormState>(EMPTY);
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
