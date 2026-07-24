@@ -26,6 +26,7 @@ import { SidebarProgress } from "@/components/sidebar-progress";
 import { ProspectSwitcher } from "@/components/prospect-switcher";
 import { BookingSync } from "@/components/booking-sync";
 import { TopStepBar } from "@/components/top-step-bar";
+import { KeyboardShortcuts } from "@/components/keyboard-shortcuts";
 
 const NAV = [
   { to: "/", label: "Accueil", icon: Home },
@@ -47,8 +48,30 @@ export function AppShell({ children }: { children: ReactNode }) {
   useEffect(() => setMobileOpen(false), [pathname]);
   const { isUnlocked, isPendingMeeting } = useBooking();
 
+  const onNavKeyDown = (e: React.KeyboardEvent<HTMLUListElement>) => {
+    const key = e.key;
+    if (key !== "ArrowDown" && key !== "ArrowUp" && key !== "Home" && key !== "End") return;
+    const items = Array.from(
+      e.currentTarget.querySelectorAll<HTMLAnchorElement>('a[href]'),
+    );
+    if (items.length === 0) return;
+    const currentIndex = items.findIndex((el) => el === document.activeElement);
+    let next = currentIndex;
+    if (key === "ArrowDown") next = currentIndex < 0 ? 0 : (currentIndex + 1) % items.length;
+    if (key === "ArrowUp") next = currentIndex <= 0 ? items.length - 1 : currentIndex - 1;
+    if (key === "Home") next = 0;
+    if (key === "End") next = items.length - 1;
+    e.preventDefault();
+    items[next]?.focus();
+  };
+
   const navList = (
-    <ul className="space-y-1" role="list">
+    <ul
+      className="space-y-1"
+      role="list"
+      onKeyDown={onNavKeyDown}
+      aria-keyshortcuts="ArrowUp ArrowDown Home End"
+    >
       {NAV.map((item, i) => {
         const active = pathname === item.to;
         const Icon = item.icon;
@@ -112,6 +135,9 @@ export function AppShell({ children }: { children: ReactNode }) {
       <a href="#main-content" className="skip-link">
         Aller au contenu principal
       </a>
+      <a href="#primary-nav" className="skip-link">
+        Aller à la navigation
+      </a>
       <aside
         aria-label="Navigation principale"
         className="hidden lg:flex sticky top-0 h-screen w-64 xl:w-72 shrink-0 flex-col border-r border-border bg-sidebar"
@@ -129,10 +155,12 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
 
         <nav className="flex-1 px-3" aria-label="Étapes du parcours">
+          <div id="primary-nav" tabIndex={-1} className="focus:outline-none">
           <div className="px-3 pb-2 pt-4 text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
             Navigation
           </div>
           {navList}
+          </div>
         </nav>
 
         <div className="mt-4">
@@ -237,6 +265,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
       </main>
       <BookingSync />
+      <KeyboardShortcuts />
     </div>
   );
 }
