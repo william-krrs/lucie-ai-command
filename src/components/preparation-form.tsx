@@ -172,6 +172,9 @@ export function PreparationForm({
   const saveTimerRef = useRef<number | null>(null);
   const pendingRef = useRef(false);
   const submit = useServerFn(submitPreparation);
+  const fetchRemoteDrafts = useServerFn(listPreparationDrafts);
+  const pushRemoteDraft = useServerFn(savePreparationDraft);
+  const clearRemoteDrafts = useServerFn(clearPreparationDrafts);
   const rec = useRecommendation();
   const { booking, updateBooking } = useBooking();
 
