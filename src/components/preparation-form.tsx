@@ -853,6 +853,15 @@ export function PreparationForm({
                                   Actuelle
                                 </span>
                               )}
+                              {snapshot.remote && (
+                                <span
+                                  className="ml-2 inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-600"
+                                  title="Synchronisé sur tous vos appareils"
+                                >
+                                  <CloudUpload className="h-2.5 w-2.5" aria-hidden="true" />
+                                  Cloud
+                                </span>
+                              )}
                             </p>
                             <p className="text-xs text-muted-foreground">
                               {snapshot.filled}/{total} champ
