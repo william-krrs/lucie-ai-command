@@ -47,6 +47,11 @@ import {
 import { toast } from "sonner";
 import { submitPreparation } from "@/lib/preparation.functions";
 import { upsertBooking } from "@/lib/bookings.functions";
+import {
+  listPreparationDrafts,
+  savePreparationDraft,
+  clearPreparationDrafts,
+} from "@/lib/preparation-drafts.functions";
 import { useRecommendation } from "@/lib/lucie-store";
 import { useBooking, formatBookingDate, getClientRef, type Booking } from "@/lib/booking-store";
 import { useUniqueModule, MODULE_IDS } from "@/lib/module-registry";
@@ -70,6 +75,7 @@ type HistorySnapshot = {
   form: FormState;
   plan: string | null;
   filled: number;
+  remote?: boolean;
 };
 
 function formatWhen(iso: string): string {
