@@ -347,6 +347,46 @@ function Offres() {
         </div>
       </section>
 
+      <section
+        aria-labelledby="rdv-test-title"
+        className="rounded-3xl border border-primary/20 bg-primary/[0.04] p-6 shadow-[var(--shadow-card)] sm:p-8"
+      >
+        <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-start gap-4">
+            <div className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-primary text-primary-foreground">
+              <Calendar className="h-5 w-5" aria-hidden="true" />
+            </div>
+            <div>
+              <div className="text-[11px] font-medium uppercase tracking-widest text-primary">
+                Rendez-vous test
+              </div>
+              <h2
+                id="rdv-test-title"
+                className="mt-1 text-lg font-semibold tracking-tight text-foreground sm:text-xl"
+              >
+                Vous préférez être accompagné avant de choisir ?
+              </h2>
+              <p className="mt-1.5 max-w-xl text-sm text-muted-foreground">
+                Réservez un rendez-vous test gratuit avec l'équipe Lucie. On vous présente la solution, on répond à vos questions et on valide ensemble la formule adaptée.
+              </p>
+            </div>
+          </div>
+          <Button
+            asChild
+            className="h-11 shrink-0 rounded-xl bg-primary text-primary-foreground shadow-[var(--shadow-elevated)] hover:bg-primary/90"
+          >
+            <a
+              href={CALENDLY_URL_SETUP}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Prendre rendez-vous test avec Lucie (ouvre un nouvel onglet)"
+            >
+              Prendre un RDV test
+              <ExternalLink className="ml-2 h-4 w-4" aria-hidden="true" />
+            </a>
+          </Button>
+        </div>
+      </section>
 
       <section>
         <div className="mb-6 flex items-end justify-between">
