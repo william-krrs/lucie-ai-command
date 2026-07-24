@@ -15,6 +15,8 @@ import {
   History,
   FileDown,
   CalendarCheck2,
+  Save,
+  CloudUpload,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -112,7 +114,13 @@ export function PreparationForm({
     at: string;
     submissionId?: string;
   } | null>(null);
+  const [saveState, setSaveState] = useState<{
+    status: "idle" | "pending" | "saved" | "error";
+    at: string | null;
+  }>({ status: "idle", at: null });
   const hydrated = useRef(false);
+  const saveTimerRef = useRef<number | null>(null);
+  const pendingRef = useRef(false);
   const submit = useServerFn(submitPreparation);
   const rec = useRecommendation();
   const { booking, updateBooking } = useBooking();
@@ -128,6 +136,7 @@ export function PreparationForm({
         plan?: string | null;
         sentAt?: string;
         submissionId?: string;
+        updatedAt?: string;
       };
       // Only prefill when it matches the current plan (or when no plan filter applies).
       if (plan && saved.plan && saved.plan !== plan) return;
@@ -143,19 +152,64 @@ export function PreparationForm({
       if (!hasValue) return;
       setForm(next);
       setResumed({ at: saved.sentAt ?? "", submissionId: saved.submissionId });
+      if (saved.updatedAt) {
+        setSaveState({ status: "saved", at: saved.updatedAt });
+      }
     } catch {
       /* ignore malformed storage */
     }
   }, [plan]);
 
-  // Persist every change so a full-page reload keeps the prospect's answers.
+  // Sauvegarde incrémentale : à chaque frappe on planifie une écriture
+  // localStorage debouncée (~600 ms). L'état d'enregistrement est exposé
+  // dans une pastille visible en haut du formulaire pour rassurer le
+  // prospect que ses réponses sont bien persistées avant tout rafraîchissement.
   useEffect(() => {
     if (!hydrated.current || submitted) return;
     const anyValue = Object.values(form).some(
       (v) => typeof v === "string" && v.trim().length > 0,
     );
-    try {
-      if (anyValue) {
+    if (!anyValue) return;
+
+    pendingRef.current = true;
+    setSaveState((prev) => ({ status: "pending", at: prev.at }));
+
+    if (saveTimerRef.current !== null) {
+      window.clearTimeout(saveTimerRef.current);
+    }
+    saveTimerRef.current = window.setTimeout(() => {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        const previous = raw ? (JSON.parse(raw) as Record<string, unknown>) : {};
+        const at = new Date().toISOString();
+        localStorage.setItem(
+          STORAGE_KEY,
+          JSON.stringify({
+            ...previous,
+            ...form,
+            plan: plan ?? previous.plan ?? null,
+            updatedAt: at,
+          }),
+        );
+        pendingRef.current = false;
+        setSaveState({ status: "saved", at });
+      } catch {
+        pendingRef.current = false;
+        setSaveState({ status: "error", at: null });
+      }
+    }, 600);
+
+    return () => {
+      if (saveTimerRef.current !== null) window.clearTimeout(saveTimerRef.current);
+    };
+  }, [form, plan, submitted]);
+
+  // Flush immédiat si la page se ferme pendant la fenêtre de debounce,
+  // plus alerte native si une frappe très récente n'est pas encore persistée.
+  useEffect(() => {
+    const flush = () => {
+      if (!pendingRef.current) return;
+      try {
         const raw = localStorage.getItem(STORAGE_KEY);
         const previous = raw ? (JSON.parse(raw) as Record<string, unknown>) : {};
         localStorage.setItem(
@@ -167,11 +221,26 @@ export function PreparationForm({
             updatedAt: new Date().toISOString(),
           }),
         );
+        pendingRef.current = false;
+      } catch {
+        /* ignore */
       }
-    } catch {
-      /* ignore */
-    }
-  }, [form, plan, submitted]);
+    };
+    const onVisibility = () => {
+      if (document.visibilityState === "hidden") flush();
+    };
+    const onBeforeUnload = (e: BeforeUnloadEvent) => {
+      flush();
+    };
+    window.addEventListener("pagehide", flush);
+    window.addEventListener("beforeunload", onBeforeUnload);
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => {
+      window.removeEventListener("pagehide", flush);
+      window.removeEventListener("beforeunload", onBeforeUnload);
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
+  }, [form, plan]);
 
   const handleReset = () => {
     try {
@@ -181,6 +250,8 @@ export function PreparationForm({
     }
     setForm(EMPTY);
     setResumed(null);
+    setSaveState({ status: "idle", at: null });
+    pendingRef.current = false;
     toast.success("Formulaire réinitialisé.");
   };
 
@@ -207,6 +278,13 @@ export function PreparationForm({
       "requiredInfo",
     ];
     return req.filter((k) => !String(form[k]).trim());
+  }, [form]);
+
+  // Complétion visible : combien de champs sont déjà remplis.
+  const completion = useMemo(() => {
+    const keys = Object.keys(EMPTY) as (keyof FormState)[];
+    const filled = keys.filter((k) => String(form[k]).trim().length > 0).length;
+    return { filled, total: keys.length };
   }, [form]);
 
   const buildBody = () => {
@@ -404,6 +482,59 @@ export function PreparationForm({
         />
       ) : (
       <form onSubmit={handleSubmit} className="space-y-8" noValidate>
+        <div
+          role="status"
+          aria-live="polite"
+          className="flex flex-col gap-3 rounded-2xl border border-border/60 bg-muted/30 p-3 text-xs sm:flex-row sm:items-center sm:justify-between sm:text-sm"
+        >
+          <div className="flex items-center gap-2">
+            {saveState.status === "pending" ? (
+              <>
+                <CloudUpload className="h-4 w-4 animate-pulse text-primary" aria-hidden="true" />
+                <span className="font-medium text-foreground">Enregistrement…</span>
+              </>
+            ) : saveState.status === "saved" && saveState.at ? (
+              <>
+                <Save className="h-4 w-4 text-emerald-500" aria-hidden="true" />
+                <span className="font-medium text-foreground">
+                  Sauvegardé automatiquement
+                </span>
+                <span className="text-muted-foreground">· {formatWhen(saveState.at)}</span>
+              </>
+            ) : saveState.status === "error" ? (
+              <>
+                <AlertCircle className="h-4 w-4 text-destructive" aria-hidden="true" />
+                <span className="font-medium text-destructive">
+                  Sauvegarde impossible sur ce navigateur
+                </span>
+              </>
+            ) : (
+              <>
+                <Save className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+                <span className="text-muted-foreground">
+                  Vos réponses sont sauvegardées à chaque frappe
+                </span>
+              </>
+            )}
+          </div>
+          <div className="flex items-center gap-3 sm:w-64">
+            <div
+              className="h-1.5 flex-1 overflow-hidden rounded-full bg-border/60"
+              aria-hidden="true"
+            >
+              <div
+                className="h-full rounded-full bg-primary transition-all duration-300"
+                style={{
+                  width: `${Math.round((completion.filled / completion.total) * 100)}%`,
+                }}
+              />
+            </div>
+            <span className="tabular-nums text-muted-foreground">
+              {completion.filled}/{completion.total}
+            </span>
+          </div>
+        </div>
+
         {resumed && (
           <div
             role="status"
