@@ -81,6 +81,21 @@
   --spacing-lg:  var(--space-lg);
   --spacing-xl:  var(--space-xl);
   --spacing-2xl: var(--space-2xl);
+  /* ── Shadows / borders / transitions (exposed to Tailwind) ── */
+  --shadow-xs:       var(--elev-xs);
+  --shadow-sm:       var(--elev-sm);
+  --shadow-md:       var(--elev-md);
+  --shadow-lg:       var(--elev-lg);
+  --shadow-xl:       var(--elev-xl);
+  --shadow-glow:     var(--elev-glow);
+  --shadow-inset:    var(--elev-inset);
+  --radius-pill:     9999px;
+  --border-width-hairline: 1px;
+  --border-width-strong:   2px;
+  --ease-standard:   var(--ease-std);
+  --ease-emphasized: var(--ease-emp);
+  --ease-decelerate: var(--ease-dec);
+  --ease-accelerate: var(--ease-acc);
 }
 
 :root {
@@ -110,6 +125,40 @@
   --space-lg:  clamp(1.25rem, 3.2vw, 1.75rem);
   --space-xl:  clamp(1.75rem, 4.5vw, 2.5rem);
   --space-2xl: clamp(2.25rem, 6vw, 3.5rem);
+
+  /* ── Elevation tokens (single source of truth for shadows) ── */
+  --shadow-color-base:   0 0 0;          /* black */
+  --shadow-color-brand:  var(--primary); /* violet halo */
+  --elev-xs:    0 1px 2px oklch(var(--shadow-color-base) / 0.25);
+  --elev-sm:    0 1px 2px oklch(var(--shadow-color-base) / 0.30),
+                0 2px 6px  -2px oklch(var(--shadow-color-base) / 0.35);
+  --elev-md:    0 2px 4px oklch(var(--shadow-color-base) / 0.30),
+                0 10px 24px -8px oklch(var(--shadow-color-base) / 0.50);
+  --elev-lg:    0 6px 16px -6px oklch(var(--shadow-color-base) / 0.55),
+                0 22px 48px -18px oklch(var(--shadow-color-base) / 0.55);
+  --elev-xl:    0 12px 32px -10px oklch(var(--shadow-color-base) / 0.60),
+                0 32px 80px -20px oklch(var(--shadow-color-base) / 0.60);
+  --elev-glow:  0 8px 30px -6px color-mix(in oklab, var(--shadow-color-brand) 45%, transparent);
+  --elev-inset: inset 0 1px 0 oklch(1 0 0 / 0.05);
+  /* Aliases kept for backward compatibility with existing components */
+  --shadow-card:     var(--elev-sm);
+  --shadow-elevated: var(--elev-lg), var(--elev-glow);
+
+  /* ── Border tokens ─────────────────────────────────────────── */
+  --border-color-subtle: color-mix(in oklab, var(--border) 65%, transparent);
+  --border-color-strong: var(--border);
+  --border-color-brand:  color-mix(in oklab, var(--primary) 55%, transparent);
+
+  /* ── Motion tokens (easings + durations) ───────────────────── */
+  --ease-std:  cubic-bezier(0.2, 0, 0, 1);      /* Material standard */
+  --ease-emp:  cubic-bezier(0.3, 0, 0, 1);      /* emphasized */
+  --ease-dec:  cubic-bezier(0, 0, 0.2, 1);      /* decelerate */
+  --ease-acc:  cubic-bezier(0.3, 0, 1, 1);      /* accelerate */
+  --duration-instant: 80ms;
+  --duration-fast:    150ms;
+  --duration-base:    220ms;
+  --duration-slow:    360ms;
+
   /* Dark purple theme — black surfaces + vibrant violet accent */
   --background: oklch(0.14 0.02 285);
   --foreground: oklch(0.98 0.005 285);
@@ -139,8 +188,6 @@
   --success-foreground: oklch(0.14 0.02 285);
   --warning: oklch(0.78 0.16 75);
   --warning-foreground: oklch(0.18 0.02 285);
-  --shadow-card: 0 1px 2px oklch(0 0 0 / 0.35), 0 10px 30px -12px oklch(0 0 0 / 0.55);
-  --shadow-elevated: 0 6px 20px -6px oklch(0 0 0 / 0.55), 0 22px 60px -18px oklch(0.62 0.24 300 / 0.45);
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
