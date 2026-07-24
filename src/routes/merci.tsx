@@ -181,11 +181,11 @@ function Merci() {
       {planMissing && (
         <section
           role="status"
-          className="rounded-2xl border border-amber-500/30 bg-amber-500/[0.06] p-5 sm:p-6"
+          className="rounded-2xl border border-warning/40 bg-warning/10 p-5 sm:p-6"
         >
           <div className="flex items-start gap-3">
             <AlertCircle
-              className="mt-0.5 h-5 w-5 shrink-0 text-amber-600"
+              className="mt-0.5 h-5 w-5 shrink-0 text-warning"
               aria-hidden="true"
             />
             <div className="space-y-2 text-sm">
