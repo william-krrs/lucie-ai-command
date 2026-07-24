@@ -94,17 +94,17 @@ function Roi() {
             <RoiCard label="CA perdu / an" value={formatEUR(m.yearlyLostRevenue)} />
           </div>
 
-          <div className="relative overflow-hidden rounded-3xl border border-primary/20 bg-gradient-to-br from-primary/[0.08] to-primary/[0.02] p-8 shadow-[var(--shadow-elevated)]">
+          <div className="relative overflow-hidden rounded-3xl border border-primary/20 bg-gradient-to-br from-primary/[0.08] to-primary/[0.02] p-5 sm:p-8 shadow-[var(--shadow-elevated)]">
             <div className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-primary/10 blur-3xl" />
             <div className="relative">
               <div className="inline-flex items-center gap-2 rounded-full bg-destructive/10 px-3 py-1 text-xs font-medium text-destructive">
                 <AlertTriangle className="h-3.5 w-3.5" />
                 Manque à gagner
               </div>
-              <p className="mt-4 text-xl leading-snug text-foreground md:text-2xl">
+              <p className="mt-4 text-base sm:text-xl leading-snug text-foreground md:text-2xl">
                 Vous laissez potentiellement
               </p>
-              <p className="mt-2 text-5xl md:text-6xl font-semibold tracking-tight tabular-nums text-primary">
+              <p className="mt-2 kpi-value-xl text-primary sm:text-5xl md:text-6xl break-words">
                 {formatEUR(m.monthlyLostRevenue)}
               </p>
               <p className="mt-2 text-sm text-muted-foreground">
@@ -214,16 +214,16 @@ function RoiSummary({
   value: string;
   tone: "alert" | "success";
 }) {
-  const cls = tone === "alert" ? "text-destructive bg-destructive/10" : "text-[oklch(0.55_0.17_155)] bg-[oklch(0.65_0.17_155)]/10";
+  const cls = tone === "alert" ? "text-destructive bg-destructive/10" : "text-success bg-success/15";
   return (
-    <div className="rounded-2xl border border-border bg-card p-4">
+    <div className="rounded-2xl border border-border bg-card p-4 min-w-0">
       <div className="flex items-center gap-2">
-        <div className={"grid h-8 w-8 place-items-center rounded-lg " + cls}>
+        <div className={"grid h-8 w-8 shrink-0 place-items-center rounded-lg " + cls}>
           <Icon className="h-4 w-4" />
         </div>
-        <div className="text-xs text-muted-foreground">{label}</div>
+        <div className="kpi-label truncate">{label}</div>
       </div>
-      <div className="mt-3 text-xl font-semibold tracking-tight tabular-nums text-foreground">
+      <div className="mt-2.5 kpi-value-md text-foreground break-words">
         {value}
       </div>
     </div>
