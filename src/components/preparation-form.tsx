@@ -41,6 +41,18 @@ import {
 
 const CONTACT_EMAIL = "contact@lucieassistant.fr";
 const STORAGE_KEY = "lucie:preparation";
+const HISTORY_KEY = "lucie:preparation:history";
+const HISTORY_LIMIT = 20;
+// Espacement mini entre deux snapshots pour éviter de saturer l'historique
+// pendant la frappe (une entrée toutes les ~15s max).
+const HISTORY_MIN_INTERVAL_MS = 15_000;
+
+type HistorySnapshot = {
+  at: string;
+  form: FormState;
+  plan: string | null;
+  filled: number;
+};
 
 function formatWhen(iso: string): string {
   if (!iso) return "";
