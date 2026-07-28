@@ -624,7 +624,7 @@ function SlideGrid({
   items,
   columns = 4,
 }: {
-  items: { label: string; value: string; tone?: "success" | "warning" | "danger" | "primary" }[];
+  items: { label: string; value: React.ReactNode; tone?: "success" | "warning" | "danger" | "primary" }[];
   columns?: 2 | 3 | 4;
 }) {
   const cols =
@@ -666,15 +666,17 @@ function Badge({
   tone,
 }: {
   children: React.ReactNode;
-  tone?: "primary";
+  tone?: "primary" | "success" | "warning" | "danger";
 }) {
   return (
     <span
       className={cn(
         "inline-flex items-center rounded-full border px-3 py-1 text-sm",
-        tone === "primary"
-          ? "border-primary/40 bg-primary/10 text-primary"
-          : "border-border bg-card text-muted-foreground",
+        tone === "primary" && "border-primary/40 bg-primary/10 text-primary",
+        tone === "success" && "border-[oklch(0.78_0.14_155)]/40 bg-[oklch(0.78_0.14_155)]/10 text-[oklch(0.78_0.14_155)]",
+        tone === "warning" && "border-[oklch(0.82_0.15_60)]/40 bg-[oklch(0.82_0.15_60)]/10 text-[oklch(0.82_0.15_60)]",
+        tone === "danger" && "border-destructive/40 bg-destructive/10 text-destructive",
+        !tone && "border-border bg-card text-muted-foreground",
       )}
     >
       {children}
