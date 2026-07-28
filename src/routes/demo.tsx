@@ -107,7 +107,7 @@ function DemoMode() {
         expiresInDays,
       };
       const { token } = await createShare({ data: payload });
-      const url = `${window.location.origin}/demo/${token}`;
+      const url = `${window.location.origin}/d/${token}`;
       const expiresAt = new Date(Date.now() + expiresInDays * 86400_000).toISOString();
       setShare({ url, expiresAt });
     } catch (e) {
