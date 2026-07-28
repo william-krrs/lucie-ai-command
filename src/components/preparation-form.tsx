@@ -1896,6 +1896,8 @@ function SubmittedConfirmation({
               sendToProspect: shouldSendToProspect,
               mode,
               retryAttempt: (emailState.retryCount ?? 0) + (mode !== "both" ? 1 : 0),
+              prospectSubject: shouldSendToProspect || mode === "prospect" ? prospectSubject.trim() || null : null,
+              prospectMessage: shouldSendToProspect || mode === "prospect" ? prospectMessage : null,
             },
           });
           const r = res as {
