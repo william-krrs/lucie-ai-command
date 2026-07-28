@@ -71,7 +71,7 @@ export const Route = createFileRoute("/recommandation")({
 });
 
 function RecommandationPage() {
-  const { state } = useLucie();
+  const { state, update } = useLucie();
   const m = useMetrics();
   const rec = useRecommendation();
   const exportRef = useRef<HTMLDivElement>(null);
@@ -296,6 +296,128 @@ function RecommandationPage() {
           </div>
         }
       />
+
+      <section
+        aria-labelledby="decision-title"
+        className="rounded-2xl border border-border bg-card/60 p-5 space-y-4"
+      >
+        <div>
+          <h2 id="decision-title" className="text-base font-semibold text-foreground">
+            Prise de décision
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            Êtes-vous seul(e) à décider, ou souhaitez-vous partager le récap avec un(e) associé(e) ?
+          </p>
+        </div>
+
+        <div className="flex flex-wrap gap-2">
+          {[
+            { value: false, label: "Je décide seul(e)" },
+            { value: true, label: "Nous décidons à plusieurs" },
+          ].map((opt) => {
+            const active = state.hasPartner === opt.value;
+            return (
+              <button
+                key={String(opt.value)}
+                type="button"
+                onClick={() => update("hasPartner", opt.value)}
+                aria-pressed={active}
+                className={
+                  "rounded-full border px-4 py-2 text-sm transition-all duration-200 " +
+                  (active
+                    ? "border-primary bg-primary text-primary-foreground shadow-[var(--shadow-elevated)]"
+                    : "border-border bg-background text-foreground hover:border-primary/40 hover:bg-accent")
+                }
+              >
+                {opt.label}
+              </button>
+            );
+          })}
+        </div>
+
+        {state.hasPartner && (
+          <div className="grid gap-3 sm:grid-cols-3">
+            <label className="text-sm space-y-1">
+              <span className="text-muted-foreground">Nombre de décideurs</span>
+              <Input
+                type="number"
+                min={2}
+                max={20}
+                value={state.partnerCount}
+                onChange={(e) =>
+                  update("partnerCount", Math.max(2, Number(e.target.value) || 2))
+                }
+                className="rounded-xl"
+              />
+            </label>
+            <label className="text-sm space-y-1">
+              <span className="text-muted-foreground">Nom de l'associé(e)</span>
+              <Input
+                value={state.partnerName}
+                onChange={(e) => update("partnerName", e.target.value)}
+                placeholder="Prénom Nom"
+                className="rounded-xl"
+              />
+            </label>
+            <label className="text-sm space-y-1">
+              <span className="text-muted-foreground">Email de l'associé(e)</span>
+              <Input
+                type="email"
+                inputMode="email"
+                value={state.partnerEmail}
+                onChange={(e) => update("partnerEmail", e.target.value)}
+                placeholder="associe@entreprise.fr"
+                className="rounded-xl"
+              />
+            </label>
+          </div>
+        )}
+
+        {state.hasPartner && (
+          <div className="flex flex-wrap gap-2 pt-1">
+            <Button
+              type="button"
+              size="sm"
+              className="rounded-xl"
+              disabled={isSharing}
+              onClick={async () => {
+                const email = state.partnerEmail.trim();
+                if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                  toast.error("Renseignez un email valide pour votre associé(e).");
+                  return;
+                }
+                let url = shareUrl;
+                if (!url) {
+                  try {
+                    url = await handleShare({ silent: true });
+                  } catch {
+                    // handleShare already surfaces the error
+                    return;
+                  }
+                }
+                if (!url) return;
+                const company = state.companyName || "votre entreprise";
+                const who = state.partnerName.trim() || "";
+                const hello = who ? `Bonjour ${who},` : "Bonjour,";
+                const subject = `Récap diagnostic Lucie — ${company}`;
+                const body = `${hello}\n\nVoici le récapitulatif du diagnostic Lucie pour ${company} :\n${url}\n\nCe lien sécurisé est valable 30 jours.\n\nBien à vous,`;
+                window.location.href = `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+                toast.success("Ouverture de votre client email…");
+              }}
+            >
+              {isSharing ? (
+                <>
+                  <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> Préparation…
+                </>
+              ) : (
+                <>
+                  <Mail className="mr-1.5 h-4 w-4" /> Envoyer le récap à mon associé(e)
+                </>
+              )}
+            </Button>
+          </div>
+        )}
+      </section>
 
       {(shareUrl || shareError) && (
         <div
