@@ -1410,13 +1410,23 @@ function SubmittedConfirmation({
     message?: string;
     sentAt?: string;
     messageId?: string;
+    prospectSent?: boolean;
+    prospectMessageId?: string;
+    prospectError?: string;
   }>({ status: "idle" });
   const emailPdf = useServerFn(sendPreparationPdf);
   const autoSentRef = useRef(false);
+  const prospectEmail = (form.contactEmail || "").trim();
+  const hasProspectEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(prospectEmail);
+  const [sendCopyToProspect, setSendCopyToProspect] = useState(hasProspectEmail);
 
-  const handleExportPdf = async (opts: { download?: boolean; email?: boolean } = { download: true }) => {
+  const handleExportPdf = async (
+    opts: { download?: boolean; email?: boolean; sendToProspect?: boolean } = { download: true },
+  ) => {
     const shouldDownload = opts.download ?? false;
     const shouldEmail = opts.email ?? false;
+    const shouldSendToProspect =
+      shouldEmail && (opts.sendToProspect ?? sendCopyToProspect) && hasProspectEmail;
     if (shouldDownload) setExporting(true);
     if (shouldEmail) setEmailState({ status: "sending" });
     try {
@@ -1821,17 +1831,30 @@ function SubmittedConfirmation({
               meetingLabel: booking
                 ? `${formatBookingDate(booking.date)}${booking.time ? " · " + booking.time : ""}`
                 : null,
+              sendToProspect: shouldSendToProspect,
             },
           });
           if (res.sent) {
+            const r = res as {
+              messageId?: string;
+              prospectSent?: boolean;
+              prospectMessageId?: string;
+              prospectError?: string;
+            };
             setEmailState({
               status: "sent",
               sentAt: new Date().toISOString(),
-              messageId: (res as { messageId?: string }).messageId,
+              messageId: r.messageId,
+              prospectSent: r.prospectSent,
+              prospectMessageId: r.prospectMessageId,
+              prospectError: r.prospectError,
             });
-            toast.success(`Email envoyé à ${CONTACT_EMAIL}`, {
-              description: `Document ${documentId}`,
-            });
+            toast.success(
+              r.prospectSent
+                ? `Email envoyé à ${CONTACT_EMAIL} + ${prospectEmail}`
+                : `Email envoyé à ${CONTACT_EMAIL}`,
+              { description: `Document ${documentId}` },
+            );
           } else {
             setEmailState({ status: "error", message: res.error });
           }
