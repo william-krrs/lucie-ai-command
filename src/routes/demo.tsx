@@ -8,8 +8,11 @@ import {
   Copy,
   Link2,
   Lock,
+  Loader2,
+  Mail,
   Maximize2,
   Minimize2,
+  Send,
   Sparkles,
   X,
   Keyboard,
@@ -21,7 +24,7 @@ import { PLAN_LABELS, PLAN_TAGLINES, PRIORITY_LABELS, TIER_LABELS } from "@/lib/
 import { cn } from "@/lib/utils";
 import { CountUp, useReducedMotion } from "@/components/count-up";
 import { LucieMascot } from "@/components/lucie-mascot";
-import { createSharedDiagnostic } from "@/lib/share.functions";
+import { createSharedDiagnostic, sendSharedDiagnosticEmail } from "@/lib/share.functions";
 import { CALENDLY_URL } from "@/lib/config";
 
 export const Route = createFileRoute("/demo")({
@@ -65,10 +68,18 @@ function DemoMode() {
   const rec = useRecommendation();
   const reduced = useReducedMotion();
   const createShare = useServerFn(createSharedDiagnostic);
+  const sendShare = useServerFn(sendSharedDiagnosticEmail);
   const [share, setShare] = useState<{ url: string; expiresAt: string } | null>(null);
   const [shareBusy, setShareBusy] = useState(false);
   const [shareErr, setShareErr] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [shareEmail, setShareEmail] = useState("");
+  const [emailSendState, setEmailSendState] = useState<
+    | { status: "idle" }
+    | { status: "sending" }
+    | { status: "sent"; to: string }
+    | { status: "error"; message: string }
+  >({ status: "idle" });
 
   const generateShare = useCallback(async () => {
     if (shareBusy) return;
@@ -128,6 +139,34 @@ function DemoMode() {
       /* noop */
     }
   }, [share]);
+
+  const sendShareByEmail = useCallback(async () => {
+    if (!share) return;
+    const trimmed = shareEmail.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
+      setEmailSendState({ status: "error", message: "Adresse email invalide." });
+      return;
+    }
+    const token = share.url.split("/d/")[1] ?? "";
+    if (!token) return;
+    setEmailSendState({ status: "sending" });
+    try {
+      await sendShare({
+        data: {
+          token,
+          email: trimmed,
+          shareUrl: share.url,
+          senderName: state.companyName ?? null,
+        },
+      });
+      setEmailSendState({ status: "sent", to: trimmed });
+    } catch (e) {
+      setEmailSendState({
+        status: "error",
+        message: e instanceof Error ? e.message : "Envoi impossible.",
+      });
+    }
+  }, [share, shareEmail, sendShare, state.companyName]);
 
   const slides = useMemo<Slide[]>(
     () => [
@@ -352,6 +391,53 @@ function DemoMode() {
                   <Copy className="h-4 w-4" />{" "}
                   {state.hasPartner ? "Partager avec mon associé" : "Copier le lien"}
                 </button>
+                <div className="rounded-2xl border border-border bg-card/60 p-4 text-left">
+                  <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-primary">
+                    <Mail className="h-3.5 w-3.5" />
+                    Envoyer / tester par email
+                  </div>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Envoyez le lien à votre associé ou faites un test en vous
+                    l'envoyant à vous-même.
+                  </p>
+                  <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+                    <input
+                      type="email"
+                      value={shareEmail}
+                      onChange={(e) => setShareEmail(e.target.value.slice(0, 200))}
+                      placeholder="destinataire@entreprise.fr"
+                      className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 sm:flex-1"
+                      disabled={emailSendState.status === "sending"}
+                      aria-label="Email du destinataire"
+                    />
+                    <button
+                      type="button"
+                      onClick={sendShareByEmail}
+                      disabled={emailSendState.status === "sending"}
+                      className="inline-flex h-10 items-center justify-center gap-1.5 rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground disabled:opacity-60"
+                    >
+                      {emailSendState.status === "sending" ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin" /> Envoi…
+                        </>
+                      ) : (
+                        <>
+                          <Send className="h-4 w-4" /> Envoyer
+                        </>
+                      )}
+                    </button>
+                  </div>
+                  {emailSendState.status === "sent" && (
+                    <p className="mt-2 text-xs text-primary">
+                      ✓ Lien envoyé à {emailSendState.to}
+                    </p>
+                  )}
+                  {emailSendState.status === "error" && (
+                    <p className="mt-2 text-xs text-destructive">
+                      {emailSendState.message}
+                    </p>
+                  )}
+                </div>
               </div>
             )}
           </div>
@@ -417,7 +503,20 @@ function DemoMode() {
         },
       },
     ],
-    [state, m, rec, share, shareBusy, shareErr, copied, generateShare, copyShare],
+    [
+      state,
+      m,
+      rec,
+      share,
+      shareBusy,
+      shareErr,
+      copied,
+      generateShare,
+      copyShare,
+      shareEmail,
+      emailSendState,
+      sendShareByEmail,
+    ],
   );
 
   const total = slides.length;
