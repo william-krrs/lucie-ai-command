@@ -47,6 +47,7 @@ import {
 import { toast } from "sonner";
 import { submitPreparation } from "@/lib/preparation.functions";
 import { upsertBooking } from "@/lib/bookings.functions";
+import { sendPreparationPdf } from "@/lib/preparation-email.functions";
 import {
   listPreparationDrafts,
   savePreparationDraft,
