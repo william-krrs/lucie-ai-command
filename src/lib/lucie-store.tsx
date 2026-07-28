@@ -22,6 +22,9 @@ export type DiagnosticState = {
   channels: AcquisitionChannel[];
   conversionRate: number;
   hasPartner: boolean;
+  partnerCount: number;
+  partnerName: string;
+  partnerEmail: string;
 };
 
 const DEFAULT_STATE: DiagnosticState = {
@@ -37,6 +40,9 @@ const DEFAULT_STATE: DiagnosticState = {
   channels: ["google-ads", "bouche-a-oreille"],
   conversionRate: 30,
   hasPartner: false,
+  partnerCount: 2,
+  partnerName: "",
+  partnerEmail: "",
 };
 
 type Ctx = {
