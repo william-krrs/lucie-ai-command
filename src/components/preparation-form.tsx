@@ -1397,9 +1397,18 @@ function SubmittedConfirmation({
 }) {
   const reference = confirmation.id.slice(0, 8).toUpperCase();
   const [exporting, setExporting] = useState(false);
+  const [emailState, setEmailState] = useState<{
+    status: "idle" | "sending" | "sent" | "error";
+    message?: string;
+  }>({ status: "idle" });
+  const emailPdf = useServerFn(sendPreparationPdf);
+  const autoSentRef = useRef(false);
 
-  const handleExportPdf = async () => {
-    setExporting(true);
+  const handleExportPdf = async (opts: { download?: boolean; email?: boolean } = { download: true }) => {
+    const shouldDownload = opts.download ?? false;
+    const shouldEmail = opts.email ?? false;
+    if (shouldDownload) setExporting(true);
+    if (shouldEmail) setEmailState({ status: "sending" });
     try {
       const { jsPDF } = await import("jspdf");
       const doc = new jsPDF({ unit: "pt", format: "a4" });
