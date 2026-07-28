@@ -1410,13 +1410,23 @@ function SubmittedConfirmation({
     message?: string;
     sentAt?: string;
     messageId?: string;
+    prospectSent?: boolean;
+    prospectMessageId?: string;
+    prospectError?: string;
   }>({ status: "idle" });
   const emailPdf = useServerFn(sendPreparationPdf);
   const autoSentRef = useRef(false);
+  const prospectEmail = (form.contactEmail || "").trim();
+  const hasProspectEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(prospectEmail);
+  const [sendCopyToProspect, setSendCopyToProspect] = useState(hasProspectEmail);
 
-  const handleExportPdf = async (opts: { download?: boolean; email?: boolean } = { download: true }) => {
+  const handleExportPdf = async (
+    opts: { download?: boolean; email?: boolean; sendToProspect?: boolean } = { download: true },
+  ) => {
     const shouldDownload = opts.download ?? false;
     const shouldEmail = opts.email ?? false;
+    const shouldSendToProspect =
+      shouldEmail && (opts.sendToProspect ?? sendCopyToProspect) && hasProspectEmail;
     if (shouldDownload) setExporting(true);
     if (shouldEmail) setEmailState({ status: "sending" });
     try {
@@ -1821,17 +1831,30 @@ function SubmittedConfirmation({
               meetingLabel: booking
                 ? `${formatBookingDate(booking.date)}${booking.time ? " · " + booking.time : ""}`
                 : null,
+              sendToProspect: shouldSendToProspect,
             },
           });
           if (res.sent) {
+            const r = res as {
+              messageId?: string;
+              prospectSent?: boolean;
+              prospectMessageId?: string;
+              prospectError?: string;
+            };
             setEmailState({
               status: "sent",
               sentAt: new Date().toISOString(),
-              messageId: (res as { messageId?: string }).messageId,
+              messageId: r.messageId,
+              prospectSent: r.prospectSent,
+              prospectMessageId: r.prospectMessageId,
+              prospectError: r.prospectError,
             });
-            toast.success(`Email envoyé à ${CONTACT_EMAIL}`, {
-              description: `Document ${documentId}`,
-            });
+            toast.success(
+              r.prospectSent
+                ? `Email envoyé à ${CONTACT_EMAIL} + ${prospectEmail}`
+                : `Email envoyé à ${CONTACT_EMAIL}`,
+              { description: `Document ${documentId}` },
+            );
           } else {
             setEmailState({ status: "error", message: res.error });
           }
@@ -1976,6 +1999,56 @@ function SubmittedConfirmation({
                 </div>
               )}
             </dl>
+
+            {/* Option : copie au prospect */}
+            {hasProspectEmail && (
+              <div className="mt-4 rounded-xl border border-border/60 bg-background/40 p-3">
+                <label className="flex cursor-pointer items-start gap-3 text-xs">
+                  <input
+                    type="checkbox"
+                    checked={sendCopyToProspect}
+                    onChange={(e) => setSendCopyToProspect(e.target.checked)}
+                    className="mt-0.5 h-4 w-4 shrink-0 rounded border-border accent-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
+                  />
+                  <span className="min-w-0 flex-1">
+                    <span className="block font-medium text-foreground">
+                      Envoyer aussi une copie au prospect
+                    </span>
+                    <span className="mt-0.5 block text-muted-foreground">
+                      Le PDF sera également envoyé à{" "}
+                      <span className="font-mono text-foreground">{prospectEmail}</span>.
+                    </span>
+                  </span>
+                </label>
+                {emailState.status === "sent" && sendCopyToProspect && (
+                  <div className="mt-2 flex flex-wrap items-center gap-2 text-[11px]">
+                    {emailState.prospectSent ? (
+                      <span className="inline-flex items-center gap-1 text-[oklch(0.55_0.17_155)]">
+                        <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" />
+                        Copie envoyée à {prospectEmail}
+                      </span>
+                    ) : emailState.prospectError ? (
+                      <span className="inline-flex items-center gap-1 text-destructive">
+                        <AlertCircle className="h-3.5 w-3.5" aria-hidden="true" />
+                        Copie non envoyée : {emailState.prospectError}
+                      </span>
+                    ) : null}
+                    {emailState.prospectSent && (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          handleExportPdf({ download: false, email: true, sendToProspect: true })
+                        }
+                        className="ml-auto text-[11px] font-semibold text-primary underline underline-offset-2 hover:no-underline"
+                      >
+                        Renvoyer la copie
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+
             {emailState.status === "error" && (
               <p className="mt-2 text-xs text-destructive">
                 {emailState.message ?? "Erreur inconnue."}

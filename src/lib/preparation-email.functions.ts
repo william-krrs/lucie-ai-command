@@ -17,6 +17,7 @@ const schema = z.object({
   companyPhone: z.string().max(60).optional().nullable(),
   planLabel: z.string().max(120).optional().nullable(),
   meetingLabel: z.string().max(200).optional().nullable(),
+  sendToProspect: z.boolean().optional(),
 });
 
 export const sendPreparationPdf = createServerFn({ method: "POST" })
@@ -119,7 +120,66 @@ ${pdfUrl}
         .from("preparation_submissions")
         .update({ email_status: "sent" })
         .eq("id", data.submissionId);
-      return { sent: true as const, pdfUrl, messageId: res.message_id };
+
+      // Copie facultative au prospect (si opt-in + email renseigné)
+      let prospectSent = false;
+      let prospectMessageId: string | undefined;
+      let prospectError: string | undefined;
+      if (data.sendToProspect && data.contactEmail) {
+        const prospectHtml = `<!doctype html><html><body style="margin:0;padding:0;background:#f5f3ff;font-family:-apple-system,Segoe UI,Roboto,sans-serif;color:#111;">
+  <div style="max-width:640px;margin:0 auto;padding:32px 24px;">
+    <div style="background:#0f0b1f;color:#fff;border-radius:16px;padding:28px;">
+      <div style="font-size:11px;letter-spacing:0.16em;color:#c4b5fd;text-transform:uppercase;">Votre récapitulatif Lucie</div>
+      <h1 style="margin:8px 0 0;font-size:24px;">Merci ${escapeHtml(data.contactName ?? "")} !</h1>
+      <p style="margin:12px 0 0;color:#d8d4f0;font-size:14px;">Voici votre récapitulatif de configuration. L'équipe Lucie revient vers vous très vite pour lancer l'installation.</p>
+    </div>
+    <div style="background:#fff;border-radius:16px;padding:24px;margin-top:16px;border:1px solid #e9e4f7;">
+      <table style="width:100%;border-collapse:collapse;">${rowsHtml}</table>
+      <div style="margin-top:24px;text-align:center;">
+        <a href="${pdfUrl}" style="display:inline-block;background:#6d28d9;color:#fff;text-decoration:none;font-weight:600;padding:14px 24px;border-radius:12px;font-size:15px;">📄 Télécharger votre récapitulatif PDF</a>
+      </div>
+      <p style="margin:16px 0 0;color:#888;font-size:12px;text-align:center;">Lien signé valable 30 jours.</p>
+    </div>
+    <p style="margin:16px 0 0;color:#888;font-size:12px;text-align:center;">Une question ? Répondez simplement à cet email.</p>
+  </div>
+</body></html>`;
+        const prospectText = `Votre récapitulatif Lucie (#${ref})\n\n${rows.map(([k, v]) => `${k}: ${v}`).join("\n")}\n\nPDF récapitulatif (lien signé 30 jours) :\n${pdfUrl}\n`;
+        try {
+          const p = await sendLovableEmail(
+            {
+              to: data.contactEmail,
+              from: FROM,
+              sender_domain: SENDER_DOMAIN,
+              subject: `Votre récapitulatif Lucie (#${ref})`,
+              html: prospectHtml,
+              text: prospectText,
+              reply_to: CONTACT_EMAIL,
+              idempotency_key: `prep-prospect-${data.submissionId}`,
+              label: "preparation-pdf-prospect",
+            },
+            { apiKey, idempotencyKey: `prep-prospect-${data.submissionId}` },
+          );
+          prospectSent = true;
+          prospectMessageId = p.message_id;
+        } catch (err) {
+          prospectError =
+            err instanceof EmailAPIError
+              ? `${(err as InstanceType<typeof EmailAPIError> & { code?: string }).code ?? (err as InstanceType<typeof EmailAPIError>).status}: ${(err as Error).message}`
+              : err instanceof Error
+                ? err.message
+                : String(err);
+          console.error("[sendPreparationPdf] prospect email failed", prospectError);
+        }
+      }
+
+      return {
+        sent: true as const,
+        pdfUrl,
+        messageId: res.message_id,
+        prospectSent,
+        prospectMessageId,
+        prospectError,
+      };
     } catch (err) {
       const msg =
         err instanceof EmailAPIError
