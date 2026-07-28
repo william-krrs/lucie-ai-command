@@ -497,6 +497,41 @@ function RecommandationPage() {
               </Button>
             </div>
 
+            <label className="flex flex-col gap-1 rounded-xl border border-border bg-background/60 p-3 text-sm sm:flex-row sm:items-center sm:justify-between">
+              <span className="text-muted-foreground">
+                Nombre total de décideurs (vous compris)
+              </span>
+              <div className="flex flex-col items-end gap-1">
+                <Input
+                  type="number"
+                  inputMode="numeric"
+                  min={2}
+                  max={20}
+                  step={1}
+                  value={state.partnerCount}
+                  onChange={(e) => {
+                    const v = Number.parseInt(e.target.value, 10);
+                    update("partnerCount", Number.isFinite(v) ? v : 0);
+                  }}
+                  className={`w-24 rounded-xl text-right ${
+                    partnerCountError ? "border-destructive focus-visible:ring-destructive/40" : ""
+                  }`}
+                  aria-invalid={partnerCountError ? true : undefined}
+                  aria-describedby={partnerCountError ? "partner-count-error" : undefined}
+                />
+                {partnerCountError && (
+                  <p
+                    id="partner-count-error"
+                    role="alert"
+                    className="inline-flex items-center gap-1 text-xs text-destructive"
+                  >
+                    <AlertCircle className="h-3 w-3" aria-hidden="true" />
+                    {partnerCountError}
+                  </p>
+                )}
+              </div>
+            </label>
+
             {state.partners.length === 0 ? (
               <p className="rounded-xl border border-dashed border-border bg-background/40 p-4 text-sm text-muted-foreground">
                 Ajoutez chaque associé pour lui envoyer un lien sécurisé personnel (unique et traçable).
@@ -505,6 +540,11 @@ function RecommandationPage() {
               <ul className="space-y-3">
                 {state.partners.map((p, idx) => {
                   const busy = busyPartnerId === p.id;
+                  const errs = partnerErrors[p.id] || {};
+                  const touched = touchedFields[p.id] || {};
+                  const showNameErr = touched.name && errs.name;
+                  const showEmailErr = touched.email && errs.email;
+                  const canSend = isPartnerValid(p.id) && !busy;
                   return (
                     <li
                       key={p.id}
@@ -527,24 +567,59 @@ function RecommandationPage() {
                       </div>
                       <div className="grid gap-2 sm:grid-cols-2">
                         <label className="text-sm space-y-1">
-                          <span className="text-muted-foreground">Nom</span>
+                          <span className="text-muted-foreground">
+                            Nom <span className="text-destructive">*</span>
+                          </span>
                           <Input
                             value={p.name}
-                            onChange={(e) => updatePartner(p.id, { name: e.target.value })}
+                            onChange={(e) => updatePartner(p.id, { name: e.target.value.slice(0, 80) })}
+                            onBlur={() => markTouched(p.id, "name")}
                             placeholder="Prénom Nom"
-                            className="rounded-xl"
+                            className={`rounded-xl ${showNameErr ? "border-destructive focus-visible:ring-destructive/40" : ""}`}
+                            aria-invalid={showNameErr ? true : undefined}
+                            aria-describedby={showNameErr ? `${p.id}-name-err` : undefined}
+                            maxLength={80}
+                            required
                           />
+                          {showNameErr && (
+                            <p
+                              id={`${p.id}-name-err`}
+                              role="alert"
+                              className="inline-flex items-center gap-1 text-xs text-destructive"
+                            >
+                              <AlertCircle className="h-3 w-3" aria-hidden="true" />
+                              {errs.name}
+                            </p>
+                          )}
                         </label>
                         <label className="text-sm space-y-1">
-                          <span className="text-muted-foreground">Email</span>
+                          <span className="text-muted-foreground">
+                            Email <span className="text-destructive">*</span>
+                          </span>
                           <Input
                             type="email"
                             inputMode="email"
+                            autoComplete="email"
                             value={p.email}
-                            onChange={(e) => updatePartner(p.id, { email: e.target.value })}
+                            onChange={(e) => updatePartner(p.id, { email: e.target.value.slice(0, 200) })}
+                            onBlur={() => markTouched(p.id, "email")}
                             placeholder="associe@entreprise.fr"
-                            className="rounded-xl"
+                            className={`rounded-xl ${showEmailErr ? "border-destructive focus-visible:ring-destructive/40" : ""}`}
+                            aria-invalid={showEmailErr ? true : undefined}
+                            aria-describedby={showEmailErr ? `${p.id}-email-err` : undefined}
+                            maxLength={200}
+                            required
                           />
+                          {showEmailErr && (
+                            <p
+                              id={`${p.id}-email-err`}
+                              role="alert"
+                              className="inline-flex items-center gap-1 text-xs text-destructive"
+                            >
+                              <AlertCircle className="h-3 w-3" aria-hidden="true" />
+                              {errs.email}
+                            </p>
+                          )}
                         </label>
                       </div>
                       {p.shareUrl && (
@@ -570,7 +645,9 @@ function RecommandationPage() {
                           type="button"
                           size="sm"
                           className="rounded-xl"
-                          disabled={busy}
+                          disabled={!canSend}
+                          aria-disabled={!canSend}
+                          title={!isPartnerValid(p.id) ? "Complétez le nom et un email valide." : undefined}
                           onClick={() => generateAndSendForPartner(p.id)}
                         >
                           {busy ? (
