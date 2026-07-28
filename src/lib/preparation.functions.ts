@@ -35,7 +35,8 @@ export const submitPreparation = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data: unknown) => submissionSchema.parse(data))
   .handler(async ({ data, context }) => {
-    const { data: row, error } = await context.supabase
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: row, error } = await supabaseAdmin
       .from("preparation_submissions")
       .insert({
         user_id: context.userId,
@@ -74,7 +75,7 @@ export const submitPreparation = createServerFn({ method: "POST" })
 
     // Email dispatch is wired once the sender domain is configured.
     const emailStatus: "sent" | "skipped" | "failed" = "skipped";
-    await context.supabase
+    await supabaseAdmin
       .from("preparation_submissions")
       .update({ email_status: emailStatus })
       .eq("id", row.id);
