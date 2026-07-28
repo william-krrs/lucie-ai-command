@@ -134,33 +134,6 @@ function Diagnostic() {
             </Field>
           </div>
 
-          <Field label="Êtes-vous seul(e) ou associé(e) ?">
-            <div className="flex flex-wrap gap-2">
-              {[
-                { value: false, label: "Seul(e)" },
-                { value: true, label: "Associé(e)" },
-              ].map((opt) => {
-                const active = state.hasPartner === opt.value;
-                return (
-                  <button
-                    key={String(opt.value)}
-                    type="button"
-                    onClick={() => update("hasPartner", opt.value)}
-                    aria-pressed={active}
-                    className={
-                      "rounded-full border px-4 py-2 text-sm transition-all duration-200 " +
-                      (active
-                        ? "border-primary bg-primary text-primary-foreground shadow-[var(--shadow-elevated)]"
-                        : "border-border bg-background text-foreground hover:border-primary/40 hover:bg-accent")
-                    }
-                  >
-                    {opt.label}
-                  </button>
-                );
-              })}
-            </div>
-          </Field>
-
           <SectionTitle step="D" title="Comment trouvez-vous vos clients ?" className="mt-8" />
           <div className="flex flex-wrap gap-2">
             {CHANNEL_OPTIONS.map((c) => {
