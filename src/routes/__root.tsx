@@ -17,6 +17,26 @@ import { BookingProvider } from "@/lib/booking-store";
 import { AppShell } from "@/components/app-shell";
 import { AnonAuthBootstrap } from "@/components/anon-auth-bootstrap";
 
+if (typeof window !== "undefined") {
+  const reloadOnChunkError = (message: string) => {
+    if (
+      /Failed to fetch dynamically imported module/i.test(message) ||
+      /Importing a module script failed/i.test(message) ||
+      /ChunkLoadError/i.test(message)
+    ) {
+      const key = "__lucie_chunk_reload__";
+      if (!sessionStorage.getItem(key)) {
+        sessionStorage.setItem(key, "1");
+        window.location.reload();
+      }
+    }
+  };
+  window.addEventListener("error", (e) => reloadOnChunkError(e.message || ""));
+  window.addEventListener("unhandledrejection", (e) =>
+    reloadOnChunkError(String((e.reason && (e.reason.message || e.reason)) || ""))
+  );
+}
+
 function NotFoundComponent() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
