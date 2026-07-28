@@ -2080,6 +2080,21 @@ function SubmittedConfirmation({
                     ? "Envoi impossible — réessayez ci-dessous"
                     : `Email en préparation vers ${CONTACT_EMAIL}`}
             </div>
+            <div className="mt-2 flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => handleExportPdf({ download: true })}
+                disabled={exporting}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-primary/40 bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary hover:bg-primary/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 disabled:opacity-60"
+              >
+                {exporting ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />
+                ) : (
+                  <FileDown className="h-3.5 w-3.5" aria-hidden="true" />
+                )}
+                {exporting ? "Génération…" : "Télécharger le PDF"}
+              </button>
+            </div>
             <dl className="mt-3 grid gap-2 text-xs sm:grid-cols-2">
               <div className="min-w-0">
                 <dt className="text-[10px] uppercase tracking-widest text-muted-foreground">
