@@ -60,9 +60,9 @@ function SharedDiagnosticPage() {
   const [senderName, setSenderName] = useState("");
   const [sendState, setSendState] = useState<
     | { status: "idle" }
-    | { status: "sending" }
-    | { status: "sent"; to: string; messageId?: string }
-    | { status: "error"; message: string }
+    | { status: "sending"; attempts: number; startedAt: number }
+    | { status: "sent"; to: string; messageId?: string; attempts: number; at: number }
+    | { status: "error"; message: string; attempts: number; at: number }
   >({ status: "idle" });
   const sendEmail = useServerFn(sendSharedDiagnosticEmail);
 
@@ -254,12 +254,19 @@ function SharedDiagnosticPage() {
 
   const resendEmail = async (targetEmail?: string) => {
     const trimmed = (targetEmail ?? email).trim();
+    const prevAttempts = sendState.status === "idle" ? 0 : sendState.attempts;
+    const attempts = prevAttempts + 1;
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
-      setSendState({ status: "error", message: "Adresse email invalide." });
+      setSendState({
+        status: "error",
+        message: "Adresse email invalide.",
+        attempts,
+        at: Date.now(),
+      });
       return;
     }
     if (!shareUrl) return;
-    setSendState({ status: "sending" });
+    setSendState({ status: "sending", attempts, startedAt: Date.now() });
     try {
       const res = await sendEmail({
         data: {
@@ -269,11 +276,19 @@ function SharedDiagnosticPage() {
           senderName: senderName.trim() || null,
         },
       });
-      setSendState({ status: "sent", to: trimmed, messageId: res.messageId });
+      setSendState({
+        status: "sent",
+        to: trimmed,
+        messageId: res.messageId,
+        attempts,
+        at: Date.now(),
+      });
     } catch (err) {
       setSendState({
         status: "error",
         message: err instanceof Error ? err.message : "Envoi impossible.",
+        attempts,
+        at: Date.now(),
       });
     }
   };
