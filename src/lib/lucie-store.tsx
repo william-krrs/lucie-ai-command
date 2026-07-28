@@ -25,6 +25,15 @@ export type DiagnosticState = {
   partnerCount: number;
   partnerName: string;
   partnerEmail: string;
+  partners: Partner[];
+};
+
+export type Partner = {
+  id: string;
+  name: string;
+  email: string;
+  shareUrl?: string;
+  sentAt?: string;
 };
 
 const DEFAULT_STATE: DiagnosticState = {
@@ -43,6 +52,7 @@ const DEFAULT_STATE: DiagnosticState = {
   partnerCount: 2,
   partnerName: "",
   partnerEmail: "",
+  partners: [],
 };
 
 type Ctx = {
