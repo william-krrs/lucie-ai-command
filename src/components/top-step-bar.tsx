@@ -10,7 +10,7 @@ const STEPS = [
   { to: "/demonstration", label: "Démonstration" },
   { to: "/offres", label: "Offres" },
   { to: "/merci", label: "Paiement" },
-  { to: "/preparation", label: "Questionnaire" },
+  { to: "/preparation", label: "Configuration" },
   { to: "/installation", label: "Installation" },
   { to: "/rdv-test", label: "RDV test & paramétrage" },
   { to: "/faq", label: "Questions fréquentes" },

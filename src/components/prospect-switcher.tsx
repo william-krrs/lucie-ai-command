@@ -82,7 +82,7 @@ export function ProspectSwitcher({ className }: { className?: string }) {
             <Users className="h-3.5 w-3.5" aria-hidden="true" /> Mes prospects
           </div>
           <p className="mt-1 text-xs text-muted-foreground">
-            Chaque prospect garde son diagnostic, son RDV et son questionnaire.
+            Chaque prospect garde son diagnostic, son RDV et sa configuration.
           </p>
           <div className="mt-3 grid grid-cols-2 gap-2">
             <Button size="sm" className="h-9 rounded-lg" onClick={handleSave}>

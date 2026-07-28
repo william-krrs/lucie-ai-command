@@ -681,7 +681,7 @@ export function PreparationForm({
           console.warn("[booking sync] failed", e);
         }
       }
-      toast.success("Questionnaire enregistré — l'équipe Lucie prend le relais.");
+      toast.success("Configuration enregistrée — l'équipe Lucie prend le relais.");
       if (typeof window !== "undefined") {
         window.scrollTo({ top: 0, behavior: "smooth" });
       }
@@ -713,7 +713,7 @@ export function PreparationForm({
             />
             <div className="space-y-1">
               <p className="font-semibold text-foreground">
-                Questionnaire de configuration — 5 minutes
+                Configuration personnalisée — 5 minutes
               </p>
               <p className="text-muted-foreground">
                 Renseignez vos informations pour que Lucie soit opérationnelle
@@ -967,7 +967,7 @@ export function PreparationForm({
                   </p>
                   <p className="mt-0.5 text-xs text-muted-foreground">
                     {resumed.submissionId
-                      ? "Vous aviez déjà envoyé un premier questionnaire. Ajustez vos réponses et renvoyez si besoin."
+                      ? "Vous aviez déjà envoyé une première configuration. Ajustez vos réponses et renvoyez si besoin."
                       : "Vos réponses précédentes ont été rechargées depuis le brouillon local. Continuez là où vous vous étiez arrêté."}
                     {resumed.at && (
                       <>
@@ -1339,7 +1339,7 @@ export function PreparationForm({
 
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-xs text-muted-foreground">
-            À l'étape suivante, votre questionnaire sera enregistré puis envoyé
+            À l'étape suivante, votre configuration sera enregistrée puis envoyée
             <strong> automatiquement en PDF</strong> à{" "}
             <strong>{CONTACT_EMAIL}</strong>.
           </p>
@@ -1690,8 +1690,8 @@ function SubmittedConfirmation({
         ["Volume d'appels", form.callVolume],
       ]);
 
-      // ---- Questionnaire complet ----
-      startSection("Questionnaire complet", 4);
+      // ---- Configuration complète ----
+      startSection("Configuration complète", 4);
       const body = summary.split("\n").slice(2).join("\n");
       writeParagraph(body, { size: 9 });
 
@@ -2037,7 +2037,7 @@ function SubmittedConfirmation({
           <CheckCircle2 className="h-7 w-7" aria-hidden="true" />
         </div>
         <h2 className="mt-5 text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
-          Questionnaire enregistré ✅
+          Configuration enregistrée ✅
         </h2>
         <p className="mt-3 max-w-xl text-sm text-muted-foreground sm:text-base">
           Merci ! Votre configuration <strong>{planLabel}</strong> est bien reçue.
@@ -2468,7 +2468,7 @@ function SubmittedConfirmation({
           className="h-11 rounded-xl"
           onClick={onReset}
         >
-          Envoyer un autre questionnaire
+          Envoyer une autre configuration
         </Button>
       </div>
     </section>
@@ -2704,7 +2704,7 @@ function ReviewPanel({
           className="h-11 rounded-xl"
         >
           <ArrowLeft className="mr-2 h-4 w-4" aria-hidden="true" />
-          Revenir au questionnaire
+          Revenir à la configuration
         </Button>
         <Button
           type="submit"

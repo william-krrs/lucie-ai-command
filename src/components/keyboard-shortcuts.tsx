@@ -41,7 +41,7 @@ const NAV_LABELS: { keys: string; label: string }[] = [
   { keys: "g r", label: "ROI" },
   { keys: "g c", label: "Recommandation" },
   { keys: "g o", label: "Offres" },
-  { keys: "g q", label: "Questionnaire" },
+  { keys: "g q", label: "Configuration" },
   { keys: "g f", label: "FAQ" },
   { keys: "g m", label: "Mode Démo" },
 ];

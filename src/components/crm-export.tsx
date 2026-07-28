@@ -15,7 +15,7 @@ export function CrmExport({ plan }: { plan?: "essential" | "pro" | "premium" }) 
       const result = exportCrmCsv({ booking, plan });
       if (!result.ok) {
         toast.error("Aucune donnée à exporter pour le moment.", {
-          description: "Remplissez le questionnaire ou prenez un RDV avant l'export.",
+          description: "Remplissez la configuration ou prenez un RDV avant l'export.",
         });
         return;
       }
@@ -47,7 +47,7 @@ export function CrmExport({ plan }: { plan?: "essential" | "pro" | "premium" }) 
             Exportez vos données au format CSV
           </h3>
           <p className="mt-1 max-w-xl text-sm text-muted-foreground">
-            Téléchargez en un clic les réponses du questionnaire et le
+            Téléchargez en un clic les réponses de la configuration et le
             rendez-vous confirmé, prêts à être importés dans HubSpot, Pipedrive,
             Salesforce, Notion ou tout CRM compatible CSV (UTF-8).
           </p>
@@ -65,7 +65,7 @@ export function CrmExport({ plan }: { plan?: "essential" | "pro" | "premium" }) 
         </Button>
       </div>
       <p className="mt-3 text-[11px] text-muted-foreground">
-        Format : une ligne, colonnes contact / entreprise / RDV / questionnaire.
+        Format : une ligne, colonnes contact / entreprise / RDV / configuration.
         Encodage UTF-8 avec BOM pour Excel.
       </p>
     </section>

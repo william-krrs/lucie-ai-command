@@ -39,9 +39,9 @@ const JOURNEY_STEPS = [
     icon: CreditCard,
   },
   {
-    id: "questionnaire",
-    label: "Questionnaire",
-    description: "Configuration Lucie",
+    id: "configuration",
+    label: "Configuration",
+    description: "Configuration personnalisée de Lucie",
     icon: ClipboardList,
   },
   {
@@ -65,7 +65,7 @@ function JourneyProgress({ activeIndex }: { activeIndex: number }) {
           </h2>
         </div>
         <p className="max-w-sm text-sm text-muted-foreground">
-          Terminez le questionnaire ci-dessous pour lancer la mise en production de Lucie.
+          Terminez la configuration ci-dessous pour lancer la mise en production de Lucie.
         </p>
       </div>
 
@@ -370,7 +370,7 @@ function Merci() {
               Suivez le déploiement en temps réel
             </h3>
             <p className="mt-1 max-w-xl text-sm text-muted-foreground">
-              Dès le questionnaire envoyé, retrouvez ici le cadrage, la mise
+              Dès la configuration envoyée, retrouvez ici le cadrage, la mise
               en production et la phase de test.
             </p>
           </div>
@@ -378,7 +378,7 @@ function Merci() {
         <div className="flex flex-wrap gap-2">
           <Button asChild className="h-11 rounded-xl">
             <Link to="/preparation" search={{ plan }}>
-              Ouvrir le questionnaire de préparation
+              Ouvrir la configuration personnalisée
             </Link>
           </Button>
           <Button asChild variant="ghost" className="h-11 rounded-xl">

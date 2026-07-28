@@ -330,7 +330,7 @@ export function CalendlyEmbed({
               </h2>
               <p className="mt-1 max-w-xl text-sm text-muted-foreground">
                 {bookedDescription ??
-                  "La démonstration, les offres, l'installation et le questionnaire seront automatiquement débloqués le jour de votre rendez-vous."}
+                  "La démonstration, les offres, l'installation et la configuration personnalisée seront automatiquement débloquées le jour de votre rendez-vous."}
               </p>
             </div>
           </div>
@@ -454,7 +454,7 @@ export function CalendlyEmbed({
           </h2>
           <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
             {description ??
-              "Sélectionnez directement votre horaire ci-dessous. La démonstration, les offres, l'installation et le questionnaire de préparation resteront verrouillés jusqu'au jour de votre rendez-vous."}
+              "Sélectionnez directement votre horaire ci-dessous. La démonstration, les offres, l'installation et la configuration personnalisée resteront verrouillées jusqu'au jour de votre rendez-vous."}
           </p>
         </div>
       </div>

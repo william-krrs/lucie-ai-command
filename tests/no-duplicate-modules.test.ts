@@ -26,7 +26,7 @@ const routeFiles = walk(ROUTES_DIR).filter((f) => /\.tsx?$/.test(f));
  */
 const SINGLETONS: Array<{ name: string; pattern: RegExp; owner: string }> = [
   {
-    name: "Preparation questionnaire (<PreparationForm />)",
+    name: "Preparation configuration (<PreparationForm />)",
     pattern: /<PreparationForm\b/,
     owner: "preparation.tsx",
   },
@@ -54,7 +54,7 @@ describe("no duplicate singleton modules across routes", () => {
       const src = readFileSync(ownerFile!, "utf8");
       const count = (src.match(new RegExp(mod.pattern.source, "g")) ?? []).length;
       // Stripe links legitimately appear multiple times (one per plan card),
-      // but the questionnaire component must be mounted exactly once.
+      // but the configuration form must be mounted exactly once.
       if (mod.name.startsWith("Preparation")) {
         expect(count).toBeLessThanOrEqual(1);
       } else {
