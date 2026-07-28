@@ -688,7 +688,7 @@ export function PreparationForm({
       }
     } catch (err) {
       console.error(err);
-      toast.error("Envoi impossible. Réessayez ou écrivez-nous à contact@lucieassistant.fr.");
+      toast.error(`Envoi impossible. Réessayez ou écrivez-nous à ${CONTACT_EMAIL}.`);
     } finally {
       setSubmitting(false);
     }
