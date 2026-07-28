@@ -161,21 +161,43 @@ export const sendSharedDiagnosticEmail = createServerFn({ method: "POST" })
           reply_to: "contact@lucieassistant.fr",
           idempotency_key: `share-${data.token}-${data.email.toLowerCase()}`,
           label: "shared-diagnostic-link",
+          purpose: "transactional",
         },
         { apiKey, idempotencyKey: `share-${data.token}-${data.email.toLowerCase()}` },
       );
       return { sent: true as const, messageId: res.message_id };
     } catch (err) {
-      const msg =
-        err instanceof EmailAPIError
-          ? (err as Error).message
-          : err instanceof Error
-            ? err.message
-            : "Erreur inconnue";
-      console.error("[sendSharedDiagnosticEmail] failed", err);
-      throw new Error(msg);
+      const c = classifyEmailError(err, EmailAPIError);
+      console.error("[sendSharedDiagnosticEmail] failed", c);
+      throw new Error(c.message);
     }
   });
+
+function classifyEmailError(
+  err: unknown,
+  EmailAPIError: typeof import("@lovable.dev/email-js").EmailAPIError,
+): { code: string | null; message: string } {
+  const code = err instanceof EmailAPIError ? ((err as { code?: string }).code ?? null) : null;
+  const status = err instanceof EmailAPIError ? (err as { status?: number }).status : undefined;
+  if (code === "recipient_suppressed") {
+    return { code, message: "Ce destinataire est désinscrit — impossible de lui envoyer l'email." };
+  }
+  if (code === "domain_not_verified") {
+    return { code, message: "Le domaine d'envoi n'est pas encore vérifié. Veuillez réessayer plus tard." };
+  }
+  if (code === "emails_disabled") {
+    return { code, message: "L'envoi d'emails est temporairement désactivé." };
+  }
+  if (status === 429) {
+    return { code: "rate_limited", message: "Trop d'envois rapprochés. Patientez quelques minutes avant de réessayer." };
+  }
+  if (code === "missing_parameter" || code === "invalid_request") {
+    return { code, message: "Problème de configuration de l'envoi. Contactez l'équipe Lucie si l'erreur persiste." };
+  }
+  const msg = err instanceof Error ? err.message : "Erreur inconnue";
+  return { code, message: `L'envoi a échoué : ${msg}` };
+}
+
 
 function escapeHtml(v: string): string {
   return v

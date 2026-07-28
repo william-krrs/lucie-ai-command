@@ -50,6 +50,7 @@ export async function sendTemplateEmail<TName extends TemplateName>(
         reply_to: opts.replyTo,
         idempotency_key: opts.idempotencyKey,
         label: templateName,
+        purpose: "transactional",
       },
       { apiKey, idempotencyKey: opts.idempotencyKey },
     );

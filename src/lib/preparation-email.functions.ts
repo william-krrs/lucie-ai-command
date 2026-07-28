@@ -159,6 +159,7 @@ ${pdfUrl}
             reply_to: data.contactEmail ?? undefined,
             idempotency_key: `prep-${data.submissionId}${attemptSuffix}`,
             label: "preparation-pdf",
+            purpose: "transactional",
           },
           { apiKey, idempotencyKey: `prep-${data.submissionId}${attemptSuffix}` },
         );
@@ -228,6 +229,7 @@ ${pdfUrl}
             reply_to: CONTACT_EMAIL,
             idempotency_key: `prep-prospect-${data.submissionId}${attemptSuffix}`,
             label: "preparation-pdf-prospect",
+            purpose: "transactional",
           },
           { apiKey, idempotencyKey: `prep-prospect-${data.submissionId}${attemptSuffix}` },
         );

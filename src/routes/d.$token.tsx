@@ -10,6 +10,7 @@ import {
   Send,
   ShieldCheck,
   Sparkles,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useServerFn } from "@tanstack/react-start";
@@ -421,13 +422,21 @@ function SharedDiagnosticPage() {
               )}
             </Button>
             {sendState.status === "sent" && (
-              <span className="inline-flex items-center gap-1.5 text-xs text-[oklch(0.55_0.17_155)]">
-                <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
+              <span className="inline-flex items-center gap-1.5 rounded-lg border border-primary/30 bg-primary/10 px-2.5 py-1 text-xs text-primary">
+                <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" />
                 Envoyé à {sendState.to}
               </span>
             )}
             {sendState.status === "error" && (
-              <span className="text-xs text-destructive">{sendState.message}</span>
+              <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-2.5 text-xs text-destructive">
+                <div className="flex items-start gap-2">
+                  <X className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                  <div className="flex-1">
+                    <p className="font-medium">L'envoi n'a pas pu aboutir</p>
+                    <p className="mt-0.5 text-destructive/90">{sendState.message}</p>
+                  </div>
+                </div>
+              </div>
             )}
           </div>
           <p className="mt-3 text-[11px] text-muted-foreground">

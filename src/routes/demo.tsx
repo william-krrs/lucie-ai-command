@@ -428,14 +428,31 @@ function DemoMode() {
                     </button>
                   </div>
                   {emailSendState.status === "sent" && (
-                    <p className="mt-2 text-xs text-primary">
-                      ✓ Lien envoyé à {emailSendState.to}
+                    <p className="mt-3 flex items-center gap-1.5 rounded-lg border border-primary/30 bg-primary/10 px-3 py-2 text-xs text-primary">
+                      <Check className="h-3.5 w-3.5" />
+                      Lien envoyé à {emailSendState.to}
                     </p>
                   )}
                   {emailSendState.status === "error" && (
-                    <p className="mt-2 text-xs text-destructive">
-                      {emailSendState.message}
-                    </p>
+                    <div className="mt-3 rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive">
+                      <div className="flex items-start gap-2">
+                        <X className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                        <div className="flex-1">
+                          <p className="font-medium">L'envoi n'a pas pu aboutir</p>
+                          <p className="mt-1 text-destructive/90">{emailSendState.message}</p>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEmailSendState({ status: "idle" });
+                          sendShareByEmail();
+                        }}
+                        className="mt-2 inline-flex items-center gap-1 rounded-md border border-destructive/40 bg-background px-2 py-1 text-[11px] font-medium text-destructive hover:bg-destructive/10"
+                      >
+                        Réessayer
+                      </button>
+                    </div>
                   )}
                 </div>
               </div>
