@@ -1,10 +1,15 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import {
+  CONTACT_EMAIL as CONFIG_CONTACT_EMAIL,
+  EMAIL_SENDER_DOMAIN,
+  EMAIL_FROM,
+} from "@/lib/config";
 
-const CONTACT_EMAIL = "contact@lucieassistant.fr";
-const SENDER_DOMAIN = "notify.lucieassistant.fr";
-const FROM = "Lucie <contact@lucieassistant.fr>";
+const CONTACT_EMAIL = CONFIG_CONTACT_EMAIL;
+const SENDER_DOMAIN = EMAIL_SENDER_DOMAIN;
+const FROM = EMAIL_FROM;
 const BUCKET = "preparation-pdfs";
 
 const schema = z.object({

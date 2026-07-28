@@ -1,5 +1,6 @@
 import { Body, Container, Head, Heading, Html, Preview, Section, Text, Button, Hr } from "@react-email/components";
 import type { TemplateEntry } from "./registry";
+import { CONTACT_EMAIL } from "@/lib/config";
 
 interface Props {
   name?: string;
@@ -35,7 +36,7 @@ const Email = ({ name, meetingDateLabel, meetingTime, calendarUrl }: Props) => (
           )}
           <Hr style={hr} />
           <Text style={muted}>
-            Une question ? Répondez à cet email ou écrivez à contact@lucieassistant.fr
+            Une question ? Répondez à cet email ou écrivez à {CONTACT_EMAIL}
           </Text>
         </Section>
       </Container>

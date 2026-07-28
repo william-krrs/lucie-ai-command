@@ -19,7 +19,7 @@ import { Button } from "@/components/ui/button";
 import { ExportHistory } from "@/components/export-history";
 import { CrmExport } from "@/components/crm-export";
 import { cn } from "@/lib/utils";
-import { CALENDLY_URL_SETUP } from "@/lib/config";
+import { CALENDLY_URL_SETUP, CONTACT_EMAIL } from "@/lib/config";
 
 const planSearchSchema = z.object({
   plan: z.enum(["essential", "pro", "premium"]).optional(),
@@ -200,10 +200,10 @@ function Merci() {
                 ci-dessous la formule payée pour retrouver le bon récapitulatif,
                 ou écrivez-nous à{" "}
                 <a
-                  href="mailto:contact@lucieassistant.fr?subject=Confirmation%20paiement%20Lucie"
+                  href={`mailto:${CONTACT_EMAIL}?subject=Confirmation%20paiement%20Lucie`}
                   className="font-medium text-primary underline underline-offset-2"
                 >
-                  contact@lucieassistant.fr
+                  {CONTACT_EMAIL}
                 </a>
                 {" "}avec votre reçu Stripe, on prend le relais sous 24 h.
               </p>

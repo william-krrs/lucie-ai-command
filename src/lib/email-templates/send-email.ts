@@ -2,12 +2,11 @@ import { render } from "@react-email/render";
 import { sendLovableEmail, EmailAPIError } from "@lovable.dev/email-js";
 import { createElement, type ReactElement } from "react";
 import { TEMPLATES, type TemplateName } from "./registry";
+import { EMAIL_FROM, EMAIL_SENDER_DOMAIN } from "@/lib/config";
 
-// The verified delegated subdomain used for the actual API lookup.
-// Update after email domain provisioning if a different subdomain is chosen.
-const SENDER_DOMAIN = "notify.lucieassistant.fr";
-// Visible From address shown to recipients.
-const FROM = "Lucie <contact@lucieassistant.fr>";
+// Centralisé dans src/lib/config.ts (surchargeable via VITE_EMAIL_*).
+const SENDER_DOMAIN = EMAIL_SENDER_DOMAIN;
+const FROM = EMAIL_FROM;
 
 export type SendTemplateResult =
   | { sent: true; messageId?: string }

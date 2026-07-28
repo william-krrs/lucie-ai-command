@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useServerFn } from "@tanstack/react-start";
+import { SITE_DOMAIN, BRAND_NAME } from "@/lib/config";
 import {
   getSharedDiagnostic,
   sendSharedDiagnosticEmail,
@@ -374,7 +375,7 @@ function SharedDiagnosticPage() {
           )}
 
           <p className="text-[11px] text-muted-foreground">
-            Diagnostic généré par Lucie Assistant — assistantvocalpro.fr · Estimation prudente
+            Diagnostic généré par {BRAND_NAME} — {SITE_DOMAIN} · Estimation prudente
             fondée sur les données déclarées.
           </p>
         </div>
