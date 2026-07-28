@@ -1930,17 +1930,34 @@ function SubmittedConfirmation({
           <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
             <Mail className="h-4 w-4" aria-hidden="true" />
           </div>
-          <div>
+          <div className="min-w-0">
             <div className="text-sm font-semibold text-foreground">
-              {confirmation.emailStatus === "sent"
-                ? "Récap envoyé par email"
-                : "Récap transmis à l'équipe"}
+              {emailState.status === "sent"
+                ? "PDF envoyé par email"
+                : emailState.status === "sending"
+                  ? "Envoi du PDF en cours…"
+                  : emailState.status === "error"
+                    ? "Envoi du PDF impossible"
+                    : "PDF prêt à envoyer"}
             </div>
-            <p className="mt-1 text-xs text-muted-foreground">
-              {confirmation.emailStatus === "sent"
-                ? `Une copie du récapitulatif a été envoyée à ${CONTACT_EMAIL}.`
-                : `Notre équipe consulte le récap directement. Pour toute question : ${CONTACT_EMAIL}.`}
+            <p className="mt-1 text-xs text-muted-foreground break-words">
+              {emailState.status === "sent"
+                ? `Le PDF récapitulatif vient d'être envoyé à ${CONTACT_EMAIL}.`
+                : emailState.status === "sending"
+                  ? `Génération et envoi du PDF vers ${CONTACT_EMAIL}…`
+                  : emailState.status === "error"
+                    ? `${emailState.message ?? "Erreur inconnue."} Vous pouvez réessayer ci-dessous.`
+                    : `Le récapitulatif PDF sera transmis à ${CONTACT_EMAIL}.`}
             </p>
+            {emailState.status === "error" && (
+              <button
+                type="button"
+                onClick={() => handleExportPdf({ download: false, email: true })}
+                className="mt-2 text-xs font-semibold text-primary underline underline-offset-2 hover:no-underline"
+              >
+                Renvoyer le PDF à {CONTACT_EMAIL}
+              </button>
+            )}
           </div>
         </div>
       </div>
