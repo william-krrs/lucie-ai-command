@@ -252,9 +252,8 @@ function SharedDiagnosticPage() {
     }
   };
 
-  const handleSendEmail = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const trimmed = email.trim();
+  const resendEmail = async (targetEmail?: string) => {
+    const trimmed = (targetEmail ?? email).trim();
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
       setSendState({ status: "error", message: "Adresse email invalide." });
       return;
@@ -277,6 +276,11 @@ function SharedDiagnosticPage() {
         message: err instanceof Error ? err.message : "Envoi impossible.",
       });
     }
+  };
+
+  const handleSendEmail = (e: React.FormEvent) => {
+    e.preventDefault();
+    void resendEmail();
   };
 
   const expires = new Date(data.expiresAt).toLocaleDateString("fr-FR", {
@@ -434,6 +438,14 @@ function SharedDiagnosticPage() {
                   <div className="flex-1">
                     <p className="font-medium">L'envoi n'a pas pu aboutir</p>
                     <p className="mt-0.5 text-destructive/90">{sendState.message}</p>
+                    <button
+                      type="button"
+                      onClick={() => void resendEmail()}
+                      className="mt-2 inline-flex items-center gap-1 rounded-md border border-destructive/40 bg-background px-2 py-1 text-[11px] font-medium text-destructive hover:bg-destructive/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive/40"
+                    >
+                      <Send className="h-3 w-3" aria-hidden="true" />
+                      Renvoyer l'e-mail
+                    </button>
                   </div>
                 </div>
               </div>
