@@ -1,9 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import {
   ArrowRight,
+  AlertCircle,
   Building2,
   Users,
   Target,
@@ -142,15 +143,49 @@ function RecommandationPage() {
   };
 
   const [busyPartnerId, setBusyPartnerId] = useState<string | null>(null);
+  const [touchedFields, setTouchedFields] = useState<Record<string, { name?: boolean; email?: boolean }>>({});
+  const markTouched = (id: string, field: "name" | "email") =>
+    setTouchedFields((prev) => ({ ...prev, [id]: { ...prev[id], [field]: true } }));
+
+  const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const partnerErrors = useMemo(() => {
+    const out: Record<string, { name?: string; email?: string }> = {};
+    for (const p of state.partners) {
+      const errs: { name?: string; email?: string } = {};
+      const name = p.name.trim();
+      const email = p.email.trim();
+      if (!name) errs.name = "Le nom est requis.";
+      else if (name.length > 80) errs.name = "80 caractères maximum.";
+      if (!email) errs.email = "L'email est requis.";
+      else if (email.length > 200) errs.email = "200 caractères maximum.";
+      else if (!EMAIL_RE.test(email)) errs.email = "Format attendu : nom@domaine.fr";
+      out[p.id] = errs;
+    }
+    return out;
+  }, [state.partners]);
+  const isPartnerValid = (id: string) => {
+    const e = partnerErrors[id] || {};
+    return !e.name && !e.email;
+  };
+
+  const partnerCountError = useMemo(() => {
+    if (!state.hasPartner) return null;
+    const n = state.partnerCount;
+    if (!Number.isFinite(n) || !Number.isInteger(n)) return "Entrez un nombre entier.";
+    if (n < 2) return "Vous devez être au moins 2.";
+    if (n > 20) return "Maximum 20 décideurs.";
+    return null;
+  }, [state.hasPartner, state.partnerCount]);
 
   const generateAndSendForPartner = async (id: string) => {
     const partner = state.partners.find((p) => p.id === id);
     if (!partner) return;
-    const email = partner.email.trim();
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      toast.error("Renseignez un email valide pour cet associé.");
+    setTouchedFields((prev) => ({ ...prev, [id]: { name: true, email: true } }));
+    if (!isPartnerValid(id)) {
+      toast.error("Corrigez les erreurs avant d'envoyer.");
       return;
     }
+    const email = partner.email.trim();
     setBusyPartnerId(id);
     try {
       let url = partner.shareUrl;
