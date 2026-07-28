@@ -1947,7 +1947,7 @@ function SubmittedConfirmation({
 
       <div className="mt-8 flex flex-wrap justify-center gap-2">
         <Button
-          onClick={handleExportPdf}
+          onClick={() => handleExportPdf({ download: true })}
           disabled={exporting}
           className="h-11 rounded-xl"
         >
