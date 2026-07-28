@@ -1339,8 +1339,9 @@ export function PreparationForm({
 
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-xs text-muted-foreground">
-            En cliquant « Envoyer », votre questionnaire est enregistré et
-            transmis à l'équipe Lucie (<strong>{CONTACT_EMAIL}</strong>).
+            À l'étape suivante, votre questionnaire sera enregistré puis envoyé
+            <strong> automatiquement en PDF</strong> à{" "}
+            <strong>{CONTACT_EMAIL}</strong>.
           </p>
           <div className="flex flex-wrap gap-2">
             <Button
@@ -1359,7 +1360,7 @@ export function PreparationForm({
               className="h-11 rounded-xl bg-primary px-6 text-primary-foreground shadow-[var(--shadow-elevated)] hover:bg-primary/90"
             >
               <Eye className="mr-2 h-4 w-4" aria-hidden="true" />
-              Vérifier le récapitulatif
+              Vérifier puis envoyer le PDF
             </Button>
           </div>
         </div>
