@@ -1429,14 +1429,40 @@ function SubmittedConfirmation({
   const [sendCopyToProspect, setSendCopyToProspect] = useState(hasProspectEmail);
 
   const handleExportPdf = async (
-    opts: { download?: boolean; email?: boolean; sendToProspect?: boolean } = { download: true },
+    opts: {
+      download?: boolean;
+      email?: boolean;
+      sendToProspect?: boolean;
+      mode?: "both" | "main" | "prospect";
+    } = { download: true },
   ) => {
     const shouldDownload = opts.download ?? false;
     const shouldEmail = opts.email ?? false;
+    const mode: "both" | "main" | "prospect" = opts.mode ?? "both";
     const shouldSendToProspect =
       shouldEmail && (opts.sendToProspect ?? sendCopyToProspect) && hasProspectEmail;
+
+    // Validation client : refuser un email prospect invalide
+    if (shouldEmail && mode === "prospect" && !hasProspectEmail) {
+      setEmailState((s) => ({
+        ...s,
+        prospectSending: false,
+        prospectSent: false,
+        prospectErrorCode: "invalid_email",
+        prospectError: "Adresse email du prospect invalide.",
+      }));
+      toast.error("Adresse email du prospect invalide.");
+      return;
+    }
+
     if (shouldDownload) setExporting(true);
-    if (shouldEmail) setEmailState({ status: "sending" });
+    if (shouldEmail) {
+      setEmailState((s) => {
+        if (mode === "prospect") return { ...s, prospectSending: true };
+        if (mode === "main") return { ...s, mainSending: true, status: "sending" };
+        return { status: "sending", retryCount: (s.retryCount ?? 0) };
+      });
+    }
     try {
       const { jsPDF } = await import("jspdf");
       const doc = new jsPDF({ unit: "pt", format: "a4" });
@@ -1840,43 +1866,122 @@ function SubmittedConfirmation({
                 ? `${formatBookingDate(booking.date)}${booking.time ? " · " + booking.time : ""}`
                 : null,
               sendToProspect: shouldSendToProspect,
+              mode,
+              retryAttempt: (emailState.retryCount ?? 0) + (mode !== "both" ? 1 : 0),
             },
           });
-          if (res.sent) {
-            const r = res as {
-              messageId?: string;
-              prospectSent?: boolean;
-              prospectMessageId?: string;
-              prospectError?: string;
+          const r = res as {
+            sent: boolean;
+            mainSent?: boolean;
+            messageId?: string;
+            mainErrorCode?: string;
+            mainError?: string;
+            prospectAttempted?: boolean;
+            prospectSent?: boolean;
+            prospectMessageId?: string;
+            prospectErrorCode?: string;
+            prospectError?: string;
+          };
+          setEmailState((s) => {
+            const mainAttempted = mode !== "prospect";
+            const nextMainSent =
+              mainAttempted ? r.mainSent : s.mainSent;
+            const nextMainError = mainAttempted ? r.mainError : s.mainError;
+            const nextMainErrorCode = mainAttempted ? r.mainErrorCode : s.mainErrorCode;
+            const nextMessageId = mainAttempted && r.messageId ? r.messageId : s.messageId;
+
+            const prospectAttempted =
+              mode === "prospect" || (mode === "both" && shouldSendToProspect);
+            const nextProspectSent = prospectAttempted ? r.prospectSent : s.prospectSent;
+            const nextProspectMessageId =
+              prospectAttempted && r.prospectMessageId ? r.prospectMessageId : s.prospectMessageId;
+            const nextProspectError = prospectAttempted ? r.prospectError : s.prospectError;
+            const nextProspectErrorCode = prospectAttempted
+              ? r.prospectErrorCode
+              : s.prospectErrorCode;
+
+            const overallOk =
+              (nextMainSent ?? true) === true &&
+              (!prospectAttempted || nextProspectSent === true);
+
+            return {
+              status: nextMainSent === false ? "error" : overallOk ? "sent" : s.status === "sent" ? "sent" : "error",
+              message: nextMainError,
+              sentAt:
+                mainAttempted && r.mainSent
+                  ? new Date().toISOString()
+                  : s.sentAt ?? (r.mainSent === undefined && r.prospectSent ? new Date().toISOString() : undefined),
+              messageId: nextMessageId,
+              mainSent: nextMainSent,
+              mainError: nextMainError,
+              mainErrorCode: nextMainErrorCode,
+              prospectAttempted: prospectAttempted || s.prospectAttempted,
+              prospectSent: nextProspectSent,
+              prospectMessageId: nextProspectMessageId,
+              prospectError: nextProspectError,
+              prospectErrorCode: nextProspectErrorCode,
+              mainSending: false,
+              prospectSending: false,
+              retryCount: (s.retryCount ?? 0) + (mode !== "both" ? 1 : 0),
             };
-            setEmailState({
-              status: "sent",
-              sentAt: new Date().toISOString(),
-              messageId: r.messageId,
-              prospectSent: r.prospectSent,
-              prospectMessageId: r.prospectMessageId,
-              prospectError: r.prospectError,
-            });
-            toast.success(
-              r.prospectSent
-                ? `Email envoyé à ${CONTACT_EMAIL} + ${prospectEmail}`
-                : `Email envoyé à ${CONTACT_EMAIL}`,
-              { description: `Document ${documentId}` },
-            );
+          });
+
+          if (mode === "prospect") {
+            if (r.prospectSent)
+              toast.success(`Copie envoyée à ${prospectEmail}`, {
+                description: `Document ${documentId}`,
+              });
+            else
+              toast.error(
+                `Copie non envoyée : ${errorLabel(r.prospectErrorCode, r.prospectError)}`,
+              );
+          } else if (mode === "main") {
+            if (r.mainSent)
+              toast.success(`Email envoyé à ${CONTACT_EMAIL}`, {
+                description: `Document ${documentId}`,
+              });
+            else
+              toast.error(`Envoi impossible : ${errorLabel(r.mainErrorCode, r.mainError)}`);
           } else {
-            setEmailState({ status: "error", message: res.error });
+            if (r.mainSent) {
+              toast.success(
+                r.prospectSent
+                  ? `Email envoyé à ${CONTACT_EMAIL} + ${prospectEmail}`
+                  : `Email envoyé à ${CONTACT_EMAIL}`,
+                { description: `Document ${documentId}` },
+              );
+            } else {
+              toast.error(`Envoi impossible : ${errorLabel(r.mainErrorCode, r.mainError)}`);
+            }
           }
         } catch (err) {
-          setEmailState({
-            status: "error",
-            message: err instanceof Error ? err.message : String(err),
-          });
+          const message = err instanceof Error ? err.message : String(err);
+          setEmailState((s) => ({
+            ...s,
+            status: mode === "prospect" ? s.status : "error",
+            message,
+            mainSending: false,
+            prospectSending: false,
+            ...(mode === "prospect"
+              ? { prospectSent: false, prospectErrorCode: "network_error", prospectError: message }
+              : { mainSent: false, mainErrorCode: "network_error", mainError: message }),
+          }));
+          toast.error(`Envoi impossible : ${message}`);
         }
       }
     } catch (err) {
       console.error(err);
       if (shouldDownload) toast.error("Export PDF impossible. Réessayez.");
-      if (shouldEmail) setEmailState({ status: "error", message: "PDF non généré." });
+      if (shouldEmail)
+        setEmailState((s) => ({
+          ...s,
+          status: "error",
+          message: "PDF non généré.",
+          mainSending: false,
+          prospectSending: false,
+          mainErrorCode: "unknown_error",
+          mainError: "PDF non généré.",
+        }));
     } finally {
       if (shouldDownload) setExporting(false);
     }
