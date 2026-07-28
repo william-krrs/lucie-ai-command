@@ -76,9 +76,9 @@ function DemoMode() {
   const [shareEmail, setShareEmail] = useState("");
   const [emailSendState, setEmailSendState] = useState<
     | { status: "idle" }
-    | { status: "sending" }
-    | { status: "sent"; to: string }
-    | { status: "error"; message: string }
+    | { status: "sending"; attempts: number; startedAt: number }
+    | { status: "sent"; to: string; attempts: number; at: number }
+    | { status: "error"; message: string; attempts: number; at: number }
   >({ status: "idle" });
 
   const generateShare = useCallback(async () => {
@@ -143,13 +143,21 @@ function DemoMode() {
   const sendShareByEmail = useCallback(async () => {
     if (!share) return;
     const trimmed = shareEmail.trim();
+    const prevAttempts =
+      emailSendState.status === "idle" ? 0 : emailSendState.attempts;
+    const attempts = prevAttempts + 1;
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
-      setEmailSendState({ status: "error", message: "Adresse email invalide." });
+      setEmailSendState({
+        status: "error",
+        message: "Adresse email invalide.",
+        attempts,
+        at: Date.now(),
+      });
       return;
     }
     const token = share.url.split("/d/")[1] ?? "";
     if (!token) return;
-    setEmailSendState({ status: "sending" });
+    setEmailSendState({ status: "sending", attempts, startedAt: Date.now() });
     try {
       await sendShare({
         data: {
@@ -159,14 +167,16 @@ function DemoMode() {
           senderName: state.companyName ?? null,
         },
       });
-      setEmailSendState({ status: "sent", to: trimmed });
+      setEmailSendState({ status: "sent", to: trimmed, attempts, at: Date.now() });
     } catch (e) {
       setEmailSendState({
         status: "error",
         message: e instanceof Error ? e.message : "Envoi impossible.",
+        attempts,
+        at: Date.now(),
       });
     }
-  }, [share, shareEmail, sendShare, state.companyName]);
+  }, [share, shareEmail, sendShare, state.companyName, emailSendState]);
 
   const slides = useMemo<Slide[]>(
     () => [
