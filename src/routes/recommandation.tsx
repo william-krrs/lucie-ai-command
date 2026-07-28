@@ -90,6 +90,111 @@ function RecommandationPage() {
     setShareHistory(getShareHistory());
   }, []);
 
+  const buildShareUrl = async (): Promise<string> => {
+    const { token } = await createShare({
+      data: {
+        companyName: state.companyName,
+        activity: state.activity,
+        city: state.city,
+        employees: state.employees,
+        callsPerWeek: state.callsPerWeek,
+        missedCalls: state.missedCalls,
+        averageBasket: state.averageBasket,
+        revenueGoal: state.revenueGoal,
+        conversionRate: state.conversionRate,
+        channels: state.channels,
+        recommendation: {
+          score: rec.score,
+          tier: rec.tier,
+          plan: rec.plan,
+          priority: rec.priority,
+          estimatedMonthlyRoi: rec.estimatedMonthlyRoi,
+          justifications: rec.justifications,
+          concerns: rec.concerns,
+          planReason: rec.planReason,
+        },
+        metrics: {
+          monthlyReceived: m.monthlyReceived,
+          monthlyMissed: m.monthlyMissed,
+          monthlyLostRevenue: m.monthlyLostRevenue,
+          yearlyLostRevenue: m.yearlyLostRevenue,
+          recoverableOpportunities: m.recoverableOpportunities,
+          timeSavedHours: m.timeSavedHours,
+        },
+      },
+    });
+    return `${window.location.origin}/d/${token}`;
+  };
+
+  const updatePartner = (id: string, patch: Partial<{ name: string; email: string; shareUrl: string; sentAt: string }>) => {
+    update(
+      "partners",
+      state.partners.map((p) => (p.id === id ? { ...p, ...patch } : p)),
+    );
+  };
+
+  const addPartner = () => {
+    const id = (crypto.randomUUID && crypto.randomUUID()) || `p_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+    update("partners", [...state.partners, { id, name: "", email: "" }]);
+  };
+
+  const removePartner = (id: string) => {
+    update("partners", state.partners.filter((p) => p.id !== id));
+  };
+
+  const [busyPartnerId, setBusyPartnerId] = useState<string | null>(null);
+
+  const generateAndSendForPartner = async (id: string) => {
+    const partner = state.partners.find((p) => p.id === id);
+    if (!partner) return;
+    const email = partner.email.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      toast.error("Renseignez un email valide pour cet associé.");
+      return;
+    }
+    setBusyPartnerId(id);
+    try {
+      let url = partner.shareUrl;
+      if (!url) {
+        url = await buildShareUrl();
+        setShareHistory(
+          addShareHistoryEntry({
+            url,
+            token: url.split("/").pop() || "",
+            companyName: partner.name
+              ? `${state.companyName || "Diagnostic"} — ${partner.name}`
+              : state.companyName || undefined,
+          }),
+        );
+      }
+      updatePartner(id, { shareUrl: url, sentAt: new Date().toISOString() });
+      const company = state.companyName || "votre entreprise";
+      const who = partner.name.trim();
+      const hello = who ? `Bonjour ${who},` : "Bonjour,";
+      const subject = `Récap diagnostic Lucie — ${company}`;
+      const body = `${hello}\n\nVoici le récapitulatif du diagnostic Lucie pour ${company} :\n${url}\n\nCe lien sécurisé personnel est valable 30 jours.\n\nBien à vous,`;
+      window.location.href = `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+      toast.success("Lien généré — ouverture de votre email…");
+    } catch (err) {
+      toast.error("Impossible de générer le lien", {
+        description: err instanceof Error ? err.message : undefined,
+      });
+    } finally {
+      setBusyPartnerId(null);
+    }
+  };
+
+  const copyPartnerLink = async (id: string) => {
+    const partner = state.partners.find((p) => p.id === id);
+    if (!partner?.shareUrl) return;
+    try {
+      await navigator.clipboard.writeText(partner.shareUrl);
+      toast.success("Lien copié");
+    } catch {
+      toast.error("Copie impossible");
+    }
+  };
+
   const handleShare = async (opts?: { silent?: boolean }): Promise<string | null> => {
     if (isSharing) return shareUrl;
     setIsSharing(true);
@@ -342,85 +447,126 @@ function RecommandationPage() {
         </div>
 
         {state.hasPartner && (
-          <div className="grid gap-3 sm:grid-cols-3">
-            <label className="text-sm space-y-1">
-              <span className="text-muted-foreground">Nombre de décideurs</span>
-              <Input
-                type="number"
-                min={2}
-                max={20}
-                value={state.partnerCount}
-                onChange={(e) =>
-                  update("partnerCount", Math.max(2, Number(e.target.value) || 2))
-                }
+          <div className="space-y-3">
+            <div className="flex items-center justify-between gap-2">
+              <div className="text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
+                Associés ({state.partners.length})
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
                 className="rounded-xl"
-              />
-            </label>
-            <label className="text-sm space-y-1">
-              <span className="text-muted-foreground">Nom de l'associé(e)</span>
-              <Input
-                value={state.partnerName}
-                onChange={(e) => update("partnerName", e.target.value)}
-                placeholder="Prénom Nom"
-                className="rounded-xl"
-              />
-            </label>
-            <label className="text-sm space-y-1">
-              <span className="text-muted-foreground">Email de l'associé(e)</span>
-              <Input
-                type="email"
-                inputMode="email"
-                value={state.partnerEmail}
-                onChange={(e) => update("partnerEmail", e.target.value)}
-                placeholder="associe@entreprise.fr"
-                className="rounded-xl"
-              />
-            </label>
-          </div>
-        )}
+                onClick={addPartner}
+              >
+                <UserPlus className="mr-1.5 h-4 w-4" /> Ajouter un associé
+              </Button>
+            </div>
 
-        {state.hasPartner && (
-          <div className="flex flex-wrap gap-2 pt-1">
-            <Button
-              type="button"
-              size="sm"
-              className="rounded-xl"
-              disabled={isSharing}
-              onClick={async () => {
-                const email = state.partnerEmail.trim();
-                if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-                  toast.error("Renseignez un email valide pour votre associé(e).");
-                  return;
-                }
-                let url = shareUrl;
-                if (!url) {
-                  try {
-                    url = await handleShare({ silent: true });
-                  } catch {
-                    // handleShare already surfaces the error
-                    return;
-                  }
-                }
-                if (!url) return;
-                const company = state.companyName || "votre entreprise";
-                const who = state.partnerName.trim() || "";
-                const hello = who ? `Bonjour ${who},` : "Bonjour,";
-                const subject = `Récap diagnostic Lucie — ${company}`;
-                const body = `${hello}\n\nVoici le récapitulatif du diagnostic Lucie pour ${company} :\n${url}\n\nCe lien sécurisé est valable 30 jours.\n\nBien à vous,`;
-                window.location.href = `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-                toast.success("Ouverture de votre client email…");
-              }}
-            >
-              {isSharing ? (
-                <>
-                  <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> Préparation…
-                </>
-              ) : (
-                <>
-                  <Mail className="mr-1.5 h-4 w-4" /> Envoyer le récap à mon associé(e)
-                </>
-              )}
-            </Button>
+            {state.partners.length === 0 ? (
+              <p className="rounded-xl border border-dashed border-border bg-background/40 p-4 text-sm text-muted-foreground">
+                Ajoutez chaque associé pour lui envoyer un lien sécurisé personnel (unique et traçable).
+              </p>
+            ) : (
+              <ul className="space-y-3">
+                {state.partners.map((p, idx) => {
+                  const busy = busyPartnerId === p.id;
+                  return (
+                    <li
+                      key={p.id}
+                      className="rounded-xl border border-border bg-background/60 p-3 space-y-3"
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                          Associé #{idx + 1}
+                        </span>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 rounded-lg text-muted-foreground hover:text-destructive"
+                          onClick={() => removePartner(p.id)}
+                          aria-label="Retirer cet associé"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+                      <div className="grid gap-2 sm:grid-cols-2">
+                        <label className="text-sm space-y-1">
+                          <span className="text-muted-foreground">Nom</span>
+                          <Input
+                            value={p.name}
+                            onChange={(e) => updatePartner(p.id, { name: e.target.value })}
+                            placeholder="Prénom Nom"
+                            className="rounded-xl"
+                          />
+                        </label>
+                        <label className="text-sm space-y-1">
+                          <span className="text-muted-foreground">Email</span>
+                          <Input
+                            type="email"
+                            inputMode="email"
+                            value={p.email}
+                            onChange={(e) => updatePartner(p.id, { email: e.target.value })}
+                            placeholder="associe@entreprise.fr"
+                            className="rounded-xl"
+                          />
+                        </label>
+                      </div>
+                      {p.shareUrl && (
+                        <div className="flex flex-col gap-1 rounded-lg border border-primary/20 bg-primary/[0.04] px-3 py-2 text-xs sm:flex-row sm:items-center sm:justify-between">
+                          <span className="truncate font-mono text-foreground">
+                            {p.shareUrl}
+                          </span>
+                          {p.sentAt && (
+                            <span className="shrink-0 text-muted-foreground">
+                              Envoyé le{" "}
+                              {new Date(p.sentAt).toLocaleString("fr-FR", {
+                                day: "2-digit",
+                                month: "short",
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })}
+                            </span>
+                          )}
+                        </div>
+                      )}
+                      <div className="flex flex-wrap gap-2">
+                        <Button
+                          type="button"
+                          size="sm"
+                          className="rounded-xl"
+                          disabled={busy}
+                          onClick={() => generateAndSendForPartner(p.id)}
+                        >
+                          {busy ? (
+                            <>
+                              <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> Préparation…
+                            </>
+                          ) : (
+                            <>
+                              <Mail className="mr-1.5 h-4 w-4" />
+                              {p.shareUrl ? "Renvoyer le lien" : "Générer & envoyer le lien"}
+                            </>
+                          )}
+                        </Button>
+                        {p.shareUrl && (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="rounded-xl"
+                            onClick={() => copyPartnerLink(p.id)}
+                          >
+                            <Copy className="mr-1.5 h-4 w-4" /> Copier
+                          </Button>
+                        )}
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
           </div>
         )}
       </section>
