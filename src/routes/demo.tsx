@@ -22,6 +22,7 @@ import { cn } from "@/lib/utils";
 import { CountUp, useReducedMotion } from "@/components/count-up";
 import { LucieMascot } from "@/components/lucie-mascot";
 import { createSharedDiagnostic } from "@/lib/share.functions";
+import { CALENDLY_URL } from "@/lib/config";
 
 export const Route = createFileRoute("/demo")({
   head: () => ({
@@ -289,7 +290,9 @@ function DemoMode() {
       {
         id: "share",
         eyebrow: "Étape 6 — Rapport privé",
-        title: "Un lien sécurisé pour votre associé",
+        title: state.hasPartner
+          ? "Un lien sécurisé pour votre associé"
+          : "Votre rapport privé sécurisé",
         render: () => (
           <div className="mx-auto flex w-full max-w-2xl flex-col items-center gap-6 text-center">
             <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1 text-xs text-muted-foreground">
@@ -299,8 +302,9 @@ function DemoMode() {
             {!share ? (
               <>
                 <p className="max-w-lg text-base leading-relaxed text-muted-foreground">
-                  Génère un lien unique pour revoir le diagnostic, le score, le ROI
-                  et la recommandation. Valable 30 jours.
+                  {state.hasPartner
+                    ? "Génère un lien unique à partager avec votre associé pour revoir le diagnostic, le score, le ROI et la recommandation. Valable 30 jours."
+                    : "Génère un lien unique pour revoir à tout moment votre diagnostic, votre score, votre ROI et la recommandation. Valable 30 jours."}
                 </p>
                 <button
                   type="button"
@@ -345,7 +349,8 @@ function DemoMode() {
                   onClick={copyShare}
                   className="inline-flex h-11 items-center gap-2 rounded-xl border border-primary/40 bg-primary/10 px-5 text-sm font-medium text-primary"
                 >
-                  <Copy className="h-4 w-4" /> Partager avec mon associé
+                  <Copy className="h-4 w-4" />{" "}
+                  {state.hasPartner ? "Partager avec mon associé" : "Copier le lien"}
                 </button>
               </div>
             )}
@@ -359,8 +364,7 @@ function DemoMode() {
         render: () => {
           const steps: { label: string; done: boolean }[] = [
             { label: "Diagnostic terminé", done: true },
-            { label: "Démonstration réalisée", done: true },
-            { label: "Choix de la formule", done: false },
+            { label: "Démonstration réalisée", done: false },
             { label: "Paiement", done: false },
             { label: "Installation", done: false },
             { label: "Mise en service", done: false },
@@ -400,12 +404,14 @@ function DemoMode() {
                   </li>
                 ))}
               </ol>
-              <Link
-                to="/offres"
+              <a
+                href={CALENDLY_URL}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="inline-flex h-12 items-center gap-2 rounded-xl bg-primary px-7 text-sm font-medium text-primary-foreground shadow-[var(--elev-glow)]"
               >
-                Continuer avec Lucie <ArrowRight className="h-4 w-4" />
-              </Link>
+                Prendre RDV pour votre démonstration <ArrowRight className="h-4 w-4" />
+              </a>
             </div>
           );
         },
