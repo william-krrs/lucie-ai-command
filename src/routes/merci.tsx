@@ -39,7 +39,7 @@ const JOURNEY_STEPS = [
     icon: CreditCard,
   },
   {
-    id: "questionnaire",
+    id: "configuration",
     label: "Configuration",
     description: "Configuration personnalisée de Lucie",
     icon: ClipboardList,
