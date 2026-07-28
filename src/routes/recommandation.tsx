@@ -1,9 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import {
   ArrowRight,
+  AlertCircle,
   Building2,
   Users,
   Target,
@@ -142,15 +143,49 @@ function RecommandationPage() {
   };
 
   const [busyPartnerId, setBusyPartnerId] = useState<string | null>(null);
+  const [touchedFields, setTouchedFields] = useState<Record<string, { name?: boolean; email?: boolean }>>({});
+  const markTouched = (id: string, field: "name" | "email") =>
+    setTouchedFields((prev) => ({ ...prev, [id]: { ...prev[id], [field]: true } }));
+
+  const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const partnerErrors = useMemo(() => {
+    const out: Record<string, { name?: string; email?: string }> = {};
+    for (const p of state.partners) {
+      const errs: { name?: string; email?: string } = {};
+      const name = p.name.trim();
+      const email = p.email.trim();
+      if (!name) errs.name = "Le nom est requis.";
+      else if (name.length > 80) errs.name = "80 caractères maximum.";
+      if (!email) errs.email = "L'email est requis.";
+      else if (email.length > 200) errs.email = "200 caractères maximum.";
+      else if (!EMAIL_RE.test(email)) errs.email = "Format attendu : nom@domaine.fr";
+      out[p.id] = errs;
+    }
+    return out;
+  }, [state.partners]);
+  const isPartnerValid = (id: string) => {
+    const e = partnerErrors[id] || {};
+    return !e.name && !e.email;
+  };
+
+  const partnerCountError = useMemo(() => {
+    if (!state.hasPartner) return null;
+    const n = state.partnerCount;
+    if (!Number.isFinite(n) || !Number.isInteger(n)) return "Entrez un nombre entier.";
+    if (n < 2) return "Vous devez être au moins 2.";
+    if (n > 20) return "Maximum 20 décideurs.";
+    return null;
+  }, [state.hasPartner, state.partnerCount]);
 
   const generateAndSendForPartner = async (id: string) => {
     const partner = state.partners.find((p) => p.id === id);
     if (!partner) return;
-    const email = partner.email.trim();
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      toast.error("Renseignez un email valide pour cet associé.");
+    setTouchedFields((prev) => ({ ...prev, [id]: { name: true, email: true } }));
+    if (!isPartnerValid(id)) {
+      toast.error("Corrigez les erreurs avant d'envoyer.");
       return;
     }
+    const email = partner.email.trim();
     setBusyPartnerId(id);
     try {
       let url = partner.shareUrl;
@@ -462,6 +497,41 @@ function RecommandationPage() {
               </Button>
             </div>
 
+            <label className="flex flex-col gap-1 rounded-xl border border-border bg-background/60 p-3 text-sm sm:flex-row sm:items-center sm:justify-between">
+              <span className="text-muted-foreground">
+                Nombre total de décideurs (vous compris)
+              </span>
+              <div className="flex flex-col items-end gap-1">
+                <Input
+                  type="number"
+                  inputMode="numeric"
+                  min={2}
+                  max={20}
+                  step={1}
+                  value={state.partnerCount}
+                  onChange={(e) => {
+                    const v = Number.parseInt(e.target.value, 10);
+                    update("partnerCount", Number.isFinite(v) ? v : 0);
+                  }}
+                  className={`w-24 rounded-xl text-right ${
+                    partnerCountError ? "border-destructive focus-visible:ring-destructive/40" : ""
+                  }`}
+                  aria-invalid={partnerCountError ? true : undefined}
+                  aria-describedby={partnerCountError ? "partner-count-error" : undefined}
+                />
+                {partnerCountError && (
+                  <p
+                    id="partner-count-error"
+                    role="alert"
+                    className="inline-flex items-center gap-1 text-xs text-destructive"
+                  >
+                    <AlertCircle className="h-3 w-3" aria-hidden="true" />
+                    {partnerCountError}
+                  </p>
+                )}
+              </div>
+            </label>
+
             {state.partners.length === 0 ? (
               <p className="rounded-xl border border-dashed border-border bg-background/40 p-4 text-sm text-muted-foreground">
                 Ajoutez chaque associé pour lui envoyer un lien sécurisé personnel (unique et traçable).
@@ -470,6 +540,11 @@ function RecommandationPage() {
               <ul className="space-y-3">
                 {state.partners.map((p, idx) => {
                   const busy = busyPartnerId === p.id;
+                  const errs = partnerErrors[p.id] || {};
+                  const touched = touchedFields[p.id] || {};
+                  const showNameErr = touched.name && errs.name;
+                  const showEmailErr = touched.email && errs.email;
+                  const canSend = isPartnerValid(p.id) && !busy;
                   return (
                     <li
                       key={p.id}
@@ -492,24 +567,59 @@ function RecommandationPage() {
                       </div>
                       <div className="grid gap-2 sm:grid-cols-2">
                         <label className="text-sm space-y-1">
-                          <span className="text-muted-foreground">Nom</span>
+                          <span className="text-muted-foreground">
+                            Nom <span className="text-destructive">*</span>
+                          </span>
                           <Input
                             value={p.name}
-                            onChange={(e) => updatePartner(p.id, { name: e.target.value })}
+                            onChange={(e) => updatePartner(p.id, { name: e.target.value.slice(0, 80) })}
+                            onBlur={() => markTouched(p.id, "name")}
                             placeholder="Prénom Nom"
-                            className="rounded-xl"
+                            className={`rounded-xl ${showNameErr ? "border-destructive focus-visible:ring-destructive/40" : ""}`}
+                            aria-invalid={showNameErr ? true : undefined}
+                            aria-describedby={showNameErr ? `${p.id}-name-err` : undefined}
+                            maxLength={80}
+                            required
                           />
+                          {showNameErr && (
+                            <p
+                              id={`${p.id}-name-err`}
+                              role="alert"
+                              className="inline-flex items-center gap-1 text-xs text-destructive"
+                            >
+                              <AlertCircle className="h-3 w-3" aria-hidden="true" />
+                              {errs.name}
+                            </p>
+                          )}
                         </label>
                         <label className="text-sm space-y-1">
-                          <span className="text-muted-foreground">Email</span>
+                          <span className="text-muted-foreground">
+                            Email <span className="text-destructive">*</span>
+                          </span>
                           <Input
                             type="email"
                             inputMode="email"
+                            autoComplete="email"
                             value={p.email}
-                            onChange={(e) => updatePartner(p.id, { email: e.target.value })}
+                            onChange={(e) => updatePartner(p.id, { email: e.target.value.slice(0, 200) })}
+                            onBlur={() => markTouched(p.id, "email")}
                             placeholder="associe@entreprise.fr"
-                            className="rounded-xl"
+                            className={`rounded-xl ${showEmailErr ? "border-destructive focus-visible:ring-destructive/40" : ""}`}
+                            aria-invalid={showEmailErr ? true : undefined}
+                            aria-describedby={showEmailErr ? `${p.id}-email-err` : undefined}
+                            maxLength={200}
+                            required
                           />
+                          {showEmailErr && (
+                            <p
+                              id={`${p.id}-email-err`}
+                              role="alert"
+                              className="inline-flex items-center gap-1 text-xs text-destructive"
+                            >
+                              <AlertCircle className="h-3 w-3" aria-hidden="true" />
+                              {errs.email}
+                            </p>
+                          )}
                         </label>
                       </div>
                       {p.shareUrl && (
@@ -535,7 +645,9 @@ function RecommandationPage() {
                           type="button"
                           size="sm"
                           className="rounded-xl"
-                          disabled={busy}
+                          disabled={!canSend}
+                          aria-disabled={!canSend}
+                          title={!isPartnerValid(p.id) ? "Complétez le nom et un email valide." : undefined}
                           onClick={() => generateAndSendForPartner(p.id)}
                         >
                           {busy ? (
