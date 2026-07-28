@@ -1444,6 +1444,18 @@ function SubmittedConfirmation({
   const hasProspectEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(prospectEmail);
   const [sendCopyToProspect, setSendCopyToProspect] = useState(hasProspectEmail);
 
+  // Personnalisation de l'email envoyé au prospect
+  const defaultProspectSubject = "Votre récapitulatif Lucie";
+  const defaultProspectMessage = `Bonjour ${form.contactName?.trim() || "{prénom}"},\n\nMerci pour votre confiance ! Vous trouverez ci-dessous le récapitulatif de votre configuration Lucie ainsi que le PDF détaillé.\n\nNotre équipe revient vers vous très vite pour lancer l'installation.\n\nÀ très vite,\nL'équipe Lucie`;
+  const [prospectSubject, setProspectSubject] = useState<string>(defaultProspectSubject);
+  const [prospectMessage, setProspectMessage] = useState<string>(defaultProspectMessage);
+  const [prospectCustomOpen, setProspectCustomOpen] = useState(false);
+  const [prospectPreviewOpen, setProspectPreviewOpen] = useState(false);
+  const resetProspectTemplate = () => {
+    setProspectSubject(defaultProspectSubject);
+    setProspectMessage(defaultProspectMessage);
+  };
+
   const handleExportPdf = async (
     opts: {
       download?: boolean;
