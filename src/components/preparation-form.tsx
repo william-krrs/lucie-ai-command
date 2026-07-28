@@ -2235,7 +2235,7 @@ function ReviewPanel({
           ) : (
             <Send className="mr-2 h-4 w-4" aria-hidden="true" />
           )}
-          {submitting ? "Envoi en cours…" : "Confirmer et envoyer à l'équipe Lucie"}
+          {submitting ? "Envoi en cours…" : `Confirmer et envoyer le PDF à ${CONTACT_EMAIL}`}
         </Button>
       </div>
     </section>
