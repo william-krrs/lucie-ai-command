@@ -36,7 +36,7 @@ const NAV = [
   { to: "/demonstration", label: "Démonstration", icon: PlayCircle, gated: true },
   { to: "/offres", label: "Offres", icon: Package, gated: true },
   { to: "/merci", label: "Paiement", icon: CheckCircle2 },
-  { to: "/preparation", label: "Questionnaire", icon: FileText, gated: true },
+  { to: "/preparation", label: "Configuration", icon: FileText, gated: true },
   { to: "/installation", label: "Installation", icon: Rocket, gated: true },
   { to: "/rdv-test", label: "RDV Test & paramétrage", icon: CalendarClock, gated: true },
   { to: "/faq", label: "Questions fréquentes", icon: HelpCircle },

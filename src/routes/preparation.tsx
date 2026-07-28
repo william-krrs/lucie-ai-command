@@ -19,15 +19,15 @@ export const Route = createFileRoute("/preparation")({
   validateSearch: searchSchema,
   head: () => ({
     meta: [
-      { title: "Questionnaire de préparation | Lucie" },
+      { title: "Configuration personnalisée | Lucie" },
       {
         name: "description",
         content:
-          "Formulaire de configuration après paiement : renseignez vos informations pour lancer l'installation de Lucie sous 72 h.",
+          "Formulaire de configuration personnalisée après paiement : renseignez vos informations pour lancer l'installation de Lucie sous 72 h.",
       },
       {
         property: "og:title",
-        content: "Questionnaire de préparation | Lucie",
+        content: "Configuration personnalisée | Lucie",
       },
       {
         property: "og:description",
@@ -59,8 +59,8 @@ function Preparation() {
     return (
       <LockedPage
         title="Questionnaire verrouillé"
-        step="Questionnaire de préparation"
-        description="Le questionnaire de préparation se débloque le jour de votre rendez-vous, après avoir choisi votre formule."
+        step="Configuration personnalisée"
+        description="Le configuration personnalisée se débloque le jour de votre rendez-vous, après avoir choisi votre formule."
       />
     );
   }
@@ -69,8 +69,8 @@ function Preparation() {
     <div className="space-y-8">
       <PageHeader
         eyebrow={`Formule ${planLabel}`}
-        title="Questionnaire de préparation"
-        description="Un formulaire unique pour tout centraliser. Une fois validé, votre assistante sera prête pour une phase de test sous 72 h ouvrées."
+        title="Configuration personnalisée"
+        description="Un formulaire sur mesure pour tout centraliser. Une fois validé, votre assistante sera prête pour une phase de test sous 72 h ouvrées."
       />
       <PreparationForm plan={plan} />
     </div>

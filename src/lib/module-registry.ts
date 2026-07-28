@@ -2,7 +2,7 @@ import { useEffect } from "react";
 
 /**
  * Runtime guard that detects duplicate mounts of "singleton" page modules
- * (e.g. payment blocks, questionnaire form) inside a single render tree.
+ * (e.g. payment blocks, configuration form) inside a single render tree.
  *
  * If two components register the same module id at the same time, we log a
  * console.error in dev and throw in test — so a regression that re-introduces

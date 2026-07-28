@@ -80,7 +80,7 @@ export const sendPreparationPdf = createServerFn({ method: "POST" })
       });
     if (uploaded.error) {
       console.error("[sendPreparationPdf] upload failed", uploaded.error);
-      throw new Error("Impossible d'archiver le PDF du questionnaire.");
+      throw new Error("Impossible d'archiver le PDF de configuration.");
     }
 
     const signed = await supabaseAdmin.storage
@@ -113,9 +113,9 @@ export const sendPreparationPdf = createServerFn({ method: "POST" })
     const html = `<!doctype html><html><body style="margin:0;padding:0;background:#f5f3ff;font-family:-apple-system,Segoe UI,Roboto,sans-serif;color:#111;">
   <div style="max-width:640px;margin:0 auto;padding:32px 24px;">
     <div style="background:#0f0b1f;color:#fff;border-radius:16px;padding:28px;">
-      <div style="font-size:11px;letter-spacing:0.16em;color:#c4b5fd;text-transform:uppercase;">Nouveau questionnaire</div>
+      <div style="font-size:11px;letter-spacing:0.16em;color:#c4b5fd;text-transform:uppercase;">Nouvelle configuration</div>
       <h1 style="margin:8px 0 0;font-size:24px;">Lucie · Préparation reçue</h1>
-      <p style="margin:12px 0 0;color:#d8d4f0;font-size:14px;">${escapeHtml(data.companyName ?? "Un prospect")} vient de soumettre le questionnaire de configuration.</p>
+      <p style="margin:12px 0 0;color:#d8d4f0;font-size:14px;">${escapeHtml(data.companyName ?? "Un prospect")} vient de soumettre sa configuration personnalisée.</p>
     </div>
     <div style="background:#fff;border-radius:16px;padding:24px;margin-top:16px;border:1px solid #e9e4f7;">
       <table style="width:100%;border-collapse:collapse;">${rowsHtml}</table>
@@ -128,7 +128,7 @@ export const sendPreparationPdf = createServerFn({ method: "POST" })
   </div>
 </body></html>`;
 
-    const text = `Nouveau questionnaire Lucie (#${ref})
+    const text = `Nouvelle configuration Lucie (#${ref})
 
 ${rows.map(([k, v]) => `${k}: ${v}`).join("\n")}
 
@@ -153,7 +153,7 @@ ${pdfUrl}
             to: CONTACT_EMAIL,
             from: FROM,
             sender_domain: SENDER_DOMAIN,
-            subject: `Questionnaire Lucie · ${data.companyName ?? "Nouveau prospect"} (#${ref})`,
+            subject: `Configuration Lucie · ${data.companyName ?? "Nouveau prospect"} (#${ref})`,
             html,
             text,
             reply_to: data.contactEmail ?? undefined,

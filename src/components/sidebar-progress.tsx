@@ -15,7 +15,7 @@ type Step = {
   hint?: string;
 };
 
-function readQuestionnaireDone(): boolean {
+function readConfigurationDone(): boolean {
   if (typeof window === "undefined") return false;
   try {
     const raw = window.localStorage.getItem("lucie:preparation");
@@ -30,15 +30,15 @@ function readQuestionnaireDone(): boolean {
 export function SidebarProgress({ onNavigate }: { onNavigate?: () => void }) {
   const { state } = useLucie();
   const { booking, isUnlocked, isPendingMeeting } = useBooking();
-  const [questionnaireDone, setQuestionnaireDone] = useState(false);
+  const [configurationDone, setConfigurationDone] = useState(false);
 
   useEffect(() => {
-    setQuestionnaireDone(readQuestionnaireDone());
+    setConfigurationDone(readConfigurationDone());
     function onStorage(e: StorageEvent) {
-      if (e.key === "lucie:preparation") setQuestionnaireDone(readQuestionnaireDone());
+      if (e.key === "lucie:preparation") setConfigurationDone(readConfigurationDone());
     }
     function onFocus() {
-      setQuestionnaireDone(readQuestionnaireDone());
+      setConfigurationDone(readConfigurationDone());
     }
     window.addEventListener("storage", onStorage);
     window.addEventListener("focus", onFocus);
@@ -70,13 +70,13 @@ export function SidebarProgress({ onNavigate }: { onNavigate?: () => void }) {
       hint: rdvDone ? (isPendingMeeting ? "Confirmé" : "Passé") : "À planifier",
     },
     {
-      key: "questionnaire",
-      label: "Questionnaire",
+      key: "configuration",
+      label: "Configuration",
       to: "/preparation",
       icon: FileText,
-      done: questionnaireDone,
-      pending: !questionnaireDone && rdvDone,
-      hint: questionnaireDone ? "Envoyé" : rdvDone ? "À remplir" : "Après le RDV",
+      done: configurationDone,
+      pending: !configurationDone && rdvDone,
+      hint: configurationDone ? "Envoyée" : rdvDone ? "À remplir" : "Après le RDV",
     },
     {
       key: "installation",

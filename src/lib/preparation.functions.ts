@@ -69,7 +69,7 @@ export const submitPreparation = createServerFn({ method: "POST" })
 
     if (error) {
       console.error("[submitPreparation] insert failed", error);
-      throw new Error("Impossible d'enregistrer votre questionnaire. Réessayez.");
+      throw new Error("Impossible d'enregistrer votre configuration. Réessayez.");
     }
 
     // Email dispatch is wired once the sender domain is configured.

@@ -1,7 +1,7 @@
 /**
  * Prospect store — sauvegarde et bascule locale entre "prospects".
  *
- * Un prospect = un instantané du parcours (diagnostic + booking + questionnaire)
+ * Un prospect = un instantané du parcours (diagnostic + booking + configuration)
  * pour un client donné. Permet à l'utilisateur commercial de savoir à qui il parle
  * et de reprendre un dossier à tout moment sans re-remplir le diagnostic.
  *

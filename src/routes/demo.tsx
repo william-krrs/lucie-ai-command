@@ -206,7 +206,7 @@ function DemoMode() {
               {[
                 { n: "1", t: "Recommandation", s: "Score et plan validés ensemble." },
                 { n: "2", t: "Offre & paiement", s: "Sélection de la formule, paiement sécurisé." },
-                { n: "3", t: "Installation", s: "Questionnaire, cadrage, RDV de mise en service." },
+                { n: "3", t: "Installation", s: "Configuration, cadrage, RDV de mise en service." },
               ].map((step) => (
                 <li
                   key={step.n}

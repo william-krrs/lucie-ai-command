@@ -77,7 +77,7 @@ function buildRow(payload: CrmExportPayload): Row {
     rdv_status: b?.status ?? "",
     rdv_created_at: b?.createdAt ?? "",
     rdv_updated_at: b?.updatedAt ?? "",
-    // Questionnaire
+    // Configuration
     call_volume: get("callVolume"),
     interlocutor: get("interlocutor"),
     greeting: get("greeting"),
