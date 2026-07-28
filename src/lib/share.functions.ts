@@ -177,7 +177,7 @@ function classifyEmailError(
   err: unknown,
   EmailAPIError: typeof import("@lovable.dev/email-js").EmailAPIError,
 ): { code: string | null; message: string } {
-  const code = err instanceof EmailAPIError ? (err as { code?: string }).code : null;
+  const code = err instanceof EmailAPIError ? ((err as { code?: string }).code ?? null) : null;
   const status = err instanceof EmailAPIError ? (err as { status?: number }).status : undefined;
   if (code === "recipient_suppressed") {
     return { code, message: "Ce destinataire est désinscrit — impossible de lui envoyer l'email." };
