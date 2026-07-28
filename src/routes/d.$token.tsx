@@ -100,6 +100,12 @@ function SharedDiagnosticPage() {
           y = margin;
         }
       };
+      // jsPDF's Helvetica core font mishandles U+00A0 / U+202F (used by
+      // Intl.NumberFormat fr-FR as thousands and currency separators) when
+      // combined with align:"right". Normalize to ASCII spaces so numbers
+      // like "5 144 €" no longer render as "5 / 1 4 4  €".
+      const sanitize = (t: string) =>
+        (t || "").replace(/[\u00A0\u202F\u2007]/g, " ");
       const writeText = (
         text: string,
         opts: { size?: number; bold?: boolean; color?: [number, number, number]; gap?: number } = {},
@@ -108,7 +114,7 @@ function SharedDiagnosticPage() {
         doc.setFont("helvetica", opts.bold ? "bold" : "normal");
         doc.setFontSize(size);
         doc.setTextColor(...(opts.color ?? BRAND.body));
-        const lines = doc.splitTextToSize(text || "—", pageW - margin * 2) as string[];
+        const lines = doc.splitTextToSize(sanitize(text) || "—", pageW - margin * 2) as string[];
         for (const line of lines) {
           ensureSpace(size + 4);
           doc.text(line, margin, y);
@@ -170,11 +176,11 @@ function SharedDiagnosticPage() {
         doc.setFont("helvetica", "normal");
         doc.setFontSize(9);
         doc.setTextColor(...BRAND.muted);
-        doc.text(k, margin, y);
+        doc.text(sanitize(k), margin, y);
         doc.setFont("helvetica", "bold");
         doc.setFontSize(11);
         doc.setTextColor(...BRAND.ink);
-        doc.text(v, pageW - margin, y, { align: "right" });
+        doc.text(sanitize(v), pageW - margin, y, { align: "right" });
         y += 16;
         doc.setDrawColor(...BRAND.line);
         doc.setLineWidth(0.3);
