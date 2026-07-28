@@ -91,7 +91,7 @@ export function CalendlyEmbed({
         );
       if (answers.length) u.searchParams.set("a1", answers.join(" · "));
       if (phone) u.searchParams.set("a2", phone);
-      // Hidden UTM-like tracking so contact@lucieassistant.fr sees the source.
+      // Hidden UTM-like tracking so the receiving mailbox sees the source.
       u.searchParams.set("utm_source", "lucie-command-center");
       u.searchParams.set("utm_medium", "recommandation");
       if (company) u.searchParams.set("utm_campaign", company);

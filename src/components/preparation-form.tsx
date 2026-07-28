@@ -2018,7 +2018,7 @@ function SubmittedConfirmation({
     }
   };
 
-  // Envoi automatique du PDF récapitulatif à contact@lucieassistant.fr
+  // Envoi automatique du PDF récapitulatif à l'adresse CONTACT_EMAIL (voir @/lib/config)
   // dès l'ouverture de la confirmation, sans intervention supplémentaire.
   useEffect(() => {
     if (autoSentRef.current) return;
