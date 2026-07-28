@@ -1397,10 +1397,19 @@ function SubmittedConfirmation({
   onReset: () => void;
 }) {
   const reference = confirmation.id.slice(0, 8).toUpperCase();
+  const documentId = useMemo(() => {
+    const d = new Date(confirmation.createdAt ?? Date.now());
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `LUCIE-${y}${m}${day}-${reference}`;
+  }, [confirmation, reference]);
   const [exporting, setExporting] = useState(false);
   const [emailState, setEmailState] = useState<{
     status: "idle" | "sending" | "sent" | "error";
     message?: string;
+    sentAt?: string;
+    messageId?: string;
   }>({ status: "idle" });
   const emailPdf = useServerFn(sendPreparationPdf);
   const autoSentRef = useRef(false);
@@ -1815,7 +1824,14 @@ function SubmittedConfirmation({
             },
           });
           if (res.sent) {
-            setEmailState({ status: "sent" });
+            setEmailState({
+              status: "sent",
+              sentAt: new Date().toISOString(),
+              messageId: (res as { messageId?: string }).messageId,
+            });
+            toast.success(`Email envoyé à ${CONTACT_EMAIL}`, {
+              description: `Document ${documentId}`,
+            });
           } else {
             setEmailState({ status: "error", message: res.error });
           }
