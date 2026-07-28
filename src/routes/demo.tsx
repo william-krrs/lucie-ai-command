@@ -161,10 +161,10 @@ function DemoMode() {
         render: () => (
           <SlideGrid
             items={[
-              { label: "Appels reçus / mois", value: String(m.monthlyReceived) },
-              { label: "Appels manqués / mois", value: String(m.monthlyMissed), tone: "warning" },
-              { label: "Panier moyen", value: EUR(state.averageBasket) },
-              { label: "Taux de conversion", value: `${state.conversionRate}%` },
+              { label: "Appels reçus / mois", value: <CountUp value={m.monthlyReceived} /> },
+              { label: "Appels manqués / mois", value: <CountUp value={m.monthlyMissed} />, tone: "warning" },
+              { label: "Panier moyen", value: <CountUp value={state.averageBasket} format={(n) => EUR(n)} /> },
+              { label: "Taux de conversion", value: <CountUp value={state.conversionRate} format={(n) => `${Math.round(n)}%`} /> },
             ]}
           />
         ),
@@ -178,22 +178,22 @@ function DemoMode() {
             items={[
               {
                 label: "Perte hebdomadaire",
-                value: EUR(m.weeklyLostRevenue),
+                value: <CountUp value={m.weeklyLostRevenue} format={(n) => EUR(n)} />,
                 tone: "warning",
               },
               {
                 label: "Perte mensuelle",
-                value: EUR(m.monthlyLostRevenue),
+                value: <CountUp value={m.monthlyLostRevenue} format={(n) => EUR(n)} />,
                 tone: "warning",
               },
               {
                 label: "Perte annualisée",
-                value: EUR(m.yearlyLostRevenue),
+                value: <CountUp value={m.yearlyLostRevenue} format={(n) => EUR(n)} />,
                 tone: "danger",
               },
               {
                 label: "Clients récupérables / mois",
-                value: String(m.recoverableOpportunities),
+                value: <CountUp value={m.recoverableOpportunities} />,
                 tone: "success",
               },
             ]}
@@ -204,19 +204,36 @@ function DemoMode() {
         id: "score",
         eyebrow: "Étape 3 — Compatibilité",
         title: "Votre score Lucie",
-        render: () => (
-          <div className="flex w-full flex-col items-center gap-10">
-            <ScoreDial value={rec.score} />
-            <div className="flex flex-wrap items-center justify-center gap-3 text-center">
-              <Badge tone="primary">{TIER_LABELS[rec.tier]}</Badge>
-              <Badge>{PRIORITY_LABELS[rec.priority]}</Badge>
-              {rec.plan && <Badge tone="primary">Formule {PLAN_LABELS[rec.plan]}</Badge>}
+        render: () => {
+          const tierTone =
+            rec.tier === "excellent" || rec.tier === "compatible"
+              ? "success"
+              : rec.tier === "limited"
+                ? "warning"
+                : "danger";
+          const dynamic =
+            rec.score >= 70
+              ? "Votre activité présente un fort potentiel de récupération grâce à Lucie."
+              : rec.score >= 45
+                ? "Votre activité peut tirer un vrai bénéfice de Lucie sur les points prioritaires."
+                : "Votre activité présente un potentiel limité — Lucie sécurisera les cas les plus critiques.";
+          return (
+            <div className="flex w-full flex-col items-center gap-8">
+              <ScoreDial value={rec.score} />
+              <div className="flex items-center gap-3">
+                <LucieMascot score={rec.score} size={44} />
+                <div className="flex flex-wrap items-center gap-2">
+                  <Badge tone={tierTone}>{TIER_LABELS[rec.tier]}</Badge>
+                  <Badge>Priorité {PRIORITY_LABELS[rec.priority].toLowerCase()}</Badge>
+                  {rec.plan && <Badge tone="primary">Formule {PLAN_LABELS[rec.plan]}</Badge>}
+                </div>
+              </div>
+              <p className="max-w-2xl text-center text-lg leading-relaxed text-muted-foreground">
+                {dynamic}
+              </p>
             </div>
-            <p className="max-w-3xl text-center text-lg text-muted-foreground">
-              {rec.planReason}
-            </p>
-          </div>
-        ),
+          );
+        },
       },
       {
         id: "roi",
@@ -229,7 +246,7 @@ function DemoMode() {
                 Revenu récupéré estimé
               </div>
               <div className="mt-3 text-[clamp(3rem,10vw,7rem)] font-semibold leading-none tracking-tight text-foreground tabular-nums">
-                {EUR(rec.estimatedMonthlyRoi)}
+                <CountUp value={rec.estimatedMonthlyRoi} duration={1100} format={(n) => EUR(n)} />
                 <span className="ml-2 align-baseline text-xl font-normal text-muted-foreground">
                   / mois
                 </span>
@@ -237,14 +254,14 @@ function DemoMode() {
             </div>
             <SlideGrid
               items={[
-                { label: "Temps gagné équipe", value: `${m.timeSavedHours} h / mois` },
+                { label: "Temps gagné équipe", value: <CountUp value={m.timeSavedHours} format={(n) => `${Math.round(n)} h / mois`} /> },
                 {
                   label: "Objectif CA mensuel",
-                  value: EUR(state.revenueGoal),
+                  value: <CountUp value={state.revenueGoal} format={(n) => EUR(n)} />,
                 },
                 {
                   label: "Couverture de l'objectif",
-                  value: `${m.goalProgress}%`,
+                  value: <CountUp value={m.goalProgress} format={(n) => `${Math.round(n)}%`} />,
                   tone: m.goalProgress >= 30 ? "success" : undefined,
                 },
               ]}
@@ -270,48 +287,131 @@ function DemoMode() {
         ),
       },
       {
-        id: "next",
-        eyebrow: "Étape 6 — Prochaines étapes",
-        title: "On avance ensemble ?",
+        id: "share",
+        eyebrow: "Étape 6 — Rapport privé",
+        title: "Un lien sécurisé pour votre associé",
         render: () => (
-          <div className="mx-auto flex max-w-3xl flex-col items-center gap-8 text-center">
-            <ol className="grid w-full grid-cols-1 gap-3 text-left sm:grid-cols-3">
-              {[
-                { n: "1", t: "Recommandation", s: "Score et plan validés ensemble." },
-                { n: "2", t: "Offre & paiement", s: "Sélection de la formule, paiement sécurisé." },
-                { n: "3", t: "Installation", s: "Configuration, cadrage, RDV de mise en service." },
-              ].map((step) => (
-                <li
-                  key={step.n}
-                  className="rounded-2xl border border-border bg-card p-5 shadow-[var(--shadow-card)]"
-                >
-                  <div className="text-xs font-medium uppercase tracking-widest text-primary">
-                    Étape {step.n}
-                  </div>
-                  <div className="mt-2 text-lg font-semibold text-foreground">{step.t}</div>
-                  <div className="mt-1 text-sm text-muted-foreground">{step.s}</div>
-                </li>
-              ))}
-            </ol>
-            <div className="flex flex-wrap items-center justify-center gap-3">
-              <Link
-                to="/recommandation"
-                className="rounded-xl bg-primary px-6 py-3 text-primary-foreground shadow-[var(--elev-glow)]"
-              >
-                Ouvrir la recommandation détaillée
-              </Link>
-              <Link
-                to="/offres"
-                className="rounded-xl border border-border px-6 py-3 text-foreground"
-              >
-                Voir les formules
-              </Link>
+          <div className="mx-auto flex w-full max-w-2xl flex-col items-center gap-6 text-center">
+            <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1 text-xs text-muted-foreground">
+              <Lock className="h-3.5 w-3.5 text-primary" />
+              Rapport privé — réservé à votre entreprise
             </div>
+            {!share ? (
+              <>
+                <p className="max-w-lg text-base leading-relaxed text-muted-foreground">
+                  Génère un lien unique pour revoir le diagnostic, le score, le ROI
+                  et la recommandation. Valable 30 jours.
+                </p>
+                <button
+                  type="button"
+                  onClick={generateShare}
+                  disabled={shareBusy}
+                  className="inline-flex h-12 items-center gap-2 rounded-xl bg-primary px-6 text-sm font-medium text-primary-foreground shadow-[var(--elev-glow)] disabled:opacity-60"
+                >
+                  <Link2 className="h-4 w-4" />
+                  {shareBusy ? "Génération…" : "Générer le lien sécurisé"}
+                </button>
+                {shareErr && <p className="text-sm text-destructive">{shareErr}</p>}
+              </>
+            ) : (
+              <div className="w-full space-y-4">
+                <div className="flex items-center gap-2 rounded-2xl border border-border bg-card p-3 text-left">
+                  <Link2 className="h-4 w-4 shrink-0 text-primary" />
+                  <code className="flex-1 truncate font-mono text-sm text-foreground">
+                    {share.url}
+                  </code>
+                  <button
+                    type="button"
+                    onClick={copyShare}
+                    className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-border bg-background px-3 text-xs text-foreground"
+                    aria-label="Copier le lien"
+                  >
+                    {copied ? <Check className="h-3.5 w-3.5 text-primary" /> : <Copy className="h-3.5 w-3.5" />}
+                    {copied ? "Copié" : "Copier"}
+                  </button>
+                </div>
+                <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-1 text-xs text-muted-foreground">
+                  <span>
+                    Généré le{" "}
+                    {new Date().toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}
+                  </span>
+                  <span>
+                    Expire le{" "}
+                    {new Date(share.expiresAt).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={copyShare}
+                  className="inline-flex h-11 items-center gap-2 rounded-xl border border-primary/40 bg-primary/10 px-5 text-sm font-medium text-primary"
+                >
+                  <Copy className="h-4 w-4" /> Partager avec mon associé
+                </button>
+              </div>
+            )}
           </div>
         ),
       },
+      {
+        id: "next",
+        eyebrow: "Étape 7 — Plan d'action",
+        title: "Vous êtes déjà en route.",
+        render: () => {
+          const steps: { label: string; done: boolean }[] = [
+            { label: "Diagnostic terminé", done: true },
+            { label: "Démonstration réalisée", done: true },
+            { label: "Choix de la formule", done: false },
+            { label: "Paiement", done: false },
+            { label: "Installation", done: false },
+            { label: "Mise en service", done: false },
+          ];
+          return (
+            <div className="mx-auto flex w-full max-w-xl flex-col items-center gap-8">
+              <ol className="w-full space-y-2.5">
+                {steps.map((s) => (
+                  <li
+                    key={s.label}
+                    className={cn(
+                      "flex items-center gap-3 rounded-xl border px-4 py-3 text-left transition-colors",
+                      s.done
+                        ? "border-primary/30 bg-primary/[0.06]"
+                        : "border-border bg-card",
+                    )}
+                  >
+                    <span
+                      className={cn(
+                        "grid h-6 w-6 shrink-0 place-items-center rounded-md border",
+                        s.done
+                          ? "border-primary bg-primary text-primary-foreground"
+                          : "border-border bg-background text-muted-foreground",
+                      )}
+                      aria-hidden="true"
+                    >
+                      {s.done ? <Check className="h-3.5 w-3.5" /> : null}
+                    </span>
+                    <span
+                      className={cn(
+                        "text-[15px]",
+                        s.done ? "font-medium text-foreground" : "text-muted-foreground",
+                      )}
+                    >
+                      {s.label}
+                    </span>
+                  </li>
+                ))}
+              </ol>
+              <Link
+                to="/offres"
+                className="inline-flex h-12 items-center gap-2 rounded-xl bg-primary px-7 text-sm font-medium text-primary-foreground shadow-[var(--elev-glow)]"
+              >
+                Continuer avec Lucie <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
+          );
+        },
+      },
     ],
-    [state, m, rec],
+    [state, m, rec, share, shareBusy, shareErr, copied, generateShare, copyShare],
   );
 
   const total = slides.length;
