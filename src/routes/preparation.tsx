@@ -58,9 +58,9 @@ function Preparation() {
   if (!isUnlocked) {
     return (
       <LockedPage
-        title="Questionnaire verrouillé"
+        title="Configuration verrouillée"
         step="Configuration personnalisée"
-        description="Le configuration personnalisée se débloque le jour de votre rendez-vous, après avoir choisi votre formule."
+        description="La configuration personnalisée se débloque le jour de votre rendez-vous, après avoir choisi votre formule."
       />
     );
   }
