@@ -98,3 +98,90 @@ export const getSharedDiagnostic = createServerFn({ method: "GET" })
       expiresAt: row.expires_at as string,
     };
   });
+
+export const sendSharedDiagnosticEmail = createServerFn({ method: "POST" })
+  .inputValidator((input) =>
+    z
+      .object({
+        token: z.string().min(6).max(128),
+        email: z.string().trim().email().max(200),
+        shareUrl: z.string().url().max(600),
+        senderName: z.string().max(120).optional().nullable(),
+      })
+      .parse(input),
+  )
+  .handler(async ({ data }) => {
+    const apiKey = process.env.LOVABLE_API_KEY;
+    if (!apiKey) throw new Error("LOVABLE_API_KEY manquant côté serveur.");
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: row, error } = await supabaseAdmin
+      .from("shared_diagnostics")
+      .select("snapshot, expires_at")
+      .eq("token", data.token)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    if (!row) throw new Error("Ce lien n'existe plus.");
+    if (new Date(row.expires_at as string) < new Date())
+      throw new Error("Ce lien a expiré.");
+
+    const snap = snapshotSchema.parse(row.snapshot);
+    const company = snap.companyName || "Diagnostic Lucie";
+    const sender = (data.senderName ?? "").trim();
+    const senderLine = sender ? `${sender} vous partage ` : "Vous recevez ";
+
+    const html = `<!doctype html><html><body style="margin:0;padding:0;background:#f5f3ff;font-family:-apple-system,Segoe UI,Roboto,sans-serif;color:#111;">
+  <div style="max-width:640px;margin:0 auto;padding:32px 24px;">
+    <div style="background:#0f0b1f;color:#fff;border-radius:16px;padding:28px;">
+      <div style="font-size:11px;letter-spacing:0.16em;color:#c4b5fd;text-transform:uppercase;">Diagnostic Lucie partagé</div>
+      <h1 style="margin:8px 0 0;font-size:24px;">${escapeHtml(company)}</h1>
+      <p style="margin:12px 0 0;color:#d8d4f0;font-size:14px;">${escapeHtml(senderLine)}le récapitulatif de diagnostic Lucie. Score, formule recommandée, ROI estimé — tout est dans le rapport privé.</p>
+    </div>
+    <div style="background:#fff;border-radius:16px;padding:24px;margin-top:16px;border:1px solid #e9e4f7;text-align:center;">
+      <p style="margin:0 0 16px;color:#333;font-size:14px;">Cliquez ci-dessous pour ouvrir le rapport privé (lien sécurisé, valable 30 jours) :</p>
+      <a href="${data.shareUrl}" style="display:inline-block;background:#6d28d9;color:#fff;text-decoration:none;font-weight:600;padding:14px 24px;border-radius:12px;font-size:15px;">🔒 Ouvrir le diagnostic</a>
+      <p style="margin:16px 0 0;color:#888;font-size:11px;word-break:break-all;">${escapeHtml(data.shareUrl)}</p>
+    </div>
+    <p style="margin:16px 0 0;color:#888;font-size:12px;text-align:center;">Envoyé via Lucie Command Center — lucieassistant.fr</p>
+  </div>
+</body></html>`;
+
+    const text = `${senderLine}le diagnostic Lucie pour ${company}.\n\nOuvrez le rapport privé (30 jours) :\n${data.shareUrl}\n`;
+
+    const { sendLovableEmail, EmailAPIError } = await import("@lovable.dev/email-js");
+    try {
+      const res = await sendLovableEmail(
+        {
+          to: data.email,
+          from: "Lucie <contact@lucieassistant.fr>",
+          sender_domain: "notify.lucieassistant.fr",
+          subject: `Diagnostic Lucie · ${company}`,
+          html,
+          text,
+          reply_to: "contact@lucieassistant.fr",
+          idempotency_key: `share-${data.token}-${data.email.toLowerCase()}`,
+          label: "shared-diagnostic-link",
+        },
+        { apiKey, idempotencyKey: `share-${data.token}-${data.email.toLowerCase()}` },
+      );
+      return { sent: true as const, messageId: res.message_id };
+    } catch (err) {
+      const msg =
+        err instanceof EmailAPIError
+          ? (err as Error).message
+          : err instanceof Error
+            ? err.message
+            : "Erreur inconnue";
+      console.error("[sendSharedDiagnosticEmail] failed", err);
+      throw new Error(msg);
+    }
+  });
+
+function escapeHtml(v: string): string {
+  return v
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
