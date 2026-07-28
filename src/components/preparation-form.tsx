@@ -2149,28 +2149,39 @@ function SubmittedConfirmation({
                     </span>
                   </span>
                 </label>
-                {emailState.status === "sent" && sendCopyToProspect && (
+                {sendCopyToProspect && emailState.prospectAttempted && (
                   <div className="mt-2 flex flex-wrap items-center gap-2 text-[11px]">
-                    {emailState.prospectSent ? (
+                    {emailState.prospectSending ? (
+                      <span className="inline-flex items-center gap-1 text-muted-foreground">
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />
+                        Envoi de la copie en cours…
+                      </span>
+                    ) : emailState.prospectSent ? (
                       <span className="inline-flex items-center gap-1 text-[oklch(0.55_0.17_155)]">
                         <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" />
                         Copie envoyée à {prospectEmail}
                       </span>
-                    ) : emailState.prospectError ? (
+                    ) : emailState.prospectSent === false ? (
                       <span className="inline-flex items-center gap-1 text-destructive">
                         <AlertCircle className="h-3.5 w-3.5" aria-hidden="true" />
-                        Copie non envoyée : {emailState.prospectError}
+                        Copie non envoyée : {errorLabel(emailState.prospectErrorCode, emailState.prospectError)}
                       </span>
                     ) : null}
-                    {emailState.prospectSent && (
+                    {!emailState.prospectSending && (
                       <button
                         type="button"
                         onClick={() =>
-                          handleExportPdf({ download: false, email: true, sendToProspect: true })
+                          handleExportPdf({
+                            download: false,
+                            email: true,
+                            sendToProspect: true,
+                            mode: "prospect",
+                          })
                         }
-                        className="ml-auto text-[11px] font-semibold text-primary underline underline-offset-2 hover:no-underline"
+                        className="ml-auto text-[11px] font-semibold text-primary underline underline-offset-2 hover:no-underline disabled:opacity-50"
+                        disabled={emailState.prospectErrorCode === "invalid_email"}
                       >
-                        Renvoyer la copie
+                        {emailState.prospectSent ? "Renvoyer la copie" : "Réessayer la copie prospect"}
                       </button>
                     )}
                   </div>
@@ -2178,10 +2189,30 @@ function SubmittedConfirmation({
               </div>
             )}
 
-            {emailState.status === "error" && (
-              <p className="mt-2 text-xs text-destructive">
-                {emailState.message ?? "Erreur inconnue."}
-              </p>
+            {emailState.mainSent === false && (
+              <div className="mt-3 flex flex-wrap items-center gap-2 rounded-lg border border-destructive/40 bg-destructive/5 p-2 text-xs">
+                <AlertCircle className="h-4 w-4 shrink-0 text-destructive" aria-hidden="true" />
+                <span className="min-w-0 flex-1 text-destructive">
+                  <strong className="font-semibold">Envoi à {CONTACT_EMAIL} impossible :</strong>{" "}
+                  {errorLabel(emailState.mainErrorCode, emailState.mainError)}
+                </span>
+                <button
+                  type="button"
+                  onClick={() =>
+                    handleExportPdf({ download: false, email: true, mode: "main" })
+                  }
+                  disabled={emailState.mainSending}
+                  className="inline-flex items-center gap-1 rounded-md bg-destructive px-2.5 py-1 text-[11px] font-semibold text-destructive-foreground hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive/60 disabled:opacity-60"
+                >
+                  {emailState.mainSending ? (
+                    <>
+                      <Loader2 className="h-3 w-3 animate-spin" aria-hidden="true" /> Renvoi…
+                    </>
+                  ) : (
+                    "Réessayer l'envoi principal"
+                  )}
+                </button>
+              </div>
             )}
           </div>
         </div>
