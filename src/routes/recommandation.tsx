@@ -19,7 +19,6 @@ import {
   History,
   Trash2,
   ExternalLink,
-  Plus,
   UserPlus,
 } from "lucide-react";
 import { PageHeader } from "@/components/app-shell";
