@@ -1,8 +1,13 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowLeft,
   ArrowRight,
+  Check,
+  Copy,
+  Link2,
+  Lock,
   Maximize2,
   Minimize2,
   Sparkles,
@@ -14,6 +19,9 @@ import {
 import { useLucie, useMetrics, useRecommendation } from "@/lib/lucie-store";
 import { PLAN_LABELS, PLAN_TAGLINES, PRIORITY_LABELS, TIER_LABELS } from "@/lib/recommendation";
 import { cn } from "@/lib/utils";
+import { CountUp, useReducedMotion } from "@/components/count-up";
+import { LucieMascot } from "@/components/lucie-mascot";
+import { createSharedDiagnostic } from "@/lib/share.functions";
 
 export const Route = createFileRoute("/demo")({
   head: () => ({
