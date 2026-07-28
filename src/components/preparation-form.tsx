@@ -1398,12 +1398,12 @@ function SubmittedConfirmation({
 }) {
   const reference = confirmation.id.slice(0, 8).toUpperCase();
   const documentId = useMemo(() => {
-    const d = new Date(confirmation.createdAt ?? Date.now());
+    const d = new Date();
     const y = d.getFullYear();
     const m = String(d.getMonth() + 1).padStart(2, "0");
     const day = String(d.getDate()).padStart(2, "0");
     return `LUCIE-${y}${m}${day}-${reference}`;
-  }, [confirmation, reference]);
+  }, [reference]);
   const [exporting, setExporting] = useState(false);
   const [emailState, setEmailState] = useState<{
     status: "idle" | "sending" | "sent" | "error";
