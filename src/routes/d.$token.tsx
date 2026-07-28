@@ -60,9 +60,9 @@ function SharedDiagnosticPage() {
   const [senderName, setSenderName] = useState("");
   const [sendState, setSendState] = useState<
     | { status: "idle" }
-    | { status: "sending" }
-    | { status: "sent"; to: string; messageId?: string }
-    | { status: "error"; message: string }
+    | { status: "sending"; attempts: number; startedAt: number }
+    | { status: "sent"; to: string; messageId?: string; attempts: number; at: number }
+    | { status: "error"; message: string; attempts: number; at: number }
   >({ status: "idle" });
   const sendEmail = useServerFn(sendSharedDiagnosticEmail);
 
@@ -254,12 +254,19 @@ function SharedDiagnosticPage() {
 
   const resendEmail = async (targetEmail?: string) => {
     const trimmed = (targetEmail ?? email).trim();
+    const prevAttempts = sendState.status === "idle" ? 0 : sendState.attempts;
+    const attempts = prevAttempts + 1;
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
-      setSendState({ status: "error", message: "Adresse email invalide." });
+      setSendState({
+        status: "error",
+        message: "Adresse email invalide.",
+        attempts,
+        at: Date.now(),
+      });
       return;
     }
     if (!shareUrl) return;
-    setSendState({ status: "sending" });
+    setSendState({ status: "sending", attempts, startedAt: Date.now() });
     try {
       const res = await sendEmail({
         data: {
@@ -269,11 +276,19 @@ function SharedDiagnosticPage() {
           senderName: senderName.trim() || null,
         },
       });
-      setSendState({ status: "sent", to: trimmed, messageId: res.messageId });
+      setSendState({
+        status: "sent",
+        to: trimmed,
+        messageId: res.messageId,
+        attempts,
+        at: Date.now(),
+      });
     } catch (err) {
       setSendState({
         status: "error",
         message: err instanceof Error ? err.message : "Envoi impossible.",
+        attempts,
+        at: Date.now(),
       });
     }
   };
@@ -448,6 +463,37 @@ function SharedDiagnosticPage() {
                     </button>
                   </div>
                 </div>
+              </div>
+            )}
+            {sendState.status !== "idle" && (
+              <div
+                role="status"
+                aria-live="polite"
+                className={
+                  "inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[11px] font-medium " +
+                  (sendState.status === "sent"
+                    ? "border-primary/30 bg-primary/10 text-primary"
+                    : sendState.status === "sending"
+                      ? "border-amber-400/40 bg-amber-400/10 text-amber-600"
+                      : "border-destructive/40 bg-destructive/10 text-destructive")
+                }
+              >
+                <span
+                  aria-hidden="true"
+                  className={
+                    "h-1.5 w-1.5 rounded-full " +
+                    (sendState.status === "sent"
+                      ? "bg-primary"
+                      : sendState.status === "sending"
+                        ? "animate-pulse bg-amber-500"
+                        : "bg-destructive")
+                  }
+                />
+                {sendState.status === "sending"
+                  ? `En attente d'envoi… (tentative ${sendState.attempts})`
+                  : sendState.status === "sent"
+                    ? `Envoyé · ${new Date(sendState.at).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}${sendState.attempts > 1 ? ` · ${sendState.attempts} tentatives` : ""}`
+                    : `Erreur · ${new Date(sendState.at).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })} · ${sendState.attempts} tentative${sendState.attempts > 1 ? "s" : ""}`}
               </div>
             )}
           </div>

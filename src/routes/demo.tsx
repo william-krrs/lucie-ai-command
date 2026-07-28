@@ -76,9 +76,9 @@ function DemoMode() {
   const [shareEmail, setShareEmail] = useState("");
   const [emailSendState, setEmailSendState] = useState<
     | { status: "idle" }
-    | { status: "sending" }
-    | { status: "sent"; to: string }
-    | { status: "error"; message: string }
+    | { status: "sending"; attempts: number; startedAt: number }
+    | { status: "sent"; to: string; attempts: number; at: number }
+    | { status: "error"; message: string; attempts: number; at: number }
   >({ status: "idle" });
 
   const generateShare = useCallback(async () => {
@@ -143,13 +143,21 @@ function DemoMode() {
   const sendShareByEmail = useCallback(async () => {
     if (!share) return;
     const trimmed = shareEmail.trim();
+    const prevAttempts =
+      emailSendState.status === "idle" ? 0 : emailSendState.attempts;
+    const attempts = prevAttempts + 1;
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
-      setEmailSendState({ status: "error", message: "Adresse email invalide." });
+      setEmailSendState({
+        status: "error",
+        message: "Adresse email invalide.",
+        attempts,
+        at: Date.now(),
+      });
       return;
     }
     const token = share.url.split("/d/")[1] ?? "";
     if (!token) return;
-    setEmailSendState({ status: "sending" });
+    setEmailSendState({ status: "sending", attempts, startedAt: Date.now() });
     try {
       await sendShare({
         data: {
@@ -159,14 +167,16 @@ function DemoMode() {
           senderName: state.companyName ?? null,
         },
       });
-      setEmailSendState({ status: "sent", to: trimmed });
+      setEmailSendState({ status: "sent", to: trimmed, attempts, at: Date.now() });
     } catch (e) {
       setEmailSendState({
         status: "error",
         message: e instanceof Error ? e.message : "Envoi impossible.",
+        attempts,
+        at: Date.now(),
       });
     }
-  }, [share, shareEmail, sendShare, state.companyName]);
+  }, [share, shareEmail, sendShare, state.companyName, emailSendState]);
 
   const slides = useMemo<Slide[]>(
     () => [
@@ -400,6 +410,37 @@ function DemoMode() {
                     Envoyez le lien à votre associé ou faites un test en vous
                     l'envoyant à vous-même.
                   </p>
+                  {emailSendState.status !== "idle" && (
+                    <div
+                      role="status"
+                      aria-live="polite"
+                      className={
+                        "mt-3 inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[11px] font-medium " +
+                        (emailSendState.status === "sent"
+                          ? "border-primary/30 bg-primary/10 text-primary"
+                          : emailSendState.status === "sending"
+                            ? "border-amber-400/40 bg-amber-400/10 text-amber-300"
+                            : "border-destructive/40 bg-destructive/10 text-destructive")
+                      }
+                    >
+                      <span
+                        aria-hidden="true"
+                        className={
+                          "h-1.5 w-1.5 rounded-full " +
+                          (emailSendState.status === "sent"
+                            ? "bg-primary"
+                            : emailSendState.status === "sending"
+                              ? "animate-pulse bg-amber-300"
+                              : "bg-destructive")
+                        }
+                      />
+                      {emailSendState.status === "sending"
+                        ? `En attente d'envoi… (tentative ${emailSendState.attempts})`
+                        : emailSendState.status === "sent"
+                          ? `Envoyé · ${new Date(emailSendState.at).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}${emailSendState.attempts > 1 ? ` · ${emailSendState.attempts} tentatives` : ""}`
+                          : `Erreur · ${new Date(emailSendState.at).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })} · ${emailSendState.attempts} tentative${emailSendState.attempts > 1 ? "s" : ""}`}
+                    </div>
+                  )}
                   <div className="mt-3 flex flex-col gap-2 sm:flex-row">
                     <input
                       type="email"
@@ -444,10 +485,7 @@ function DemoMode() {
                       </div>
                       <button
                         type="button"
-                        onClick={() => {
-                          setEmailSendState({ status: "idle" });
-                          sendShareByEmail();
-                        }}
+                        onClick={() => sendShareByEmail()}
                         className="mt-2 inline-flex items-center gap-1 rounded-md border border-destructive/40 bg-background px-2 py-1 text-[11px] font-medium text-destructive hover:bg-destructive/10"
                       >
                         Réessayer
