@@ -1396,6 +1396,22 @@ function SubmittedConfirmation({
   };
   onReset: () => void;
 }) {
+  // Traductions FR des codes d'erreur d'envoi email
+  const ERROR_LABELS: Record<string, string> = {
+    invalid_email: "Adresse email invalide ou refusée.",
+    recipient_suppressed:
+      "Ce destinataire est bloqué (désinscription ou plainte antérieure).",
+    domain_not_verified: "Domaine expéditeur non vérifié. Contactez l'admin.",
+    emails_disabled: "L'envoi d'emails est actuellement désactivé.",
+    rate_limited: "Trop d'envois : réessayez dans quelques instants.",
+    unauthorized: "Clé API invalide côté serveur.",
+    server_error: "Erreur temporaire du service d'envoi. Réessayez.",
+    network_error: "Problème réseau lors de l'envoi. Vérifiez votre connexion.",
+    unknown_error: "Erreur inconnue lors de l'envoi.",
+  };
+  const errorLabel = (code?: string, fallback?: string) =>
+    (code && ERROR_LABELS[code]) || fallback || "Erreur inconnue.";
+
   const reference = confirmation.id.slice(0, 8).toUpperCase();
   const documentId = useMemo(() => {
     const d = new Date();
