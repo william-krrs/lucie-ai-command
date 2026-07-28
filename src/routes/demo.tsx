@@ -62,6 +62,71 @@ function DemoMode() {
   const { state } = useLucie();
   const m = useMetrics();
   const rec = useRecommendation();
+  const reduced = useReducedMotion();
+  const createShare = useServerFn(createSharedDiagnostic);
+  const [share, setShare] = useState<{ url: string; expiresAt: string } | null>(null);
+  const [shareBusy, setShareBusy] = useState(false);
+  const [shareErr, setShareErr] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+
+  const generateShare = useCallback(async () => {
+    if (shareBusy) return;
+    setShareBusy(true);
+    setShareErr(null);
+    try {
+      const expiresInDays = 30;
+      const payload = {
+        companyName: state.companyName ?? "",
+        activity: state.activity ?? "",
+        city: state.city ?? "",
+        employees: state.employees ?? 0,
+        callsPerWeek: state.callsPerWeek ?? 0,
+        missedCalls: state.missedCalls ?? 0,
+        averageBasket: state.averageBasket ?? 0,
+        revenueGoal: state.revenueGoal ?? 0,
+        conversionRate: state.conversionRate ?? 0,
+        channels: (state.channels ?? []).slice(0, 20),
+        recommendation: {
+          score: rec.score,
+          tier: rec.tier,
+          plan: rec.plan,
+          priority: rec.priority,
+          estimatedMonthlyRoi: rec.estimatedMonthlyRoi,
+          justifications: rec.justifications.slice(0, 20),
+          concerns: rec.concerns.slice(0, 20),
+          planReason: rec.planReason,
+        },
+        metrics: {
+          monthlyReceived: m.monthlyReceived,
+          monthlyMissed: m.monthlyMissed,
+          monthlyLostRevenue: m.monthlyLostRevenue,
+          yearlyLostRevenue: m.yearlyLostRevenue,
+          recoverableOpportunities: m.recoverableOpportunities,
+          timeSavedHours: m.timeSavedHours,
+        },
+        expiresInDays,
+      };
+      const { token } = await createShare({ data: payload });
+      const url = `${window.location.origin}/demo/${token}`;
+      const expiresAt = new Date(Date.now() + expiresInDays * 86400_000).toISOString();
+      setShare({ url, expiresAt });
+    } catch (e) {
+      setShareErr(e instanceof Error ? e.message : "Échec de génération du lien");
+    } finally {
+      setShareBusy(false);
+    }
+  }, [shareBusy, createShare, state, rec, m]);
+
+  const copyShare = useCallback(async () => {
+    if (!share) return;
+    try {
+      await navigator.clipboard.writeText(share.url);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1600);
+    } catch {
+      /* noop */
+    }
+  }, [share]);
 
   const slides = useMemo<Slide[]>(
     () => [
