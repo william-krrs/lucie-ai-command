@@ -88,8 +88,8 @@ function RecommandationPage() {
     setShareHistory(getShareHistory());
   }, []);
 
-  const handleShare = async () => {
-    if (isSharing) return;
+  const handleShare = async (opts?: { silent?: boolean }): Promise<string | null> => {
+    if (isSharing) return shareUrl;
     setIsSharing(true);
     setShareError(null);
     try {
@@ -130,20 +130,24 @@ function RecommandationPage() {
       setShareHistory(
         addShareHistoryEntry({ url, token, companyName: state.companyName || undefined }),
       );
-      try {
-        await navigator.clipboard.writeText(url);
-        setShareCopied(true);
-        setTimeout(() => setShareCopied(false), 2500);
-        toast.success("Lien de partage copié", {
-          description: "Le diagnostic public a été copié dans le presse-papiers.",
-        });
-      } catch {
-        toast.error("Presse-papiers bloqué", {
-          description: "Copiez le lien affiché ci-dessous manuellement.",
-        });
+      if (!opts?.silent) {
+        try {
+          await navigator.clipboard.writeText(url);
+          setShareCopied(true);
+          setTimeout(() => setShareCopied(false), 2500);
+          toast.success("Lien de partage copié", {
+            description: "Le diagnostic public a été copié dans le presse-papiers.",
+          });
+        } catch {
+          toast.error("Presse-papiers bloqué", {
+            description: "Copiez le lien affiché ci-dessous manuellement.",
+          });
+        }
       }
+      return url;
     } catch (err) {
       setShareError(err instanceof Error ? err.message : "Impossible de générer le lien");
+      return null;
     } finally {
       setIsSharing(false);
     }
