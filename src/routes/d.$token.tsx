@@ -374,7 +374,7 @@ function SharedDiagnosticPage() {
           )}
 
           <p className="text-[11px] text-muted-foreground">
-            Diagnostic généré par Lucie Assistant — lucieassistant.fr · Estimation prudente
+            Diagnostic généré par Lucie Assistant — assistantvocalpro.fr · Estimation prudente
             fondée sur les données déclarées.
           </p>
         </div>
