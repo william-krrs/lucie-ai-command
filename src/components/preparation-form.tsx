@@ -62,8 +62,9 @@ import {
   PRIORITY_LABELS,
   TIER_LABELS,
 } from "@/lib/recommendation";
+import { CONTACT_EMAIL as CONFIG_CONTACT_EMAIL } from "@/lib/config";
 
-const CONTACT_EMAIL = "contact@lucieassistant.fr";
+const CONTACT_EMAIL = CONFIG_CONTACT_EMAIL;
 const STORAGE_KEY = "lucie:preparation";
 const HISTORY_KEY = "lucie:preparation:history";
 const HISTORY_LIMIT = 20;
