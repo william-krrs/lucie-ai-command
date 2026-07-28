@@ -63,7 +63,11 @@ export const createSharedDiagnostic = createServerFn({ method: "POST" })
     const expiresAt = expiresInDays
       ? new Date(Date.now() + expiresInDays * 24 * 60 * 60 * 1000).toISOString()
       : undefined;
-    const { error } = await context.supabase
+    // Use admin client to bypass RLS (anonymous sessions are blocked by policy).
+    // The caller is still authenticated (requireSupabaseAuth) and owner_id is
+    // set server-side from the verified token.
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin
       .from("shared_diagnostics")
       .insert({
         token,
