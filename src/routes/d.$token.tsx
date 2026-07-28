@@ -141,13 +141,16 @@ function SharedDiagnosticPage() {
 
       // Score block
       const r = snap.recommendation;
+      const tierKey = r.tier as keyof typeof TIER_LABELS;
+      const priorityKey = r.priority as keyof typeof PRIORITY_LABELS;
+      const planKey = r.plan as keyof typeof PLAN_LABELS | null | undefined;
       writeText("Score de compatibilité Lucie", { size: 9, bold: true, color: BRAND.muted, gap: 2 });
       writeText(
-        `${r.score} / 100 · ${TIER_LABELS[r.tier]} · Priorité ${PRIORITY_LABELS[r.priority]}`,
+        `${r.score} / 100 · ${TIER_LABELS[tierKey] ?? tierKey} · Priorité ${PRIORITY_LABELS[priorityKey] ?? priorityKey}`,
         { size: 16, bold: true, color: BRAND.ink, gap: 10 },
       );
       writeText(
-        `Formule recommandée : ${r.plan ? PLAN_LABELS[r.plan] : "Aucune"}. ${r.planReason}`,
+        `Formule recommandée : ${planKey ? PLAN_LABELS[planKey] ?? planKey : "Aucune"}. ${r.planReason}`,
         { size: 10, color: BRAND.body, gap: 12 },
       );
 
