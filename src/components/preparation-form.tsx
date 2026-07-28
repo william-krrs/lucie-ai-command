@@ -1780,15 +1780,68 @@ function SubmittedConfirmation({
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, "-")
         .replace(/^-|-$/g, "")}.pdf`;
-      doc.save(filename);
-      toast.success("PDF récapitulatif téléchargé.");
+
+      if (shouldDownload) {
+        doc.save(filename);
+        toast.success("PDF récapitulatif téléchargé.");
+      }
+
+      if (shouldEmail) {
+        const arrayBuf = doc.output("arraybuffer");
+        const bytes = new Uint8Array(arrayBuf);
+        let binary = "";
+        for (let i = 0; i < bytes.length; i += 0x8000) {
+          binary += String.fromCharCode.apply(
+            null,
+            Array.from(bytes.subarray(i, i + 0x8000)) as unknown as number[],
+          );
+        }
+        const pdfBase64 = btoa(binary);
+        try {
+          const res = await emailPdf({
+            data: {
+              submissionId: confirmation.id,
+              filename,
+              pdfBase64,
+              contactName: form.contactName || null,
+              contactEmail: form.contactEmail || null,
+              companyName: form.companyName || null,
+              companyPhone: form.companyPhone || null,
+              planLabel,
+              meetingLabel: booking
+                ? `${formatBookingDate(booking.date)}${booking.time ? " · " + booking.time : ""}`
+                : null,
+            },
+          });
+          if (res.sent) {
+            setEmailState({ status: "sent" });
+          } else {
+            setEmailState({ status: "error", message: res.error });
+          }
+        } catch (err) {
+          setEmailState({
+            status: "error",
+            message: err instanceof Error ? err.message : String(err),
+          });
+        }
+      }
     } catch (err) {
       console.error(err);
-      toast.error("Export PDF impossible. Réessayez.");
+      if (shouldDownload) toast.error("Export PDF impossible. Réessayez.");
+      if (shouldEmail) setEmailState({ status: "error", message: "PDF non généré." });
     } finally {
-      setExporting(false);
+      if (shouldDownload) setExporting(false);
     }
   };
+
+  // Envoi automatique du PDF récapitulatif à contact@lucieassistant.fr
+  // dès l'ouverture de la confirmation, sans intervention supplémentaire.
+  useEffect(() => {
+    if (autoSentRef.current) return;
+    autoSentRef.current = true;
+    void handleExportPdf({ download: false, email: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <section
