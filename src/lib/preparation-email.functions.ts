@@ -164,7 +164,7 @@ ${pdfUrl}
         );
         mainSent = true;
         mainMessageId = res.message_id;
-        await context.supabase
+        await supabaseAdmin
           .from("preparation_submissions")
           .update({ email_status: "sent" })
           .eq("id", data.submissionId);
@@ -174,7 +174,7 @@ ${pdfUrl}
         mainErrorCode = c.code;
         mainError = c.message;
         console.error("[sendPreparationPdf] main email failed", c);
-        await context.supabase
+        await supabaseAdmin
           .from("preparation_submissions")
           .update({ email_status: "failed" })
           .eq("id", data.submissionId);
