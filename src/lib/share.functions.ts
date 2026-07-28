@@ -142,7 +142,7 @@ export const sendSharedDiagnosticEmail = createServerFn({ method: "POST" })
       <a href="${data.shareUrl}" style="display:inline-block;background:#6d28d9;color:#fff;text-decoration:none;font-weight:600;padding:14px 24px;border-radius:12px;font-size:15px;">🔒 Ouvrir le diagnostic</a>
       <p style="margin:16px 0 0;color:#888;font-size:11px;word-break:break-all;">${escapeHtml(data.shareUrl)}</p>
     </div>
-    <p style="margin:16px 0 0;color:#888;font-size:12px;text-align:center;">Envoyé via Lucie Command Center — lucieassistant.fr</p>
+    <p style="margin:16px 0 0;color:#888;font-size:12px;text-align:center;">Envoyé via Lucie Command Center — assistantvocalpro.fr</p>
   </div>
 </body></html>`;
 
