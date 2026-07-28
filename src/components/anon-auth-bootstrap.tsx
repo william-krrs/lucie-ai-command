@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 /**
  * Ensures every visitor has an anonymous Supabase session so that RLS
- * (user_id = auth.uid()) can scope their bookings and questionnaire
+ * (user_id = auth.uid()) can scope their bookings and configuration
  * answers to them alone. Runs once on mount, client-only.
  */
 export function AnonAuthBootstrap() {
