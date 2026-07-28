@@ -1,6 +1,12 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import {
+  SITE_DOMAIN,
+  CONTACT_EMAIL,
+  EMAIL_SENDER_DOMAIN,
+  EMAIL_FROM,
+} from "@/lib/config";
 
 const snapshotSchema = z.object({
   companyName: z.string().max(200).default(""),
@@ -142,7 +148,7 @@ export const sendSharedDiagnosticEmail = createServerFn({ method: "POST" })
       <a href="${data.shareUrl}" style="display:inline-block;background:#6d28d9;color:#fff;text-decoration:none;font-weight:600;padding:14px 24px;border-radius:12px;font-size:15px;">🔒 Ouvrir le diagnostic</a>
       <p style="margin:16px 0 0;color:#888;font-size:11px;word-break:break-all;">${escapeHtml(data.shareUrl)}</p>
     </div>
-    <p style="margin:16px 0 0;color:#888;font-size:12px;text-align:center;">Envoyé via Lucie Command Center — assistantvocalpro.fr</p>
+    <p style="margin:16px 0 0;color:#888;font-size:12px;text-align:center;">Envoyé via Lucie Command Center — ${SITE_DOMAIN}</p>
   </div>
 </body></html>`;
 
@@ -153,12 +159,12 @@ export const sendSharedDiagnosticEmail = createServerFn({ method: "POST" })
       const res = await sendLovableEmail(
         {
           to: data.email,
-          from: "Lucie <contact@lucieassistant.fr>",
-          sender_domain: "notify.lucieassistant.fr",
+          from: EMAIL_FROM,
+          sender_domain: EMAIL_SENDER_DOMAIN,
           subject: `Diagnostic Lucie · ${company}`,
           html,
           text,
-          reply_to: "contact@lucieassistant.fr",
+          reply_to: CONTACT_EMAIL,
           idempotency_key: `share-${data.token}-${data.email.toLowerCase()}`,
           label: "shared-diagnostic-link",
           purpose: "transactional",
