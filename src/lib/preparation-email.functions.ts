@@ -20,6 +20,8 @@ const schema = z.object({
   sendToProspect: z.boolean().optional(),
   mode: z.enum(["both", "main", "prospect"]).optional(),
   retryAttempt: z.number().int().min(0).max(20).optional(),
+  prospectSubject: z.string().min(3).max(200).optional().nullable(),
+  prospectMessage: z.string().max(5000).optional().nullable(),
 });
 
 type EmailErrorCode =
