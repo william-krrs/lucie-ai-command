@@ -1397,10 +1397,19 @@ function SubmittedConfirmation({
   onReset: () => void;
 }) {
   const reference = confirmation.id.slice(0, 8).toUpperCase();
+  const documentId = useMemo(() => {
+    const d = new Date();
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `LUCIE-${y}${m}${day}-${reference}`;
+  }, [reference]);
   const [exporting, setExporting] = useState(false);
   const [emailState, setEmailState] = useState<{
     status: "idle" | "sending" | "sent" | "error";
     message?: string;
+    sentAt?: string;
+    messageId?: string;
   }>({ status: "idle" });
   const emailPdf = useServerFn(sendPreparationPdf);
   const autoSentRef = useRef(false);
@@ -1815,7 +1824,14 @@ function SubmittedConfirmation({
             },
           });
           if (res.sent) {
-            setEmailState({ status: "sent" });
+            setEmailState({
+              status: "sent",
+              sentAt: new Date().toISOString(),
+              messageId: (res as { messageId?: string }).messageId,
+            });
+            toast.success(`Email envoyé à ${CONTACT_EMAIL}`, {
+              description: `Document ${documentId}`,
+            });
           } else {
             setEmailState({ status: "error", message: res.error });
           }
@@ -1865,6 +1881,108 @@ function SubmittedConfirmation({
         <p className="mt-2 text-xs text-muted-foreground">
           Référence : <span className="font-mono font-medium text-foreground">#{reference}</span>
         </p>
+      </div>
+
+      {/* Accusé de réception automatique */}
+      <div
+        role="status"
+        aria-live="polite"
+        className={`mt-6 rounded-2xl border p-4 sm:p-5 ${
+          emailState.status === "sent"
+            ? "border-[oklch(0.65_0.17_155)]/40 bg-[oklch(0.65_0.17_155)]/[0.08]"
+            : emailState.status === "error"
+              ? "border-destructive/40 bg-destructive/10"
+              : "border-primary/30 bg-primary/[0.06]"
+        }`}
+      >
+        <div className="flex flex-wrap items-start gap-3">
+          <span
+            className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl ${
+              emailState.status === "sent"
+                ? "bg-[oklch(0.65_0.17_155)]/20 text-[oklch(0.45_0.17_155)]"
+                : emailState.status === "error"
+                  ? "bg-destructive/15 text-destructive"
+                  : "bg-primary/15 text-primary"
+            }`}
+          >
+            {emailState.status === "sending" ? (
+              <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" />
+            ) : emailState.status === "sent" ? (
+              <CheckCircle2 className="h-5 w-5" aria-hidden="true" />
+            ) : emailState.status === "error" ? (
+              <AlertCircle className="h-5 w-5" aria-hidden="true" />
+            ) : (
+              <Mail className="h-5 w-5" aria-hidden="true" />
+            )}
+          </span>
+          <div className="min-w-0 flex-1">
+            <div className="text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
+              Accusé de réception
+            </div>
+            <div className="mt-0.5 text-sm font-semibold text-foreground">
+              {emailState.status === "sent"
+                ? `✅ Email envoyé à ${CONTACT_EMAIL}`
+                : emailState.status === "sending"
+                  ? `Envoi de l'email en cours vers ${CONTACT_EMAIL}…`
+                  : emailState.status === "error"
+                    ? "Envoi impossible — réessayez ci-dessous"
+                    : `Email en préparation vers ${CONTACT_EMAIL}`}
+            </div>
+            <dl className="mt-3 grid gap-2 text-xs sm:grid-cols-2">
+              <div className="min-w-0">
+                <dt className="text-[10px] uppercase tracking-widest text-muted-foreground">
+                  Identifiant du document
+                </dt>
+                <dd className="mt-0.5 flex items-center gap-2">
+                  <code className="truncate rounded-md bg-background/60 px-2 py-1 font-mono text-[11px] font-semibold text-foreground">
+                    {documentId}
+                  </code>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      navigator.clipboard?.writeText(documentId);
+                      toast.success("Identifiant copié");
+                    }}
+                    className="grid h-7 w-7 shrink-0 place-items-center rounded-md border border-border/60 text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
+                    aria-label="Copier l'identifiant du document"
+                  >
+                    <Copy className="h-3.5 w-3.5" aria-hidden="true" />
+                  </button>
+                </dd>
+              </div>
+              <div className="min-w-0">
+                <dt className="text-[10px] uppercase tracking-widest text-muted-foreground">
+                  Horodatage
+                </dt>
+                <dd className="mt-0.5 font-mono text-[11px] text-foreground">
+                  {emailState.sentAt
+                    ? new Date(emailState.sentAt).toLocaleString("fr-FR", {
+                        dateStyle: "short",
+                        timeStyle: "medium",
+                      })
+                    : emailState.status === "sending"
+                      ? "—"
+                      : "En attente"}
+                </dd>
+              </div>
+              {emailState.messageId && (
+                <div className="min-w-0 sm:col-span-2">
+                  <dt className="text-[10px] uppercase tracking-widest text-muted-foreground">
+                    ID message (traçabilité)
+                  </dt>
+                  <dd className="mt-0.5 truncate font-mono text-[11px] text-muted-foreground">
+                    {emailState.messageId}
+                  </dd>
+                </div>
+              )}
+            </dl>
+            {emailState.status === "error" && (
+              <p className="mt-2 text-xs text-destructive">
+                {emailState.message ?? "Erreur inconnue."}
+              </p>
+            )}
+          </div>
+        </div>
       </div>
 
       {booking && (
