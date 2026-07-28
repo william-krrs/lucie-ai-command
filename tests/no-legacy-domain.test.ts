@@ -75,15 +75,20 @@ describe("no legacy domain (lucieassistant.fr) in source", () => {
  * commentaire — l'historique montre que ces zones sont copiées/collées.
  */
 describe("PDF & email modules use only centralised identity", () => {
+  // Liste explicite des modules connus (garde-fou même si l'auto-détection
+  // échoue à cause d'un renommage de dépendance).
   const CRITICAL = [
     "src/lib/share.functions.ts",
     "src/lib/preparation-email.functions.ts",
     "src/lib/email-templates/send-email.ts",
+    "src/lib/email-templates/registry.ts",
     "src/lib/email-templates/reminder-2h.tsx",
     "src/lib/email-templates/reminder-24h.tsx",
     "src/components/preparation-form.tsx",
     "src/routes/d.$token.tsx",
     "src/routes/merci.tsx",
+    "src/routes/recommandation.tsx",
+    "src/routes/demo.tsx",
   ];
 
   for (const rel of CRITICAL) {
@@ -91,6 +96,37 @@ describe("PDF & email modules use only centralised identity", () => {
       const src = readFileSync(join(ROOT, rel), "utf8");
       const hits = src.match(/lucieassistant\.fr/gi) ?? [];
       expect(hits, `Remplacer par les constantes @/lib/config`).toEqual([]);
+    });
+  }
+});
+
+/**
+ * Auto-détection : tout module qui importe jsPDF, @react-email ou l'API
+ * d'envoi (`sendLovableEmail`) doit être couvert par le garde-fou, sans
+ * exception. Cela garantit que 100 % des documents générés (PDF) et envoyés
+ * (e-mails) passent par la config centralisée.
+ */
+describe("all PDF/email producers are domain-clean", () => {
+  const SIGNAL =
+    /(from\s+["']jspdf["']|from\s+["']@react-email\/|from\s+["']@lovable\.dev\/email-js["']|sendLovableEmail\s*\(|new\s+jsPDF\s*\()/;
+
+  const producers = files
+    .map((abs) => ({ abs, rel: relative(ROOT, abs).replace(/\\/g, "/") }))
+    .filter(({ rel }) => !IGNORED_FILES.has(rel))
+    .filter(({ abs }) => SIGNAL.test(readFileSync(abs, "utf8")));
+
+  it("au moins un producteur PDF/e-mail détecté (sanity)", () => {
+    expect(producers.length).toBeGreaterThan(0);
+  });
+
+  for (const { abs, rel } of producers) {
+    it(`${rel} n'utilise pas le domaine historique`, () => {
+      const src = readFileSync(abs, "utf8");
+      const hits = src.match(/lucieassistant\.fr/gi) ?? [];
+      expect(
+        hits,
+        `Ce module génère un PDF ou envoie un e-mail : passez par SITE_DOMAIN / CONTACT_EMAIL / EMAIL_FROM depuis @/lib/config.`,
+      ).toEqual([]);
     });
   }
 });
