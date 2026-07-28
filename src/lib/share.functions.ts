@@ -43,25 +43,40 @@ const snapshotSchema = z.object({
 export type DiagnosticSnapshot = z.infer<typeof snapshotSchema>;
 
 function randomToken(): string {
-  const bytes = new Uint8Array(24);
+  // Short, human-shareable base32 code (Crockford, no ambiguous chars).
+  const ALPH = "23456789ABCDEFGHJKLMNPQRSTUVWXYZ";
+  const bytes = new Uint8Array(7);
   crypto.getRandomValues(bytes);
-  return Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
+  return Array.from(bytes, (b) => ALPH[b % ALPH.length]).join("");
 }
 
 export const createSharedDiagnostic = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input) => snapshotSchema.parse(input))
+  .inputValidator((input) =>
+    snapshotSchema
+      .extend({ expiresInDays: z.number().int().min(1).max(365).optional() })
+      .parse(input),
+  )
   .handler(async ({ data, context }) => {
+    const { expiresInDays, ...snapshot } = data;
     const token = randomToken();
+    const expiresAt = expiresInDays
+      ? new Date(Date.now() + expiresInDays * 24 * 60 * 60 * 1000).toISOString()
+      : undefined;
     const { error } = await context.supabase
       .from("shared_diagnostics")
-      .insert({ token, snapshot: data, owner_id: context.userId });
+      .insert({
+        token,
+        snapshot,
+        owner_id: context.userId,
+        ...(expiresAt ? { expires_at: expiresAt } : {}),
+      });
     if (error) throw new Error(error.message);
     return { token };
   });
 
 export const getSharedDiagnostic = createServerFn({ method: "GET" })
-  .inputValidator((input) => z.object({ token: z.string().min(16).max(128) }).parse(input))
+  .inputValidator((input) => z.object({ token: z.string().min(6).max(128) }).parse(input))
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: row, error } = await supabaseAdmin
