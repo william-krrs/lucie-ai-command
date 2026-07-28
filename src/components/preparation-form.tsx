@@ -1410,9 +1410,17 @@ function SubmittedConfirmation({
     message?: string;
     sentAt?: string;
     messageId?: string;
+    mainSent?: boolean;
+    mainErrorCode?: string;
+    mainError?: string;
+    prospectAttempted?: boolean;
     prospectSent?: boolean;
     prospectMessageId?: string;
+    prospectErrorCode?: string;
     prospectError?: string;
+    prospectSending?: boolean;
+    mainSending?: boolean;
+    retryCount?: number;
   }>({ status: "idle" });
   const emailPdf = useServerFn(sendPreparationPdf);
   const autoSentRef = useRef(false);
