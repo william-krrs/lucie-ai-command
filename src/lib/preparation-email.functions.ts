@@ -123,7 +123,7 @@ ${pdfUrl}
     } catch (err) {
       const msg =
         err instanceof EmailAPIError
-          ? `${(err as EmailAPIError & { code?: string }).code ?? err.status}: ${err.message}`
+          ? `${(err as InstanceType<typeof EmailAPIError> & { code?: string }).code ?? (err as InstanceType<typeof EmailAPIError>).status}: ${(err as Error).message}`
           : err instanceof Error
             ? err.message
             : String(err);
