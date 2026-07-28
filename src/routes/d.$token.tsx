@@ -71,7 +71,7 @@ function SharedDiagnosticPage() {
 
   if (!data.found) return null;
   const snap = data.snapshot;
-  const token = (data as { found: true; snapshot: DiagnosticSnapshot }) && Route.useParams().token;
+  const token = Route.useParams().token;
 
   const handleExport = async () => {
     if (exporting) return;
