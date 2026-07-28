@@ -47,6 +47,7 @@ import {
 import { toast } from "sonner";
 import { submitPreparation } from "@/lib/preparation.functions";
 import { upsertBooking } from "@/lib/bookings.functions";
+import { sendPreparationPdf } from "@/lib/preparation-email.functions";
 import {
   listPreparationDrafts,
   savePreparationDraft,
@@ -1338,8 +1339,9 @@ export function PreparationForm({
 
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-xs text-muted-foreground">
-            En cliquant « Envoyer », votre questionnaire est enregistré et
-            transmis à l'équipe Lucie (<strong>{CONTACT_EMAIL}</strong>).
+            À l'étape suivante, votre questionnaire sera enregistré puis envoyé
+            <strong> automatiquement en PDF</strong> à{" "}
+            <strong>{CONTACT_EMAIL}</strong>.
           </p>
           <div className="flex flex-wrap gap-2">
             <Button
@@ -1358,7 +1360,7 @@ export function PreparationForm({
               className="h-11 rounded-xl bg-primary px-6 text-primary-foreground shadow-[var(--shadow-elevated)] hover:bg-primary/90"
             >
               <Eye className="mr-2 h-4 w-4" aria-hidden="true" />
-              Vérifier le récapitulatif
+              Vérifier puis envoyer le PDF
             </Button>
           </div>
         </div>
@@ -1396,9 +1398,18 @@ function SubmittedConfirmation({
 }) {
   const reference = confirmation.id.slice(0, 8).toUpperCase();
   const [exporting, setExporting] = useState(false);
+  const [emailState, setEmailState] = useState<{
+    status: "idle" | "sending" | "sent" | "error";
+    message?: string;
+  }>({ status: "idle" });
+  const emailPdf = useServerFn(sendPreparationPdf);
+  const autoSentRef = useRef(false);
 
-  const handleExportPdf = async () => {
-    setExporting(true);
+  const handleExportPdf = async (opts: { download?: boolean; email?: boolean } = { download: true }) => {
+    const shouldDownload = opts.download ?? false;
+    const shouldEmail = opts.email ?? false;
+    if (shouldDownload) setExporting(true);
+    if (shouldEmail) setEmailState({ status: "sending" });
     try {
       const { jsPDF } = await import("jspdf");
       const doc = new jsPDF({ unit: "pt", format: "a4" });
@@ -1770,15 +1781,68 @@ function SubmittedConfirmation({
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, "-")
         .replace(/^-|-$/g, "")}.pdf`;
-      doc.save(filename);
-      toast.success("PDF récapitulatif téléchargé.");
+
+      if (shouldDownload) {
+        doc.save(filename);
+        toast.success("PDF récapitulatif téléchargé.");
+      }
+
+      if (shouldEmail) {
+        const arrayBuf = doc.output("arraybuffer");
+        const bytes = new Uint8Array(arrayBuf);
+        let binary = "";
+        for (let i = 0; i < bytes.length; i += 0x8000) {
+          binary += String.fromCharCode.apply(
+            null,
+            Array.from(bytes.subarray(i, i + 0x8000)) as unknown as number[],
+          );
+        }
+        const pdfBase64 = btoa(binary);
+        try {
+          const res = await emailPdf({
+            data: {
+              submissionId: confirmation.id,
+              filename,
+              pdfBase64,
+              contactName: form.contactName || null,
+              contactEmail: form.contactEmail || null,
+              companyName: form.companyName || null,
+              companyPhone: form.companyPhone || null,
+              planLabel,
+              meetingLabel: booking
+                ? `${formatBookingDate(booking.date)}${booking.time ? " · " + booking.time : ""}`
+                : null,
+            },
+          });
+          if (res.sent) {
+            setEmailState({ status: "sent" });
+          } else {
+            setEmailState({ status: "error", message: res.error });
+          }
+        } catch (err) {
+          setEmailState({
+            status: "error",
+            message: err instanceof Error ? err.message : String(err),
+          });
+        }
+      }
     } catch (err) {
       console.error(err);
-      toast.error("Export PDF impossible. Réessayez.");
+      if (shouldDownload) toast.error("Export PDF impossible. Réessayez.");
+      if (shouldEmail) setEmailState({ status: "error", message: "PDF non généré." });
     } finally {
-      setExporting(false);
+      if (shouldDownload) setExporting(false);
     }
   };
+
+  // Envoi automatique du PDF récapitulatif à contact@lucieassistant.fr
+  // dès l'ouverture de la confirmation, sans intervention supplémentaire.
+  useEffect(() => {
+    if (autoSentRef.current) return;
+    autoSentRef.current = true;
+    void handleExportPdf({ download: false, email: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <section
@@ -1867,24 +1931,41 @@ function SubmittedConfirmation({
           <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
             <Mail className="h-4 w-4" aria-hidden="true" />
           </div>
-          <div>
+          <div className="min-w-0">
             <div className="text-sm font-semibold text-foreground">
-              {confirmation.emailStatus === "sent"
-                ? "Récap envoyé par email"
-                : "Récap transmis à l'équipe"}
+              {emailState.status === "sent"
+                ? "PDF envoyé par email"
+                : emailState.status === "sending"
+                  ? "Envoi du PDF en cours…"
+                  : emailState.status === "error"
+                    ? "Envoi du PDF impossible"
+                    : "PDF prêt à envoyer"}
             </div>
-            <p className="mt-1 text-xs text-muted-foreground">
-              {confirmation.emailStatus === "sent"
-                ? `Une copie du récapitulatif a été envoyée à ${CONTACT_EMAIL}.`
-                : `Notre équipe consulte le récap directement. Pour toute question : ${CONTACT_EMAIL}.`}
+            <p className="mt-1 text-xs text-muted-foreground break-words">
+              {emailState.status === "sent"
+                ? `Le PDF récapitulatif vient d'être envoyé à ${CONTACT_EMAIL}.`
+                : emailState.status === "sending"
+                  ? `Génération et envoi du PDF vers ${CONTACT_EMAIL}…`
+                  : emailState.status === "error"
+                    ? `${emailState.message ?? "Erreur inconnue."} Vous pouvez réessayer ci-dessous.`
+                    : `Le récapitulatif PDF sera transmis à ${CONTACT_EMAIL}.`}
             </p>
+            {emailState.status === "error" && (
+              <button
+                type="button"
+                onClick={() => handleExportPdf({ download: false, email: true })}
+                className="mt-2 text-xs font-semibold text-primary underline underline-offset-2 hover:no-underline"
+              >
+                Renvoyer le PDF à {CONTACT_EMAIL}
+              </button>
+            )}
           </div>
         </div>
       </div>
 
       <div className="mt-8 flex flex-wrap justify-center gap-2">
         <Button
-          onClick={handleExportPdf}
+          onClick={() => handleExportPdf({ download: true })}
           disabled={exporting}
           className="h-11 rounded-xl"
         >
@@ -2154,7 +2235,7 @@ function ReviewPanel({
           ) : (
             <Send className="mr-2 h-4 w-4" aria-hidden="true" />
           )}
-          {submitting ? "Envoi en cours…" : "Confirmer et envoyer à l'équipe Lucie"}
+          {submitting ? "Envoi en cours…" : `Confirmer et envoyer le PDF à ${CONTACT_EMAIL}`}
         </Button>
       </div>
     </section>
