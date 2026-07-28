@@ -266,7 +266,7 @@ function RecommandationPage() {
             <Button
               variant="outline"
               className="rounded-xl"
-              onClick={handleShare}
+              onClick={() => handleShare()}
               disabled={isSharing}
               aria-label="Générer un lien de partage sécurisé"
             >
