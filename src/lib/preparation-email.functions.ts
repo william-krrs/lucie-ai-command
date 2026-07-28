@@ -18,7 +18,41 @@ const schema = z.object({
   planLabel: z.string().max(120).optional().nullable(),
   meetingLabel: z.string().max(200).optional().nullable(),
   sendToProspect: z.boolean().optional(),
+  mode: z.enum(["both", "main", "prospect"]).optional(),
+  retryAttempt: z.number().int().min(0).max(20).optional(),
 });
+
+type EmailErrorCode =
+  | "invalid_email"
+  | "recipient_suppressed"
+  | "domain_not_verified"
+  | "emails_disabled"
+  | "rate_limited"
+  | "unauthorized"
+  | "server_error"
+  | "network_error"
+  | "unknown_error";
+
+function classifyEmailError(err: unknown, EmailAPIError: any): { code: EmailErrorCode; message: string } {
+  if (err instanceof EmailAPIError) {
+    const status = (err as { status?: number }).status;
+    const code = (err as { code?: string }).code;
+    const message = (err as Error).message || "Erreur d'envoi";
+    if (code === "recipient_suppressed") return { code: "recipient_suppressed", message };
+    if (code === "domain_not_verified") return { code: "domain_not_verified", message };
+    if (code === "emails_disabled") return { code: "emails_disabled", message };
+    if (code === "invalid_recipient" || code === "invalid_email" || status === 422)
+      return { code: "invalid_email", message };
+    if (status === 429) return { code: "rate_limited", message };
+    if (status === 401 || status === 403) return { code: "unauthorized", message };
+    if (typeof status === "number" && status >= 500) return { code: "server_error", message };
+    return { code: "unknown_error", message: `${code ?? status ?? "?"}: ${message}` };
+  }
+  const msg = err instanceof Error ? err.message : String(err);
+  if (/network|fetch|timeout|ENOTFOUND|ECONN/i.test(msg))
+    return { code: "network_error", message: msg };
+  return { code: "unknown_error", message: msg };
+}
 
 export const sendPreparationPdf = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
