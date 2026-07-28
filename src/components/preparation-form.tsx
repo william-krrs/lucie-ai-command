@@ -1444,6 +1444,18 @@ function SubmittedConfirmation({
   const hasProspectEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(prospectEmail);
   const [sendCopyToProspect, setSendCopyToProspect] = useState(hasProspectEmail);
 
+  // Personnalisation de l'email envoyé au prospect
+  const defaultProspectSubject = "Votre récapitulatif Lucie";
+  const defaultProspectMessage = `Bonjour ${form.contactName?.trim() || "{prénom}"},\n\nMerci pour votre confiance ! Vous trouverez ci-dessous le récapitulatif de votre configuration Lucie ainsi que le PDF détaillé.\n\nNotre équipe revient vers vous très vite pour lancer l'installation.\n\nÀ très vite,\nL'équipe Lucie`;
+  const [prospectSubject, setProspectSubject] = useState<string>(defaultProspectSubject);
+  const [prospectMessage, setProspectMessage] = useState<string>(defaultProspectMessage);
+  const [prospectCustomOpen, setProspectCustomOpen] = useState(false);
+  const [prospectPreviewOpen, setProspectPreviewOpen] = useState(false);
+  const resetProspectTemplate = () => {
+    setProspectSubject(defaultProspectSubject);
+    setProspectMessage(defaultProspectMessage);
+  };
+
   const handleExportPdf = async (
     opts: {
       download?: boolean;
@@ -1884,6 +1896,8 @@ function SubmittedConfirmation({
               sendToProspect: shouldSendToProspect,
               mode,
               retryAttempt: (emailState.retryCount ?? 0) + (mode !== "both" ? 1 : 0),
+              prospectSubject: shouldSendToProspect || mode === "prospect" ? prospectSubject.trim() || null : null,
+              prospectMessage: shouldSendToProspect || mode === "prospect" ? prospectMessage : null,
             },
           });
           const r = res as {
@@ -2164,6 +2178,107 @@ function SubmittedConfirmation({
                     </span>
                   </span>
                 </label>
+                {sendCopyToProspect && (
+                  <div className="mt-3 space-y-2">
+                    <div className="flex flex-wrap items-center gap-2 text-[11px]">
+                      <button
+                        type="button"
+                        onClick={() => setProspectCustomOpen((v) => !v)}
+                        className="inline-flex items-center gap-1 rounded-md border border-border/60 bg-background/60 px-2 py-1 font-medium text-foreground hover:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
+                        aria-expanded={prospectCustomOpen}
+                      >
+                        {prospectCustomOpen ? "Masquer" : "Personnaliser"} l'email au prospect
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setProspectPreviewOpen((v) => !v)}
+                        className="inline-flex items-center gap-1 rounded-md border border-border/60 bg-background/60 px-2 py-1 font-medium text-foreground hover:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
+                        aria-expanded={prospectPreviewOpen}
+                      >
+                        {prospectPreviewOpen ? "Masquer" : "Aperçu"}
+                      </button>
+                      {(prospectSubject !== defaultProspectSubject ||
+                        prospectMessage !== defaultProspectMessage) && (
+                        <button
+                          type="button"
+                          onClick={resetProspectTemplate}
+                          className="ml-auto text-[11px] text-muted-foreground underline underline-offset-2 hover:text-foreground"
+                        >
+                          Réinitialiser
+                        </button>
+                      )}
+                    </div>
+                    {prospectCustomOpen && (
+                      <div className="space-y-2 rounded-lg border border-border/60 bg-background/60 p-3">
+                        <div>
+                          <label className="mb-1 block text-[11px] font-medium text-muted-foreground">
+                            Sujet
+                          </label>
+                          <input
+                            type="text"
+                            value={prospectSubject}
+                            onChange={(e) => setProspectSubject(e.target.value.slice(0, 200))}
+                            maxLength={200}
+                            className="w-full rounded-md border border-border bg-background px-2 py-1.5 text-xs text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
+                            placeholder={defaultProspectSubject}
+                          />
+                        </div>
+                        <div>
+                          <label className="mb-1 block text-[11px] font-medium text-muted-foreground">
+                            Message personnel (facultatif)
+                          </label>
+                          <textarea
+                            value={prospectMessage}
+                            onChange={(e) => setProspectMessage(e.target.value.slice(0, 5000))}
+                            rows={6}
+                            maxLength={5000}
+                            className="w-full rounded-md border border-border bg-background px-2 py-1.5 font-mono text-xs leading-relaxed text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
+                            placeholder={defaultProspectMessage}
+                          />
+                          <div className="mt-1 flex justify-between text-[10px] text-muted-foreground">
+                            <span>Le PDF et le récap sont ajoutés automatiquement sous ce message.</span>
+                            <span>{prospectMessage.length}/5000</span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    {prospectPreviewOpen && (
+                      <div className="overflow-hidden rounded-lg border border-border/60 bg-background/60">
+                        <div className="border-b border-border/60 bg-muted/40 px-3 py-1.5 text-[10px] uppercase tracking-widest text-muted-foreground">
+                          Aperçu
+                        </div>
+                        <div className="space-y-2 p-3 text-xs">
+                          <div>
+                            <span className="text-[10px] uppercase tracking-widest text-muted-foreground">De</span>
+                            <div className="font-mono text-foreground">Lucie &lt;{CONTACT_EMAIL}&gt;</div>
+                          </div>
+                          <div>
+                            <span className="text-[10px] uppercase tracking-widest text-muted-foreground">À</span>
+                            <div className="font-mono text-foreground">{prospectEmail}</div>
+                          </div>
+                          <div>
+                            <span className="text-[10px] uppercase tracking-widest text-muted-foreground">Sujet</span>
+                            <div className="font-semibold text-foreground">
+                              {prospectSubject.trim() || defaultProspectSubject}
+                            </div>
+                          </div>
+                          <div className="rounded-md border border-border/50 bg-background p-3">
+                            <div className="whitespace-pre-wrap text-foreground">
+                              {prospectMessage.trim() || (
+                                <span className="italic text-muted-foreground">
+                                  (aucun message personnel — seul le récap et le PDF seront envoyés)
+                                </span>
+                              )}
+                            </div>
+                            <div className="mt-3 border-t border-dashed border-border/60 pt-2 text-[11px] text-muted-foreground">
+                              📄 Récapitulatif + lien de téléchargement du PDF (ajoutés automatiquement)
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
                 {sendCopyToProspect && emailState.prospectAttempted && (
                   <div className="mt-2 flex flex-wrap items-center gap-2 text-[11px]">
                     {emailState.prospectSending ? (

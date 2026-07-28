@@ -20,6 +20,8 @@ const schema = z.object({
   sendToProspect: z.boolean().optional(),
   mode: z.enum(["both", "main", "prospect"]).optional(),
   retryAttempt: z.number().int().min(0).max(20).optional(),
+  prospectSubject: z.string().min(3).max(200).optional().nullable(),
+  prospectMessage: z.string().max(5000).optional().nullable(),
 });
 
 type EmailErrorCode =
@@ -189,6 +191,12 @@ ${pdfUrl}
       (mode === "prospect" || (mode === "both" && data.sendToProspect)) && !!data.contactEmail;
     if (wantsProspect && data.contactEmail) {
       prospectAttempted = true;
+      const customMsg = (data.prospectMessage ?? "").trim();
+      const customMsgHtml = customMsg
+        ? `<div style="background:#faf7ff;border:1px solid #e9e4f7;border-radius:12px;padding:16px 18px;margin-bottom:16px;color:#333;font-size:14px;line-height:1.55;white-space:pre-wrap;">${escapeHtml(customMsg)}</div>`
+        : "";
+      const customMsgText = customMsg ? `${customMsg}\n\n` : "";
+      const prospectSubject = (data.prospectSubject ?? "").trim() || `Votre récapitulatif Lucie (#${ref})`;
       const prospectHtml = `<!doctype html><html><body style="margin:0;padding:0;background:#f5f3ff;font-family:-apple-system,Segoe UI,Roboto,sans-serif;color:#111;">
   <div style="max-width:640px;margin:0 auto;padding:32px 24px;">
     <div style="background:#0f0b1f;color:#fff;border-radius:16px;padding:28px;">
@@ -197,6 +205,7 @@ ${pdfUrl}
       <p style="margin:12px 0 0;color:#d8d4f0;font-size:14px;">Voici votre récapitulatif de configuration. L'équipe Lucie revient vers vous très vite pour lancer l'installation.</p>
     </div>
     <div style="background:#fff;border-radius:16px;padding:24px;margin-top:16px;border:1px solid #e9e4f7;">
+      ${customMsgHtml}
       <table style="width:100%;border-collapse:collapse;">${rowsHtml}</table>
       <div style="margin-top:24px;text-align:center;">
         <a href="${pdfUrl}" style="display:inline-block;background:#6d28d9;color:#fff;text-decoration:none;font-weight:600;padding:14px 24px;border-radius:12px;font-size:15px;">📄 Télécharger votre récapitulatif PDF</a>
@@ -206,14 +215,14 @@ ${pdfUrl}
     <p style="margin:16px 0 0;color:#888;font-size:12px;text-align:center;">Une question ? Répondez simplement à cet email.</p>
   </div>
 </body></html>`;
-      const prospectText = `Votre récapitulatif Lucie (#${ref})\n\n${rows.map(([k, v]) => `${k}: ${v}`).join("\n")}\n\nPDF récapitulatif (lien signé 30 jours) :\n${pdfUrl}\n`;
+      const prospectText = `${prospectSubject}\n\n${customMsgText}${rows.map(([k, v]) => `${k}: ${v}`).join("\n")}\n\nPDF récapitulatif (lien signé 30 jours) :\n${pdfUrl}\n`;
       try {
         const p = await sendLovableEmail(
           {
             to: data.contactEmail,
             from: FROM,
             sender_domain: SENDER_DOMAIN,
-            subject: `Votre récapitulatif Lucie (#${ref})`,
+            subject: prospectSubject,
             html: prospectHtml,
             text: prospectText,
             reply_to: CONTACT_EMAIL,
