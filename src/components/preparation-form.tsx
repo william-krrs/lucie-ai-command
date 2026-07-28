@@ -1396,6 +1396,22 @@ function SubmittedConfirmation({
   };
   onReset: () => void;
 }) {
+  // Traductions FR des codes d'erreur d'envoi email
+  const ERROR_LABELS: Record<string, string> = {
+    invalid_email: "Adresse email invalide ou refusée.",
+    recipient_suppressed:
+      "Ce destinataire est bloqué (désinscription ou plainte antérieure).",
+    domain_not_verified: "Domaine expéditeur non vérifié. Contactez l'admin.",
+    emails_disabled: "L'envoi d'emails est actuellement désactivé.",
+    rate_limited: "Trop d'envois : réessayez dans quelques instants.",
+    unauthorized: "Clé API invalide côté serveur.",
+    server_error: "Erreur temporaire du service d'envoi. Réessayez.",
+    network_error: "Problème réseau lors de l'envoi. Vérifiez votre connexion.",
+    unknown_error: "Erreur inconnue lors de l'envoi.",
+  };
+  const errorLabel = (code?: string, fallback?: string) =>
+    (code && ERROR_LABELS[code]) || fallback || "Erreur inconnue.";
+
   const reference = confirmation.id.slice(0, 8).toUpperCase();
   const documentId = useMemo(() => {
     const d = new Date();
@@ -1410,9 +1426,17 @@ function SubmittedConfirmation({
     message?: string;
     sentAt?: string;
     messageId?: string;
+    mainSent?: boolean;
+    mainErrorCode?: string;
+    mainError?: string;
+    prospectAttempted?: boolean;
     prospectSent?: boolean;
     prospectMessageId?: string;
+    prospectErrorCode?: string;
     prospectError?: string;
+    prospectSending?: boolean;
+    mainSending?: boolean;
+    retryCount?: number;
   }>({ status: "idle" });
   const emailPdf = useServerFn(sendPreparationPdf);
   const autoSentRef = useRef(false);
@@ -1421,14 +1445,40 @@ function SubmittedConfirmation({
   const [sendCopyToProspect, setSendCopyToProspect] = useState(hasProspectEmail);
 
   const handleExportPdf = async (
-    opts: { download?: boolean; email?: boolean; sendToProspect?: boolean } = { download: true },
+    opts: {
+      download?: boolean;
+      email?: boolean;
+      sendToProspect?: boolean;
+      mode?: "both" | "main" | "prospect";
+    } = { download: true },
   ) => {
     const shouldDownload = opts.download ?? false;
     const shouldEmail = opts.email ?? false;
+    const mode: "both" | "main" | "prospect" = opts.mode ?? "both";
     const shouldSendToProspect =
       shouldEmail && (opts.sendToProspect ?? sendCopyToProspect) && hasProspectEmail;
+
+    // Validation client : refuser un email prospect invalide
+    if (shouldEmail && mode === "prospect" && !hasProspectEmail) {
+      setEmailState((s) => ({
+        ...s,
+        prospectSending: false,
+        prospectSent: false,
+        prospectErrorCode: "invalid_email",
+        prospectError: "Adresse email du prospect invalide.",
+      }));
+      toast.error("Adresse email du prospect invalide.");
+      return;
+    }
+
     if (shouldDownload) setExporting(true);
-    if (shouldEmail) setEmailState({ status: "sending" });
+    if (shouldEmail) {
+      setEmailState((s) => {
+        if (mode === "prospect") return { ...s, prospectSending: true };
+        if (mode === "main") return { ...s, mainSending: true, status: "sending" };
+        return { status: "sending", retryCount: (s.retryCount ?? 0) };
+      });
+    }
     try {
       const { jsPDF } = await import("jspdf");
       const doc = new jsPDF({ unit: "pt", format: "a4" });
@@ -1832,43 +1882,122 @@ function SubmittedConfirmation({
                 ? `${formatBookingDate(booking.date)}${booking.time ? " · " + booking.time : ""}`
                 : null,
               sendToProspect: shouldSendToProspect,
+              mode,
+              retryAttempt: (emailState.retryCount ?? 0) + (mode !== "both" ? 1 : 0),
             },
           });
-          if (res.sent) {
-            const r = res as {
-              messageId?: string;
-              prospectSent?: boolean;
-              prospectMessageId?: string;
-              prospectError?: string;
+          const r = res as {
+            sent: boolean;
+            mainSent?: boolean;
+            messageId?: string;
+            mainErrorCode?: string;
+            mainError?: string;
+            prospectAttempted?: boolean;
+            prospectSent?: boolean;
+            prospectMessageId?: string;
+            prospectErrorCode?: string;
+            prospectError?: string;
+          };
+          setEmailState((s) => {
+            const mainAttempted = mode !== "prospect";
+            const nextMainSent =
+              mainAttempted ? r.mainSent : s.mainSent;
+            const nextMainError = mainAttempted ? r.mainError : s.mainError;
+            const nextMainErrorCode = mainAttempted ? r.mainErrorCode : s.mainErrorCode;
+            const nextMessageId = mainAttempted && r.messageId ? r.messageId : s.messageId;
+
+            const prospectAttempted =
+              mode === "prospect" || (mode === "both" && shouldSendToProspect);
+            const nextProspectSent = prospectAttempted ? r.prospectSent : s.prospectSent;
+            const nextProspectMessageId =
+              prospectAttempted && r.prospectMessageId ? r.prospectMessageId : s.prospectMessageId;
+            const nextProspectError = prospectAttempted ? r.prospectError : s.prospectError;
+            const nextProspectErrorCode = prospectAttempted
+              ? r.prospectErrorCode
+              : s.prospectErrorCode;
+
+            const overallOk =
+              (nextMainSent ?? true) === true &&
+              (!prospectAttempted || nextProspectSent === true);
+
+            return {
+              status: nextMainSent === false ? "error" : overallOk ? "sent" : s.status === "sent" ? "sent" : "error",
+              message: nextMainError,
+              sentAt:
+                mainAttempted && r.mainSent
+                  ? new Date().toISOString()
+                  : s.sentAt ?? (r.mainSent === undefined && r.prospectSent ? new Date().toISOString() : undefined),
+              messageId: nextMessageId,
+              mainSent: nextMainSent,
+              mainError: nextMainError,
+              mainErrorCode: nextMainErrorCode,
+              prospectAttempted: prospectAttempted || s.prospectAttempted,
+              prospectSent: nextProspectSent,
+              prospectMessageId: nextProspectMessageId,
+              prospectError: nextProspectError,
+              prospectErrorCode: nextProspectErrorCode,
+              mainSending: false,
+              prospectSending: false,
+              retryCount: (s.retryCount ?? 0) + (mode !== "both" ? 1 : 0),
             };
-            setEmailState({
-              status: "sent",
-              sentAt: new Date().toISOString(),
-              messageId: r.messageId,
-              prospectSent: r.prospectSent,
-              prospectMessageId: r.prospectMessageId,
-              prospectError: r.prospectError,
-            });
-            toast.success(
-              r.prospectSent
-                ? `Email envoyé à ${CONTACT_EMAIL} + ${prospectEmail}`
-                : `Email envoyé à ${CONTACT_EMAIL}`,
-              { description: `Document ${documentId}` },
-            );
+          });
+
+          if (mode === "prospect") {
+            if (r.prospectSent)
+              toast.success(`Copie envoyée à ${prospectEmail}`, {
+                description: `Document ${documentId}`,
+              });
+            else
+              toast.error(
+                `Copie non envoyée : ${errorLabel(r.prospectErrorCode, r.prospectError)}`,
+              );
+          } else if (mode === "main") {
+            if (r.mainSent)
+              toast.success(`Email envoyé à ${CONTACT_EMAIL}`, {
+                description: `Document ${documentId}`,
+              });
+            else
+              toast.error(`Envoi impossible : ${errorLabel(r.mainErrorCode, r.mainError)}`);
           } else {
-            setEmailState({ status: "error", message: res.error });
+            if (r.mainSent) {
+              toast.success(
+                r.prospectSent
+                  ? `Email envoyé à ${CONTACT_EMAIL} + ${prospectEmail}`
+                  : `Email envoyé à ${CONTACT_EMAIL}`,
+                { description: `Document ${documentId}` },
+              );
+            } else {
+              toast.error(`Envoi impossible : ${errorLabel(r.mainErrorCode, r.mainError)}`);
+            }
           }
         } catch (err) {
-          setEmailState({
-            status: "error",
-            message: err instanceof Error ? err.message : String(err),
-          });
+          const message = err instanceof Error ? err.message : String(err);
+          setEmailState((s) => ({
+            ...s,
+            status: mode === "prospect" ? s.status : "error",
+            message,
+            mainSending: false,
+            prospectSending: false,
+            ...(mode === "prospect"
+              ? { prospectSent: false, prospectErrorCode: "network_error", prospectError: message }
+              : { mainSent: false, mainErrorCode: "network_error", mainError: message }),
+          }));
+          toast.error(`Envoi impossible : ${message}`);
         }
       }
     } catch (err) {
       console.error(err);
       if (shouldDownload) toast.error("Export PDF impossible. Réessayez.");
-      if (shouldEmail) setEmailState({ status: "error", message: "PDF non généré." });
+      if (shouldEmail)
+        setEmailState((s) => ({
+          ...s,
+          status: "error",
+          message: "PDF non généré.",
+          mainSending: false,
+          prospectSending: false,
+          mainErrorCode: "unknown_error",
+          mainError: "PDF non généré.",
+        }));
     } finally {
       if (shouldDownload) setExporting(false);
     }
@@ -2020,28 +2149,39 @@ function SubmittedConfirmation({
                     </span>
                   </span>
                 </label>
-                {emailState.status === "sent" && sendCopyToProspect && (
+                {sendCopyToProspect && emailState.prospectAttempted && (
                   <div className="mt-2 flex flex-wrap items-center gap-2 text-[11px]">
-                    {emailState.prospectSent ? (
+                    {emailState.prospectSending ? (
+                      <span className="inline-flex items-center gap-1 text-muted-foreground">
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />
+                        Envoi de la copie en cours…
+                      </span>
+                    ) : emailState.prospectSent ? (
                       <span className="inline-flex items-center gap-1 text-[oklch(0.55_0.17_155)]">
                         <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" />
                         Copie envoyée à {prospectEmail}
                       </span>
-                    ) : emailState.prospectError ? (
+                    ) : emailState.prospectSent === false ? (
                       <span className="inline-flex items-center gap-1 text-destructive">
                         <AlertCircle className="h-3.5 w-3.5" aria-hidden="true" />
-                        Copie non envoyée : {emailState.prospectError}
+                        Copie non envoyée : {errorLabel(emailState.prospectErrorCode, emailState.prospectError)}
                       </span>
                     ) : null}
-                    {emailState.prospectSent && (
+                    {!emailState.prospectSending && (
                       <button
                         type="button"
                         onClick={() =>
-                          handleExportPdf({ download: false, email: true, sendToProspect: true })
+                          handleExportPdf({
+                            download: false,
+                            email: true,
+                            sendToProspect: true,
+                            mode: "prospect",
+                          })
                         }
-                        className="ml-auto text-[11px] font-semibold text-primary underline underline-offset-2 hover:no-underline"
+                        className="ml-auto text-[11px] font-semibold text-primary underline underline-offset-2 hover:no-underline disabled:opacity-50"
+                        disabled={emailState.prospectErrorCode === "invalid_email"}
                       >
-                        Renvoyer la copie
+                        {emailState.prospectSent ? "Renvoyer la copie" : "Réessayer la copie prospect"}
                       </button>
                     )}
                   </div>
@@ -2049,10 +2189,30 @@ function SubmittedConfirmation({
               </div>
             )}
 
-            {emailState.status === "error" && (
-              <p className="mt-2 text-xs text-destructive">
-                {emailState.message ?? "Erreur inconnue."}
-              </p>
+            {emailState.mainSent === false && (
+              <div className="mt-3 flex flex-wrap items-center gap-2 rounded-lg border border-destructive/40 bg-destructive/5 p-2 text-xs">
+                <AlertCircle className="h-4 w-4 shrink-0 text-destructive" aria-hidden="true" />
+                <span className="min-w-0 flex-1 text-destructive">
+                  <strong className="font-semibold">Envoi à {CONTACT_EMAIL} impossible :</strong>{" "}
+                  {errorLabel(emailState.mainErrorCode, emailState.mainError)}
+                </span>
+                <button
+                  type="button"
+                  onClick={() =>
+                    handleExportPdf({ download: false, email: true, mode: "main" })
+                  }
+                  disabled={emailState.mainSending}
+                  className="inline-flex items-center gap-1 rounded-md bg-destructive px-2.5 py-1 text-[11px] font-semibold text-destructive-foreground hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive/60 disabled:opacity-60"
+                >
+                  {emailState.mainSending ? (
+                    <>
+                      <Loader2 className="h-3 w-3 animate-spin" aria-hidden="true" /> Renvoi…
+                    </>
+                  ) : (
+                    "Réessayer l'envoi principal"
+                  )}
+                </button>
+              </div>
             )}
           </div>
         </div>
