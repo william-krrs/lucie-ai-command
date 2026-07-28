@@ -135,32 +135,61 @@ ${pdfUrl}
 `;
 
     const { sendLovableEmail, EmailAPIError } = await import("@lovable.dev/email-js");
-    try {
-      const res = await sendLovableEmail(
-        {
-          to: CONTACT_EMAIL,
-          from: FROM,
-          sender_domain: SENDER_DOMAIN,
-          subject: `Questionnaire Lucie · ${data.companyName ?? "Nouveau prospect"} (#${ref})`,
-          html,
-          text,
-          reply_to: data.contactEmail ?? undefined,
-          idempotency_key: `prep-${data.submissionId}`,
-          label: "preparation-pdf",
-        },
-        { apiKey, idempotencyKey: `prep-${data.submissionId}` },
-      );
-      await context.supabase
-        .from("preparation_submissions")
-        .update({ email_status: "sent" })
-        .eq("id", data.submissionId);
+    const mode = data.mode ?? "both";
+    const attempt = data.retryAttempt ?? 0;
+    const attemptSuffix = attempt > 0 ? `-retry${attempt}` : "";
 
-      // Copie facultative au prospect (si opt-in + email renseigné)
-      let prospectSent = false;
-      let prospectMessageId: string | undefined;
-      let prospectError: string | undefined;
-      if (data.sendToProspect && data.contactEmail) {
-        const prospectHtml = `<!doctype html><html><body style="margin:0;padding:0;background:#f5f3ff;font-family:-apple-system,Segoe UI,Roboto,sans-serif;color:#111;">
+    let mainSent: boolean | undefined;
+    let mainMessageId: string | undefined;
+    let mainErrorCode: EmailErrorCode | undefined;
+    let mainError: string | undefined;
+
+    if (mode === "both" || mode === "main") {
+      try {
+        const res = await sendLovableEmail(
+          {
+            to: CONTACT_EMAIL,
+            from: FROM,
+            sender_domain: SENDER_DOMAIN,
+            subject: `Questionnaire Lucie · ${data.companyName ?? "Nouveau prospect"} (#${ref})`,
+            html,
+            text,
+            reply_to: data.contactEmail ?? undefined,
+            idempotency_key: `prep-${data.submissionId}${attemptSuffix}`,
+            label: "preparation-pdf",
+          },
+          { apiKey, idempotencyKey: `prep-${data.submissionId}${attemptSuffix}` },
+        );
+        mainSent = true;
+        mainMessageId = res.message_id;
+        await context.supabase
+          .from("preparation_submissions")
+          .update({ email_status: "sent" })
+          .eq("id", data.submissionId);
+      } catch (err) {
+        const c = classifyEmailError(err, EmailAPIError);
+        mainSent = false;
+        mainErrorCode = c.code;
+        mainError = c.message;
+        console.error("[sendPreparationPdf] main email failed", c);
+        await context.supabase
+          .from("preparation_submissions")
+          .update({ email_status: "failed" })
+          .eq("id", data.submissionId);
+      }
+    }
+
+    // Copie facultative au prospect (si opt-in + email renseigné)
+    let prospectAttempted = false;
+    let prospectSent: boolean | undefined;
+    let prospectMessageId: string | undefined;
+    let prospectErrorCode: EmailErrorCode | undefined;
+    let prospectError: string | undefined;
+    const wantsProspect =
+      (mode === "prospect" || (mode === "both" && data.sendToProspect)) && !!data.contactEmail;
+    if (wantsProspect && data.contactEmail) {
+      prospectAttempted = true;
+      const prospectHtml = `<!doctype html><html><body style="margin:0;padding:0;background:#f5f3ff;font-family:-apple-system,Segoe UI,Roboto,sans-serif;color:#111;">
   <div style="max-width:640px;margin:0 auto;padding:32px 24px;">
     <div style="background:#0f0b1f;color:#fff;border-radius:16px;padding:28px;">
       <div style="font-size:11px;letter-spacing:0.16em;color:#c4b5fd;text-transform:uppercase;">Votre récapitulatif Lucie</div>
@@ -177,57 +206,52 @@ ${pdfUrl}
     <p style="margin:16px 0 0;color:#888;font-size:12px;text-align:center;">Une question ? Répondez simplement à cet email.</p>
   </div>
 </body></html>`;
-        const prospectText = `Votre récapitulatif Lucie (#${ref})\n\n${rows.map(([k, v]) => `${k}: ${v}`).join("\n")}\n\nPDF récapitulatif (lien signé 30 jours) :\n${pdfUrl}\n`;
-        try {
-          const p = await sendLovableEmail(
-            {
-              to: data.contactEmail,
-              from: FROM,
-              sender_domain: SENDER_DOMAIN,
-              subject: `Votre récapitulatif Lucie (#${ref})`,
-              html: prospectHtml,
-              text: prospectText,
-              reply_to: CONTACT_EMAIL,
-              idempotency_key: `prep-prospect-${data.submissionId}`,
-              label: "preparation-pdf-prospect",
-            },
-            { apiKey, idempotencyKey: `prep-prospect-${data.submissionId}` },
-          );
-          prospectSent = true;
-          prospectMessageId = p.message_id;
-        } catch (err) {
-          prospectError =
-            err instanceof EmailAPIError
-              ? `${(err as InstanceType<typeof EmailAPIError> & { code?: string }).code ?? (err as InstanceType<typeof EmailAPIError>).status}: ${(err as Error).message}`
-              : err instanceof Error
-                ? err.message
-                : String(err);
-          console.error("[sendPreparationPdf] prospect email failed", prospectError);
-        }
+      const prospectText = `Votre récapitulatif Lucie (#${ref})\n\n${rows.map(([k, v]) => `${k}: ${v}`).join("\n")}\n\nPDF récapitulatif (lien signé 30 jours) :\n${pdfUrl}\n`;
+      try {
+        const p = await sendLovableEmail(
+          {
+            to: data.contactEmail,
+            from: FROM,
+            sender_domain: SENDER_DOMAIN,
+            subject: `Votre récapitulatif Lucie (#${ref})`,
+            html: prospectHtml,
+            text: prospectText,
+            reply_to: CONTACT_EMAIL,
+            idempotency_key: `prep-prospect-${data.submissionId}${attemptSuffix}`,
+            label: "preparation-pdf-prospect",
+          },
+          { apiKey, idempotencyKey: `prep-prospect-${data.submissionId}${attemptSuffix}` },
+        );
+        prospectSent = true;
+        prospectMessageId = p.message_id;
+      } catch (err) {
+        const c = classifyEmailError(err, EmailAPIError);
+        prospectSent = false;
+        prospectErrorCode = c.code;
+        prospectError = c.message;
+        console.error("[sendPreparationPdf] prospect email failed", c);
       }
-
-      return {
-        sent: true as const,
-        pdfUrl,
-        messageId: res.message_id,
-        prospectSent,
-        prospectMessageId,
-        prospectError,
-      };
-    } catch (err) {
-      const msg =
-        err instanceof EmailAPIError
-          ? `${(err as InstanceType<typeof EmailAPIError> & { code?: string }).code ?? (err as InstanceType<typeof EmailAPIError>).status}: ${(err as Error).message}`
-          : err instanceof Error
-            ? err.message
-            : String(err);
-      console.error("[sendPreparationPdf] email failed", msg);
-      await context.supabase
-        .from("preparation_submissions")
-        .update({ email_status: "failed" })
-        .eq("id", data.submissionId);
-      return { sent: false as const, pdfUrl, error: msg };
     }
+
+    // sent === true si au moins un des envois demandés a réussi
+    const anyAttempted = mode !== "prospect" || prospectAttempted;
+    const anySucceeded = mainSent === true || prospectSent === true;
+    return {
+      sent: (anyAttempted && anySucceeded) as boolean,
+      pdfUrl,
+      mode,
+      mainSent,
+      messageId: mainMessageId,
+      mainErrorCode,
+      mainError,
+      prospectAttempted,
+      prospectSent,
+      prospectMessageId,
+      prospectErrorCode,
+      prospectError,
+      // Rétrocompat
+      error: mainError,
+    };
   });
 
 function escapeHtml(v: string): string {
