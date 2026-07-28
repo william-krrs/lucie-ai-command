@@ -542,7 +542,13 @@ function DemoMode() {
         aria-label={`Étape ${i + 1} sur ${total} : ${current.title}`}
         className="flex flex-1 items-center justify-center px-4 py-6 sm:px-10 sm:py-12"
       >
-        <article className="flex w-full max-w-6xl flex-col items-center gap-8" key={current.id}>
+        <article
+          key={current.id}
+          className={cn(
+            "flex w-full max-w-6xl flex-col items-center gap-8",
+            !reduced && "motion-safe:animate-[slide-in_420ms_cubic-bezier(0.2,0.7,0.2,1)_both]",
+          )}
+        >
           <div className="flex flex-col items-center gap-3 text-center">
             <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1 text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
               <span className="h-1.5 w-1.5 rounded-full bg-primary" />
