@@ -139,6 +139,7 @@ function normalize(raw: unknown, fallbackType: BookingType = DEFAULT_BOOKING_TYP
           }
         : undefined,
     status,
+    statusNorm: normalizeStatusNorm(r.statusNorm, status),
     bookingType: isBookingType(r.bookingType) ? r.bookingType : fallbackType,
     iclosedEventId: typeof r.iclosedEventId === "string" ? r.iclosedEventId : undefined,
     meetingLocation: typeof r.meetingLocation === "string" ? r.meetingLocation : undefined,
