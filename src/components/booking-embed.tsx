@@ -562,6 +562,7 @@ export function BookingEmbed({
                 setRecapUrl(null);
                 try {
                   await cancelBookingFn({ data: { clientRef: getClientRef(), bookingType } });
+                  await refreshJourney();
                 } catch {
                   /* silent */
                 }
