@@ -11,17 +11,27 @@ export type JourneyStateDTO = {
   installationStatus: InstallationStatus;
   /** true si un RDV Démo (r2_demo) est confirmé côté base. */
   demoBookingConfirmed: boolean;
+  /** meeting_at (ISO/timestamptz) du RDV Démo confirmé, sinon null. */
+  demoMeetingAt: string | null;
+  /** Ouverture temporelle : meeting_at - 15 min (ISO), sinon null. */
+  demoUnlockAt: string | null;
   /** true si une configuration (preparation_submissions) a été soumise. */
   configurationSubmitted: boolean;
 };
+
+/** Fenêtre d'ouverture avant le rendez-vous (ms). */
+export const DEMO_UNLOCK_LEAD_MS = 15 * 60 * 1000;
 
 const EMPTY: JourneyStateDTO = {
   demoCompletedAt: null,
   paymentStatus: "unpaid",
   installationStatus: "not_started",
   demoBookingConfirmed: false,
+  demoMeetingAt: null,
+  demoUnlockAt: null,
   configurationSubmitted: false,
 };
+
 
 /**
  * Source de vérité serveur du parcours. Toutes les permissions client
@@ -40,10 +50,11 @@ export const getJourneyState = createServerFn({ method: "GET" })
         .maybeSingle(),
       supabase
         .from("bookings")
-        .select("id")
+        .select("id, meeting_at")
         .eq("user_id", userId)
         .eq("booking_type", "r2_demo")
         .eq("status_norm", "confirmed")
+        .order("meeting_at", { ascending: true })
         .limit(1),
       supabase.from("preparation_submissions").select("id").eq("user_id", userId).limit(1),
     ]);
@@ -53,15 +64,24 @@ export const getJourneyState = createServerFn({ method: "GET" })
     if (prepRes.error) console.error("[getJourneyState] prep", prepRes.error);
 
     const row = stateRes.data;
+    // meeting_at est un timestamptz : la comparaison se fait en UTC côté serveur.
+    const meetingAtRaw = bookingRes.data?.[0]?.meeting_at ?? null;
+    const meetingAt = meetingAtRaw ? new Date(meetingAtRaw) : null;
+    const unlockAt = meetingAt ? new Date(meetingAt.getTime() - DEMO_UNLOCK_LEAD_MS) : null;
+
     return {
       ...EMPTY,
       demoCompletedAt: row?.demo_completed_at ?? null,
       paymentStatus: (row?.payment_status as PaymentStatus | undefined) ?? "unpaid",
       installationStatus:
         (row?.installation_status as InstallationStatus | undefined) ?? "not_started",
-      demoBookingConfirmed: (bookingRes.data?.length ?? 0) > 0,
+      // Confirmé ET fenêtre temporelle atteinte (meeting_at - 15 min <= now).
+      demoBookingConfirmed: !!unlockAt && unlockAt.getTime() <= Date.now(),
+      demoMeetingAt: meetingAt ? meetingAt.toISOString() : null,
+      demoUnlockAt: unlockAt ? unlockAt.toISOString() : null,
       configurationSubmitted: (prepRes.data?.length ?? 0) > 0,
     };
+
   });
 
 /**
