@@ -272,8 +272,6 @@ export function AppShell({ children }: { children: ReactNode }) {
 }
 
 function AuditGate() {
-  const { useState } = require("react") as typeof import("react");
-  const [open, setOpen] = useState(true);
   return (
     <section
       role="region"
