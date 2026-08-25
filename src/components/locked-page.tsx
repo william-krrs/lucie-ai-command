@@ -31,6 +31,7 @@ export function LockedPage({
   description,
   step,
   meetingAt,
+  unlockAt,
   unlockNote,
 }: {
   title: string;
