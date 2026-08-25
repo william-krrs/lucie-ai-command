@@ -38,22 +38,103 @@ function str(flat: Flat, keys: string[]): string | undefined {
 
 type Action = "booked" | "cancelled" | "rescheduled";
 
-function actionFrom(flat: Flat): Action | null {
-  const normalizedEvent = (str(flat, ["event", "event_type", "type", "action", "topic"]) ?? "")
+function normalizeEventLabel(value: string): string {
+  return value
     .trim()
     .toLowerCase()
     .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "");
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[._-]+/g, " ")
+    .replace(/\s+/g, " ");
+}
 
-  let action: Action | null = null;
-  if (/cancel|annul/.test(normalizedEvent)) action = "cancelled";
-  else if (/reschedul|resched|moved|report/.test(normalizedEvent)) action = "rescheduled";
-  else if (/book|schedul|created|confirm|reserv/.test(normalizedEvent)) action = "booked";
+function actionFromLabel(value: string): Action | null {
+  const normalized = normalizeEventLabel(value);
+  if (normalized === "closer") return null;
 
-  console.info(
-    `[iclosed webhook] event=${normalizedEvent || "unknown"} action=${action ?? "ignored"}`,
-  );
-  return action;
+  if (/^(appel |call )?(annule|cancelled|canceled|cancel)$/.test(normalized)) return "cancelled";
+  if (/^(appel |call )?(reporte|rescheduled|reschedule|resched|moved)$/.test(normalized)) return "rescheduled";
+  if (/^(appel |call )?(reserve|booked|scheduled|created|confirmed|book)$/.test(normalized)) return "booked";
+  return null;
+}
+
+function valueAtPath(value: unknown, path: string): unknown {
+  let current = value;
+  for (const segment of path.split(".")) {
+    if (!current || typeof current !== "object") return undefined;
+    current = (current as Flat)[segment];
+  }
+  return current;
+}
+
+type EventCandidate = { path: string; value: string; action: Action };
+
+function findEventCandidates(value: unknown): EventCandidate[] {
+  const candidates: EventCandidate[] = [];
+
+  function visit(current: unknown, path: string, depth: number): void {
+    if (depth > 7 || !current || typeof current !== "object") return;
+    if (Array.isArray(current)) {
+      current.forEach((item, index) => visit(item, `${path}[${index}]`, depth + 1));
+      return;
+    }
+
+    for (const [key, nested] of Object.entries(current as Flat)) {
+      const nestedPath = path ? `${path}.${key}` : key;
+      if (typeof nested === "string") {
+        const action = actionFromLabel(nested);
+        if (action) candidates.push({ path: nestedPath, value: normalizeEventLabel(nested), action });
+      } else {
+        visit(nested, nestedPath, depth + 1);
+      }
+    }
+  }
+
+  visit(value, "", 0);
+  return candidates;
+}
+
+const ICLOSED_EVENT_PATHS = [
+  "event.type",
+  "event.event_type",
+  "event.name",
+  "data.event.type",
+  "data.event.event_type",
+  "data.event.name",
+  "data.event_type",
+  "data.event",
+  "event_type",
+  "event",
+] as const;
+
+function actionFrom(payload: unknown): Action | null {
+  const topLevelKeys = payload && typeof payload === "object" && !Array.isArray(payload)
+    ? Object.keys(payload as Flat)
+    : [];
+
+  let selected: EventCandidate | null = null;
+  for (const path of ICLOSED_EVENT_PATHS) {
+    const value = valueAtPath(payload, path);
+    if (typeof value !== "string") continue;
+    const action = actionFromLabel(value);
+    if (action) {
+      selected = { path, value: normalizeEventLabel(value), action };
+      break;
+    }
+  }
+
+  const candidates = findEventCandidates(payload);
+  if (!selected) selected = candidates[0] ?? null;
+
+  // Diagnostic structurel temporaire : uniquement des clés et des libellés
+  // strictement reconnus comme événements. Aucune donnée personnelle ni URL.
+  console.info("[iclosed webhook] event diagnostic", {
+    topLevelKeys,
+    candidates,
+    selectedPath: selected?.path ?? null,
+    action: selected?.action ?? "ignored",
+  });
+  return selected?.action ?? null;
 }
 
 function splitDateTime(iso: string): { date: string; time: string; at: string } | null {
@@ -124,7 +205,7 @@ async function handle(request: Request): Promise<Response> {
   }
 
   const flat = flatten(payload);
-  const action = actionFrom(flat);
+  const action = actionFrom(payload);
   if (!action) return Response.json({ ok: true, ignored: true });
 
   const eventId = str(flat, ["event_id", "eventid", "call_id", "callid", "uuid", "id"]);
