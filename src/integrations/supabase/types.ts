@@ -137,6 +137,51 @@ export type Database = {
         }
         Relationships: []
       }
+      journey_state: {
+        Row: {
+          client_ref: string | null
+          created_at: string
+          demo_completed_at: string | null
+          id: string
+          installation_status: Database["public"]["Enums"]["installation_status"]
+          paid_at: string | null
+          paid_plan: string | null
+          payment_status: Database["public"]["Enums"]["payment_status"]
+          stripe_customer_id: string | null
+          stripe_session_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          client_ref?: string | null
+          created_at?: string
+          demo_completed_at?: string | null
+          id?: string
+          installation_status?: Database["public"]["Enums"]["installation_status"]
+          paid_at?: string | null
+          paid_plan?: string | null
+          payment_status?: Database["public"]["Enums"]["payment_status"]
+          stripe_customer_id?: string | null
+          stripe_session_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          client_ref?: string | null
+          created_at?: string
+          demo_completed_at?: string | null
+          id?: string
+          installation_status?: Database["public"]["Enums"]["installation_status"]
+          paid_at?: string | null
+          paid_plan?: string | null
+          payment_status?: Database["public"]["Enums"]["payment_status"]
+          stripe_customer_id?: string | null
+          stripe_session_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       preparation_drafts: {
         Row: {
           created_at: string
@@ -306,6 +351,12 @@ export type Database = {
         | "completed"
         | "no_show"
       booking_type: "r1_discovery" | "r2_demo" | "setup_test"
+      installation_status:
+        | "not_started"
+        | "in_progress"
+        | "ready_for_test"
+        | "live"
+      payment_status: "unpaid" | "paid" | "refunded"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -442,6 +493,13 @@ export const Constants = {
         "no_show",
       ],
       booking_type: ["r1_discovery", "r2_demo", "setup_test"],
+      installation_status: [
+        "not_started",
+        "in_progress",
+        "ready_for_test",
+        "live",
+      ],
+      payment_status: ["unpaid", "paid", "refunded"],
     },
   },
 } as const
