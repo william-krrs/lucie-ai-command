@@ -14,8 +14,12 @@ export type JourneyAccess = {
   /** État serveur (null tant qu'il n'est pas chargé). */
   state: JourneyStateDTO | null;
   loading: boolean;
-  /** RDV Démo r2_demo avec status_norm = 'confirmed'. */
+  /** RDV Démo r2_demo confirmé ET meeting_at - 15 min <= maintenant. */
   canViewDemonstration: boolean;
+  /** meeting_at du RDV Démo confirmé (ISO), sinon null. */
+  demoMeetingAt: string | null;
+  /** Instant d'ouverture de la démonstration (meeting_at - 15 min, ISO). */
+  demoUnlockAt: string | null;
   /** journey_state.demo_completed_at IS NOT NULL. */
   canViewOffers: boolean;
   /** journey_state.payment_status === 'paid'. */
@@ -35,6 +39,8 @@ const FALLBACK: JourneyStateDTO = {
   paymentStatus: "unpaid",
   installationStatus: "not_started",
   demoBookingConfirmed: false,
+  demoMeetingAt: null,
+  demoUnlockAt: null,
   configurationSubmitted: false,
 };
 
@@ -46,6 +52,7 @@ export function JourneyAccessProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient();
   const [bypass, setBypass] = useState(false);
   const [authed, setAuthed] = useState(false);
+  const [now, setNow] = useState(() => Date.now());
 
   useEffect(() => {
     setBypass(UNLOCK_ALL_PAGES || readAdminMode());
@@ -72,6 +79,16 @@ export function JourneyAccessProvider({ children }: { children: ReactNode }) {
     staleTime: 15_000,
   });
 
+  // Réévalue la fenêtre H-15 sans rechargement manuel.
+  const unlockAt = data?.demoUnlockAt ?? null;
+  useEffect(() => {
+    if (!unlockAt) return;
+    const target = new Date(unlockAt).getTime();
+    if (Number.isNaN(target) || target <= Date.now()) return;
+    const id = window.setInterval(() => setNow(Date.now()), 1000);
+    return () => window.clearInterval(id);
+  }, [unlockAt]);
+
   const refresh = useCallback(async () => {
     await queryClient.invalidateQueries({ queryKey: JOURNEY_QUERY_KEY });
   }, [queryClient]);
@@ -87,7 +104,12 @@ export function JourneyAccessProvider({ children }: { children: ReactNode }) {
     return {
       state: s,
       loading: authed && isLoading,
-      canViewDemonstration: bypass || effective.demoBookingConfirmed,
+      canViewDemonstration:
+        bypass ||
+        effective.demoBookingConfirmed ||
+        (effective.demoUnlockAt !== null && new Date(effective.demoUnlockAt).getTime() <= now),
+      demoMeetingAt: effective.demoMeetingAt,
+      demoUnlockAt: effective.demoUnlockAt,
       canViewOffers: bypass || effective.demoCompletedAt !== null,
       canConfigure: bypass || effective.paymentStatus === "paid",
       canViewInstallation: bypass || effective.configurationSubmitted,
@@ -96,7 +118,7 @@ export function JourneyAccessProvider({ children }: { children: ReactNode }) {
       refresh,
       completeDemo,
     };
-  }, [data, isLoading, authed, bypass, refresh, completeDemo]);
+  }, [data, isLoading, authed, bypass, now, refresh, completeDemo]);
 
   return <JourneyCtx.Provider value={value}>{children}</JourneyCtx.Provider>;
 }
