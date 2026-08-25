@@ -19,7 +19,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { DEFAULT_BOOKING_TYPE, type BookingType } from "@/lib/booking-types";
 import { useAdminMode } from "@/lib/admin-mode";
 
-import { useBooking, formatBookingDate, getClientRef } from "@/lib/booking-store";
+import { useBooking, formatBookingDate, getClientRef, type Booking } from "@/lib/booking-store";
 import { upsertBooking, cancelBooking } from "@/lib/bookings.functions";
 import { createSharedDiagnostic } from "@/lib/share.functions";
 import { useLucie, useMetrics, useRecommendation } from "@/lib/lucie-store";
