@@ -1,4 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
+import { AUDIT_MODE } from "@/lib/config";
 import {
   Home,
   ClipboardList,
@@ -75,7 +76,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       {NAV.map((item, i) => {
         const active = pathname === item.to;
         const Icon = item.icon;
-        const locked = "gated" in item && item.gated && !isUnlocked;
+        const locked = AUDIT_MODE || ("gated" in item && item.gated && !isUnlocked);
         return (
           <li key={item.to}>
             <Link
@@ -261,12 +262,41 @@ export function AppShell({ children }: { children: ReactNode }) {
           key={pathname}
           className="mx-auto w-full max-w-6xl min-w-0 px-4 py-6 sm:px-6 sm:py-8 lg:px-10 lg:py-12 animate-fade-in focus:outline-none"
         >
-          {children}
+          {AUDIT_MODE ? <AuditGate /> : children}
         </div>
       </main>
       <BookingSync />
       <KeyboardShortcuts />
     </div>
+  );
+}
+
+function AuditGate() {
+  return (
+    <section
+      role="region"
+      aria-labelledby="audit-title"
+      aria-live="polite"
+      className="mx-auto max-w-2xl rounded-3xl border border-border bg-card p-8 text-center shadow-[var(--shadow-card)] sm:p-12"
+    >
+      <span className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-primary/10 text-primary" aria-hidden="true">
+        <Sparkles className="h-6 w-6" aria-hidden="true" />
+      </span>
+      <div className="mt-4 text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
+        Mode Audit · Maintenance temporaire
+      </div>
+      <h1 id="audit-title" className="mt-2 text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
+        Toutes les pages sont temporairement désactivées
+      </h1>
+      <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
+        L'application est en mode audit pour une révision globale. Aucune page
+        du parcours n'est accessible pendant cette période.
+      </p>
+      <div className="mt-6 inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/[0.05] px-3 py-1.5 text-[11px] font-medium text-primary">
+        <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+        Audit en cours
+      </div>
+    </section>
   );
 }
 

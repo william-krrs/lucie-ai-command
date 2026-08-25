@@ -3,6 +3,13 @@
  * Modifiez ces valeurs pour ajuster l'affichage sans toucher au code des composants.
  */
 
+/**
+ * Mode audit temporaire : quand true, toutes les pages du parcours sont
+ * verrouillées et affichent un écran d'audit global. Passer à false pour
+ * réactiver l'application normalement.
+ */
+export const AUDIT_MODE = true;
+
 /** Nombre d'entreprises affiché dans le badge social proof de la page d'accueil. */
 export const SOCIAL_PROOF_COMPANY_COUNT = 25;
 
