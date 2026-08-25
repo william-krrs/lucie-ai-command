@@ -22,7 +22,8 @@ function useCountdown(targetIso: string | null | undefined) {
   const seconds = Math.floor((diff % 60000) / 1000);
   if (days > 0) return `${days} j ${hours} h ${minutes} min`;
   if (hours > 0) return `${hours} h ${minutes} min`;
-  return `${minutes} min ${String(seconds).padStart(2, "0")} s`;
+  if (minutes > 0) return `${minutes} min ${String(seconds).padStart(2, "0")} s`;
+  return `${seconds} s`;
 }
 
 export function LockedPage({
@@ -30,38 +31,43 @@ export function LockedPage({
   description,
   step,
   meetingAt,
+  unlockAt,
   unlockNote,
 }: {
   title: string;
   description?: string;
   /** Nom de l'étape verrouillée, affiché dans le message (ex: "Démonstration"). */
   step?: string;
-  /** meeting_at (ISO) du RDV confirmé : active le compte à rebours. */
+  /** meeting_at (ISO) du RDV confirmé : affiché comme date du rendez-vous. */
   meetingAt?: string | null;
+  /** Instant exact de déverrouillage (ISO) : base du compte à rebours. */
+  unlockAt?: string | null;
   /** Note affichée sous le compte à rebours. */
   unlockNote?: string;
 }) {
   const { booking, isPendingMeeting } = useBooking();
-  const countdown = useCountdown(meetingAt ?? null);
+  const countdown = useCountdown(unlockAt ?? meetingAt ?? null);
 
-  const daysUntil = (() => {
-    if (!booking) return null;
-    const [y, m, d] = booking.date.split("-").map(Number);
-    const target = new Date(y, (m ?? 1) - 1, d ?? 1);
-    target.setHours(0, 0, 0, 0);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    return Math.round((target.getTime() - today.getTime()) / 86400000);
+  const meetingLabel = (() => {
+    if (meetingAt) {
+      const d = new Date(meetingAt);
+      if (!Number.isNaN(d.getTime())) {
+        return new Intl.DateTimeFormat("fr-FR", {
+          weekday: "long",
+          day: "numeric",
+          month: "long",
+          hour: "2-digit",
+          minute: "2-digit",
+        }).format(d);
+      }
+    }
+    if (booking) {
+      return `${formatBookingDate(booking.date)}${booking.time ? ` · ${booking.time}` : ""}`;
+    }
+    return null;
   })();
 
-  const daysLabel =
-    daysUntil == null
-      ? null
-      : daysUntil <= 0
-        ? "Aujourd'hui"
-        : daysUntil === 1
-          ? "Dans 1 jour"
-          : `Dans ${daysUntil} jours`;
+  const hasMeeting = Boolean(meetingAt) || (isPendingMeeting && !!booking);
 
   return (
     <section
@@ -94,27 +100,24 @@ export function LockedPage({
             : "Réservez d'abord un créneau avec l'équipe Lucie pour débloquer cette étape.")}
       </p>
 
-      {isPendingMeeting && booking ? (
+      {hasMeeting ? (
         <div className="mx-auto mt-6 max-w-md rounded-2xl border border-primary/30 bg-primary/[0.05] p-4 text-left">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-2 text-[11px] font-medium uppercase tracking-widest text-primary">
               <CalendarCheck2 className="h-4 w-4" aria-hidden="true" />
               Rendez-vous confirmé
             </div>
-            {daysLabel && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary">
-                <Clock className="h-3 w-3" aria-hidden="true" />
-                {daysLabel}
-              </span>
-            )}
+            <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary">
+              <Clock className="h-3 w-3" aria-hidden="true" />
+              Verrouillé
+            </span>
           </div>
-          <div className="mt-1 text-sm font-medium text-foreground">
-            {formatBookingDate(booking.date)}
-            {booking.time ? ` · ${booking.time}` : ""}
-          </div>
+          {meetingLabel && (
+            <div className="mt-1 text-sm font-medium text-foreground">{meetingLabel}</div>
+          )}
           {countdown && (
             <div className="mt-2 font-mono text-sm tabular-nums text-foreground">
-              Dans {countdown}
+              Disponible dans {countdown}
             </div>
           )}
           <p className="mt-1 text-xs text-muted-foreground">
