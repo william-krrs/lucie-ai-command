@@ -59,6 +59,18 @@ function flatten(value: unknown, out: Record<string, unknown> = {}, depth = 0) {
   return out;
 }
 
+function mergeUrlParameters(value: unknown, out: Record<string, unknown>) {
+  if (typeof value !== "string") return;
+  try {
+    const url = new URL(value, window.location.origin);
+    url.searchParams.forEach((parameterValue, key) => {
+      if (!(key in out)) out[key] = parameterValue;
+    });
+  } catch {
+    // The value is not a URL; there is nothing to extract.
+  }
+}
+
 /**
  * Analyse un message posté par le widget iClosed et en extrait la réservation
  * si l'événement correspond à un créneau confirmé.
@@ -74,13 +86,22 @@ export function parseIclosedBooking(raw: unknown): DetectedBooking | null {
   }
   if (!data || typeof data !== "object") return null;
   const flat = flatten(data);
+  // After a successful booking, iClosed asks the parent page to open its
+  // confirmation URL. The booking details are carried as query parameters
+  // inside `data.url`, rather than as top-level postMessage fields.
+  for (const value of Object.values(flat)) mergeUrlParameters(value, flat);
   const kind = String(
     pick(flat, ["event", "type", "action", "name", "status"]) ?? "",
   ).toLowerCase();
+  const confirmationId = pick(flat, ["previewid", "invitee_uuid", "call_id", "callid"]);
   const looksBooked =
-    /book|schedul|appointment|meeting|confirm|complete/.test(kind) &&
+    (/book|schedul|appointment|meeting|confirm|complete/.test(kind) ||
+      (kind === "openinparenttab" && !!confirmationId)) &&
     !/cancel/.test(kind);
   const start = pick(flat, [
+    "event_start_time",
+    "invitee_start_time",
+    "utc_start_time",
     "starttime",
     "start_time",
     "startsat",
@@ -92,19 +113,27 @@ export function parseIclosedBooking(raw: unknown): DetectedBooking | null {
     "date",
   ]);
   if (!looksBooked || !start) return null;
+  const wallClock = start.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/);
   const d = new Date(start);
   if (Number.isNaN(d.getTime())) return null;
-  const date = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(
-    d.getDate(),
-  ).padStart(2, "0")}`;
-  const time = `${String(d.getHours()).padStart(2, "0")}:${String(
-    d.getMinutes(),
-  ).padStart(2, "0")}`;
+  const date = wallClock
+    ? `${wallClock[1]}-${wallClock[2]}-${wallClock[3]}`
+    : `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  const time = wallClock
+    ? `${wallClock[4]}:${wallClock[5]}`
+    : `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
   return {
     date,
     time,
-    name: pick(flat, ["name", "invitee", "inviteename", "fullname", "firstname"]),
-    email: pick(flat, ["email", "inviteeemail", "useremail"]),
+    name: pick(flat, [
+      "name",
+      "invitee",
+      "inviteename",
+      "invitee_full_name",
+      "fullname",
+      "firstname",
+    ]),
+    email: pick(flat, ["email", "inviteeemail", "invitee_email", "useremail", "answer_1"]),
   };
 }
 
@@ -207,9 +236,9 @@ export function BookingEmbed({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bookingUrl, title, widgetKey]);
 
-  // Écoute les messages postés par l'iframe iClosed : dès qu'un créneau est
-  // réservé, on récupère la date/heure (et le contact si fourni) et on confirme
-  // automatiquement le rendez-vous — plus besoin de saisie manuelle.
+  // Écoute la redirection de confirmation publiée par iClosed. Le widget ne
+  // publie pas un événement « booked » dédié : il envoie `openInParentTab`
+  // avec une URL contenant event_start_time, previewId et les coordonnées.
   useEffect(() => {
     function onMessage(event: MessageEvent) {
       try {
@@ -402,7 +431,7 @@ export function BookingEmbed({
               </h2>
               <p className="mt-1 max-w-xl text-sm text-muted-foreground">
                 {bookedDescription ??
-                  "La démonstration, les offres, l'installation et la configuration personnalisée seront automatiquement débloquées le jour de votre rendez-vous."}
+                  "La démonstration, les offres, l'installation et la configuration personnalisée sont maintenant débloquées."}
               </p>
             </div>
           </div>
@@ -526,7 +555,7 @@ export function BookingEmbed({
           </h2>
           <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
             {description ??
-              "Sélectionnez directement votre horaire ci-dessous. La démonstration, les offres, l'installation et la configuration personnalisée resteront verrouillées jusqu'au jour de votre rendez-vous."}
+              "Sélectionnez directement votre horaire ci-dessous. La suite du parcours se débloque automatiquement dès que votre rendez-vous est confirmé."}
           </p>
         </div>
       </div>

@@ -59,7 +59,7 @@ type Ctx = {
   setBooking: (b: Omit<Booking, "status" | "updatedAt" | "createdAt"> & Partial<Pick<Booking, "status" | "createdAt" | "updatedAt">>) => void;
   updateBooking: (patch: Partial<Booking>) => void;
   clearBooking: () => void;
-  /** true si un RDV existe et que la date est aujourd'hui ou passée (status !== cancelled). */
+  /** true dès qu'un RDV confirmé existe (status !== cancelled). */
   isUnlocked: boolean;
   /** true si un RDV existe mais est dans le futur (status !== cancelled). */
   isPendingMeeting: boolean;
@@ -142,6 +142,47 @@ function todayISO(): string {
   ).padStart(2, "0")}`;
 }
 
+function bookingFromIclosedConfirmation(event: MessageEvent): Omit<Booking, "status" | "updatedAt"> | null {
+  if (event.origin !== "https://app.iclosed.io") return null;
+  if (!event.data || typeof event.data !== "object") return null;
+  const data = event.data as Record<string, unknown>;
+  if (data.type !== "openInParentTab" || typeof data.url !== "string") return null;
+
+  try {
+    const confirmation = new URL(data.url, window.location.origin);
+    const start = confirmation.searchParams.get("event_start_time");
+    const confirmationId =
+      confirmation.searchParams.get("previewId") ??
+      confirmation.searchParams.get("invitee_uuid");
+    if (!start || !confirmationId) return null;
+
+    const dateTime = new Date(start);
+    if (Number.isNaN(dateTime.getTime())) return null;
+    const wallClock = start.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/);
+    const date = wallClock
+      ? `${wallClock[1]}-${wallClock[2]}-${wallClock[3]}`
+      : `${dateTime.getFullYear()}-${String(dateTime.getMonth() + 1).padStart(2, "0")}-${String(dateTime.getDate()).padStart(2, "0")}`;
+    const time = wallClock
+      ? `${wallClock[4]}:${wallClock[5]}`
+      : `${String(dateTime.getHours()).padStart(2, "0")}:${String(dateTime.getMinutes()).padStart(2, "0")}`;
+    const name = confirmation.searchParams.get("invitee_full_name") ?? undefined;
+    const email =
+      confirmation.searchParams.get("Invitee_email") ??
+      confirmation.searchParams.get("invitee_email") ??
+      undefined;
+
+    return {
+      date,
+      time,
+      inviteeName: name,
+      user: email ? { name, email } : undefined,
+      createdAt: new Date().toISOString(),
+    };
+  } catch {
+    return null;
+  }
+}
+
 export function BookingProvider({ children }: { children: ReactNode }) {
   const [booking, setBookingState] = useState<Booking | null>(null);
 
@@ -174,6 +215,17 @@ export function BookingProvider({ children }: { children: ReactNode }) {
     persist(next);
     setBookingState(next);
   }, []);
+
+  useEffect(() => {
+    const onIclosedConfirmation = (event: MessageEvent) => {
+      const confirmed = bookingFromIclosedConfirmation(event);
+      if (confirmed) setBooking(confirmed);
+    };
+    // The provider mounts before the external widget script, so this listener
+    // records the confirmation before iClosed redirects the parent tab.
+    window.addEventListener("message", onIclosedConfirmation);
+    return () => window.removeEventListener("message", onIclosedConfirmation);
+  }, [setBooking]);
 
   const updateBooking = useCallback<Ctx["updateBooking"]>((patch) => {
     setBookingState((prev) => {
@@ -208,8 +260,10 @@ export function BookingProvider({ children }: { children: ReactNode }) {
   const value = useMemo<Ctx>(() => {
     const active = !!booking && booking.status !== "cancelled";
     const today = todayISO();
-    const isUnlocked = active && booking!.date <= today;
-    const isPendingMeeting = active && booking!.date > today;
+    // A confirmed future appointment unlocks the journey immediately. The
+    // previous date gate kept legitimate prospects blocked until appointment day.
+    const isUnlocked = active;
+    const isPendingMeeting = active && booking.date > today;
     return { booking, setBooking, updateBooking, clearBooking, isUnlocked, isPendingMeeting };
   }, [booking, setBooking, updateBooking, clearBooking]);
 
