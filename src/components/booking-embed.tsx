@@ -70,7 +70,7 @@ export function BookingEmbed({
    * URL brute de l'événement iClosed (servant à la fois de `data-url` pour le
    * widget inline et de lien « ouvrir dans un nouvel onglet »). iClosed récupère
    * automatiquement les paramètres UTM depuis les cookies et le référent, il n'y
-   * donc pas de pré-remplissage d'URL à construire comme avec Calendly.
+   * donc pas de pré-remplissage d'URL à construire comme avec l’ancien outil de réservation.
    */
   const bookingUrl = url ?? BOOKING_URL;
 

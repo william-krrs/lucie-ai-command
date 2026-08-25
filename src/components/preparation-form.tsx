@@ -1265,7 +1265,7 @@ export function PreparationForm({
           <Grid>
             <Field
               label="Lien de prise de RDV"
-              hint="Calendly, Google Agenda, autre… (Si aucun, l'IA proposera de laisser un message.)"
+              hint="Google Agenda, Outlook, autre… (Si aucun, l'IA proposera de laisser un message.)"
               required
               full
             >
