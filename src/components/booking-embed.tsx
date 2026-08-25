@@ -125,6 +125,8 @@ export function BookingEmbed({
   bookedDescription,
 }: BookingEmbedProps = {}) {
   const { booking, setBooking, clearBooking } = useBooking();
+  const isAdmin = useAdminMode();
+
   const [awaitingConfirm, setAwaitingConfirm] = useState(false);
   const [rescheduling, setRescheduling] = useState(false);
   const [manualDate, setManualDate] = useState(todayISO());
