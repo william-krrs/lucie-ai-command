@@ -15,6 +15,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { BOOKING_URL } from "@/lib/config";
+import { supabase } from "@/integrations/supabase/client";
+import { DEFAULT_BOOKING_TYPE, type BookingType } from "@/lib/booking-types";
 import { useAdminMode } from "@/lib/admin-mode";
 
 import { useBooking, formatBookingDate, getClientRef } from "@/lib/booking-store";
@@ -140,6 +142,8 @@ export function parseIclosedBooking(raw: unknown): DetectedBooking | null {
 
 export type BookingEmbedProps = {
   url?: string;
+  /** Type métier du rendez-vous géré par ce module (défaut : RDV Démo). */
+  bookingType?: BookingType;
   eyebrow?: string;
   title?: string;
   description?: string;
@@ -149,13 +153,17 @@ export type BookingEmbedProps = {
 
 export function BookingEmbed({
   url,
+  bookingType = DEFAULT_BOOKING_TYPE,
   eyebrow,
   title,
   description,
   bookedTitle,
   bookedDescription,
 }: BookingEmbedProps = {}) {
-  const { booking, setBooking, clearBooking } = useBooking();
+  const { getBookingFor, setBookingFor, clearBookingFor } = useBooking();
+  const booking = getBookingFor(bookingType);
+  const setBooking = (b: Parameters<typeof setBookingFor>[1]) => setBookingFor(bookingType, b);
+  const clearBooking = () => clearBookingFor(bookingType);
   const isAdmin = useAdminMode();
 
   const [awaitingConfirm, setAwaitingConfirm] = useState(false);
@@ -180,7 +188,57 @@ export function BookingEmbed({
    * automatiquement les paramètres UTM depuis les cookies et le référent, il n'y
    * donc pas de pré-remplissage d'URL à construire comme avec l’ancien outil de réservation.
    */
-  const bookingUrl = url ?? BOOKING_URL;
+  const baseBookingUrl = url ?? BOOKING_URL;
+  const [bookingUrl, setBookingUrl] = useState(baseBookingUrl);
+
+  // `utm_client_ref` relie le créneau iClosed au prospect : c'est la clé de
+  // corrélation prioritaire (après l'id d'événement) côté webhook.
+  useEffect(() => {
+    try {
+      const next = new URL(baseBookingUrl);
+      next.searchParams.set("utm_client_ref", getClientRef());
+      next.searchParams.set("utm_source", "lucie-command-center");
+      next.searchParams.set("utm_medium", bookingType);
+      setBookingUrl(next.toString());
+    } catch {
+      setBookingUrl(baseBookingUrl);
+    }
+  }, [baseBookingUrl, bookingType]);
+
+  // Realtime : le webhook iClosed peut confirmer/annuler le RDV côté serveur.
+  useEffect(() => {
+    const clientRef = getClientRef();
+    if (!clientRef) return;
+    const channel = supabase
+      .channel(`bookings:${clientRef}:${bookingType}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "bookings", filter: `client_ref=eq.${clientRef}` },
+        (payload) => {
+          const row = payload.new as Record<string, unknown> | null;
+          if (!row || row.booking_type !== bookingType) return;
+          if (row.status_norm === "cancelled") {
+            clearBookingFor(bookingType);
+            return;
+          }
+          if (typeof row.meeting_date !== "string") return;
+          setBookingFor(bookingType, {
+            date: row.meeting_date,
+            time: typeof row.meeting_time === "string" ? row.meeting_time : undefined,
+            inviteeName: typeof row.name === "string" ? row.name : undefined,
+            user: typeof row.email === "string" ? { email: row.email } : undefined,
+            iclosedEventId:
+              typeof row.iclosed_event_id === "string" ? row.iclosed_event_id : undefined,
+            meetingLocation:
+              typeof row.meeting_location === "string" ? row.meeting_location : undefined,
+          });
+        },
+      )
+      .subscribe();
+    return () => {
+      void supabase.removeChannel(channel);
+    };
+  }, [bookingType, clearBookingFor, setBookingFor]);
 
   const [recapUrl, setRecapUrl] = useState<string | null>(null);
   const [sharing, setSharing] = useState(false);
@@ -283,6 +341,7 @@ export function BookingEmbed({
             meetingDate: detected.date,
             meetingTime: detected.time,
             meetingAt,
+            bookingType,
           },
         });
       } catch (e) {
@@ -396,6 +455,7 @@ export function BookingEmbed({
             meetingDate: manualDate,
             meetingTime: manualTime || undefined,
             meetingAt,
+            bookingType,
           },
         });
       } catch (e) {
@@ -458,7 +518,7 @@ export function BookingEmbed({
                 setRescheduling(false);
                 setRecapUrl(null);
                 try {
-                  await cancelBookingFn({ data: { clientRef: getClientRef() } });
+                  await cancelBookingFn({ data: { clientRef: getClientRef(), bookingType } });
                 } catch {
                   /* silent */
                 }

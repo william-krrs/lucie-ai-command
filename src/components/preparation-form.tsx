@@ -676,6 +676,7 @@ export function PreparationForm({
               meetingDate: booking.date,
               meetingTime: booking.time || undefined,
               meetingAt,
+              bookingType: booking.bookingType,
             },
           });
         } catch (e) {

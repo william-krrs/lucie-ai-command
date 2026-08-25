@@ -935,7 +935,7 @@ function RecommandationPage() {
       </div>
 
       <div id="rdv" className="scroll-mt-24">
-        <BookingEmbed />
+        <BookingEmbed bookingType="r2_demo" />
       </div>
 
       <RoiBreakdown />

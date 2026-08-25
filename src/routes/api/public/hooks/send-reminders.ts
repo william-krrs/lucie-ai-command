@@ -52,7 +52,7 @@ async function runReminders() {
   const { data: due24, error: err24 } = await supabaseAdmin
     .from("bookings")
     .select("id,email,name,meeting_at,meeting_date,meeting_time,reminder_24h_sent_at,reminder_2h_sent_at,status")
-    .eq("status", "pending")
+    .eq("status_norm", "confirmed")
     .is("reminder_24h_sent_at", null)
     .gte("meeting_at", in23h)
     .lte("meeting_at", in25h)
@@ -92,7 +92,7 @@ async function runReminders() {
   const { data: due2, error: err2 } = await supabaseAdmin
     .from("bookings")
     .select("id,email,name,meeting_at,meeting_date,meeting_time,reminder_24h_sent_at,reminder_2h_sent_at,status")
-    .eq("status", "pending")
+    .eq("status_norm", "confirmed")
     .is("reminder_2h_sent_at", null)
     .gte("meeting_at", in90m)
     .lte("meeting_at", in150m)

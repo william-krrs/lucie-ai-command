@@ -22,6 +22,7 @@ import {
   upsertBooking,
   type ServerBooking,
 } from "@/lib/bookings.functions";
+import { DEFAULT_BOOKING_TYPE } from "@/lib/booking-types";
 
 /**
  * Réconcilie la progression locale (localStorage) avec la progression
@@ -70,7 +71,9 @@ export function BookingSync() {
       checkedRef.current = true;
 
       try {
-        const { booking: server } = await getServer({ data: { clientRef } });
+        const { booking: server } = await getServer({
+          data: { clientRef, bookingType: DEFAULT_BOOKING_TYPE },
+        });
         if (cancelled) return;
 
         // Aucun serveur : pousser le local si présent.
@@ -166,6 +169,7 @@ export function BookingSync() {
         meetingDate: local.date,
         meetingTime: local.time,
         meetingAt,
+        bookingType: DEFAULT_BOOKING_TYPE,
       },
     });
   }
