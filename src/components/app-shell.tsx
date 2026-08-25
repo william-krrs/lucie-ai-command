@@ -1,4 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
+import { AUDIT_MODE } from "@/lib/config";
 import {
   Home,
   ClipboardList,
