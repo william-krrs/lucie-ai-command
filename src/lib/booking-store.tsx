@@ -78,8 +78,11 @@ export type Booking = {
 
 export type BookingMap = Partial<Record<BookingType, Booking>>;
 
-type BookingInput = Omit<Booking, "status" | "updatedAt" | "createdAt" | "bookingType"> &
-  Partial<Pick<Booking, "status" | "createdAt" | "updatedAt" | "bookingType">>;
+type BookingInput = Omit<
+  Booking,
+  "status" | "statusNorm" | "updatedAt" | "createdAt" | "bookingType"
+> &
+  Partial<Pick<Booking, "status" | "statusNorm" | "createdAt" | "updatedAt" | "bookingType">>;
 
 type Ctx = {
   /** Tous les rendez-vous connus, indexés par type. */
