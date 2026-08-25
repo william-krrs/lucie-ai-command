@@ -23,6 +23,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { useBooking } from "@/lib/booking-store";
+import { useJourneyAccess } from "@/lib/journey-access";
 import { SidebarProgress } from "@/components/sidebar-progress";
 import { ProspectSwitcher } from "@/components/prospect-switcher";
 import { BookingSync } from "@/components/booking-sync";
@@ -34,12 +35,12 @@ const NAV = [
   { to: "/diagnostic", label: "Diagnostic", icon: ClipboardList },
   { to: "/roi", label: "ROI", icon: TrendingUp },
   { to: "/recommandation", label: "Recommandation", icon: Gauge },
-  { to: "/demonstration", label: "Démonstration", icon: PlayCircle, gated: true },
-  { to: "/offres", label: "Offres", icon: Package, gated: true },
+  { to: "/demonstration", label: "Démonstration", icon: PlayCircle, gate: "demonstration" },
+  { to: "/offres", label: "Offres", icon: Package, gate: "offers" },
   { to: "/merci", label: "Paiement", icon: CheckCircle2 },
-  { to: "/preparation", label: "Configuration", icon: FileText, gated: true },
-  { to: "/installation", label: "Installation", icon: Rocket, gated: true },
-  { to: "/rdv-test", label: "RDV Test & paramétrage", icon: CalendarClock, gated: true },
+  { to: "/preparation", label: "Configuration", icon: FileText, gate: "configure" },
+  { to: "/installation", label: "Installation", icon: Rocket, gate: "installation" },
+  { to: "/rdv-test", label: "RDV Test & paramétrage", icon: CalendarClock, gate: "setupTest" },
   { to: "/faq", label: "Questions fréquentes", icon: HelpCircle },
 ] as const;
 
@@ -47,7 +48,15 @@ export function AppShell({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const [mobileOpen, setMobileOpen] = useState(false);
   useEffect(() => setMobileOpen(false), [pathname]);
-  const { isUnlocked, isPendingMeeting } = useBooking();
+  const { isPendingMeeting } = useBooking();
+  const access = useJourneyAccess();
+  const allows: Record<string, boolean> = {
+    demonstration: access.canViewDemonstration,
+    offers: access.canViewOffers,
+    configure: access.canConfigure,
+    installation: access.canViewInstallation,
+    setupTest: access.canBookSetupTest,
+  };
 
   const onNavKeyDown = (e: React.KeyboardEvent<HTMLUListElement>) => {
     const key = e.key;
@@ -76,7 +85,8 @@ export function AppShell({ children }: { children: ReactNode }) {
       {NAV.map((item, i) => {
         const active = pathname === item.to;
         const Icon = item.icon;
-        const locked = AUDIT_MODE || ("gated" in item && item.gated && !isUnlocked);
+        const locked =
+          AUDIT_MODE || ("gate" in item && item.gate ? !allows[item.gate] : false);
         return (
           <li key={item.to}>
             <Link

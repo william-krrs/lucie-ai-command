@@ -4,6 +4,7 @@ import { Check, CircleDashed, ClipboardList, CalendarCheck2, FileText, Rocket } 
 import { cn } from "@/lib/utils";
 import { useLucie } from "@/lib/lucie-store";
 import { useBooking } from "@/lib/booking-store";
+import { useJourneyAccess } from "@/lib/journey-access";
 
 type Step = {
   key: string;
@@ -29,7 +30,8 @@ function readConfigurationDone(): boolean {
 
 export function SidebarProgress({ onNavigate }: { onNavigate?: () => void }) {
   const { state } = useLucie();
-  const { booking, isUnlocked, isPendingMeeting } = useBooking();
+  const { booking, isPendingMeeting } = useBooking();
+  const access = useJourneyAccess();
   const [configurationDone, setConfigurationDone] = useState(false);
 
   useEffect(() => {
@@ -50,7 +52,10 @@ export function SidebarProgress({ onNavigate }: { onNavigate?: () => void }) {
 
   const diagnosticDone = (state.activity ?? "").trim().length > 0;
   const rdvDone = !!booking;
-  const installationDone = isUnlocked;
+  // Source de vérité serveur : la configuration est "faite" dès qu'une
+  // soumission existe ; l'installation est "faite" quand elle est prête au test.
+  const configDone = access.state?.configurationSubmitted ?? configurationDone;
+  const installationDone = access.canBookSetupTest;
 
   const steps: Step[] = [
     {
@@ -74,9 +79,9 @@ export function SidebarProgress({ onNavigate }: { onNavigate?: () => void }) {
       label: "Configuration",
       to: "/preparation",
       icon: FileText,
-      done: configurationDone,
-      pending: !configurationDone && rdvDone,
-      hint: configurationDone ? "Envoyée" : rdvDone ? "À remplir" : "Après le RDV",
+      done: configDone,
+      pending: !configDone && access.canConfigure,
+      hint: configDone ? "Envoyée" : access.canConfigure ? "À remplir" : "Après le paiement",
     },
     {
       key: "installation",
@@ -84,8 +89,8 @@ export function SidebarProgress({ onNavigate }: { onNavigate?: () => void }) {
       to: "/installation",
       icon: Rocket,
       done: installationDone,
-      pending: !installationDone && rdvDone,
-      hint: installationDone ? "Débloqué" : isPendingMeeting ? "Jour du RDV" : "Verrouillé",
+      pending: !installationDone && access.canViewInstallation,
+      hint: installationDone ? "Prête au test" : access.canViewInstallation ? "En cours" : "Verrouillée",
     },
   ];
 
