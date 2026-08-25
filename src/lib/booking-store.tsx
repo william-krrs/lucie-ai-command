@@ -222,7 +222,7 @@ function bookingTypeForCurrentPage(): BookingType {
 
 function bookingFromIclosedConfirmation(
   event: MessageEvent,
-): Omit<Booking, "status" | "updatedAt" | "bookingType"> | null {
+): Omit<Booking, "status" | "statusNorm" | "updatedAt" | "bookingType"> | null {
   if (event.origin !== "https://app.iclosed.io") return null;
   if (!event.data || typeof event.data !== "object") return null;
   const data = event.data as Record<string, unknown>;
