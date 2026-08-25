@@ -41,7 +41,7 @@ const AFTER = [
 ];
 
 function Demonstration() {
-  const { canViewDemonstration, completeDemo } = useJourneyAccess();
+  const { canViewDemonstration, demoMeetingAt, completeDemo } = useJourneyAccess();
   const navigate = useNavigate();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -64,7 +64,13 @@ function Demonstration() {
       <LockedPage
         title="Démonstration verrouillée"
         step="Démonstration"
-        description="La démonstration se débloquera automatiquement dès la confirmation de votre rendez-vous. Prenez d'abord votre créneau depuis la recommandation."
+        meetingAt={demoMeetingAt}
+        unlockNote="Votre démonstration sera accessible 15 minutes avant notre rendez-vous."
+        description={
+          demoMeetingAt
+            ? "Votre démonstration sera accessible 15 minutes avant notre rendez-vous."
+            : "Prenez d'abord votre créneau de démonstration depuis la recommandation."
+        }
       />
     );
   }

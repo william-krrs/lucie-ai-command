@@ -1,19 +1,48 @@
+import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { Lock, CalendarCheck2, ArrowRight, CalendarPlus, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useBooking, formatBookingDate } from "@/lib/booking-store";
 
+function useCountdown(targetIso: string | null | undefined) {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    if (!targetIso) return;
+    const id = window.setInterval(() => setNow(Date.now()), 1000);
+    return () => window.clearInterval(id);
+  }, [targetIso]);
+  if (!targetIso) return null;
+  const target = new Date(targetIso).getTime();
+  if (Number.isNaN(target)) return null;
+  const diff = Math.max(0, target - now);
+  const totalMinutes = Math.floor(diff / 60000);
+  const days = Math.floor(totalMinutes / 1440);
+  const hours = Math.floor((totalMinutes % 1440) / 60);
+  const minutes = totalMinutes % 60;
+  const seconds = Math.floor((diff % 60000) / 1000);
+  if (days > 0) return `${days} j ${hours} h ${minutes} min`;
+  if (hours > 0) return `${hours} h ${minutes} min`;
+  return `${minutes} min ${String(seconds).padStart(2, "0")} s`;
+}
+
 export function LockedPage({
   title,
   description,
   step,
+  meetingAt,
+  unlockNote,
 }: {
   title: string;
   description?: string;
   /** Nom de l'étape verrouillée, affiché dans le message (ex: "Démonstration"). */
   step?: string;
+  /** meeting_at (ISO) du RDV confirmé : active le compte à rebours. */
+  meetingAt?: string | null;
+  /** Note affichée sous le compte à rebours. */
+  unlockNote?: string;
 }) {
   const { booking, isPendingMeeting } = useBooking();
+  const countdown = useCountdown(meetingAt ?? null);
 
   const daysUntil = (() => {
     if (!booking) return null;
@@ -83,10 +112,16 @@ export function LockedPage({
             {formatBookingDate(booking.date)}
             {booking.time ? ` · ${booking.time}` : ""}
           </div>
+          {countdown && (
+            <div className="mt-2 font-mono text-sm tabular-nums text-foreground">
+              Dans {countdown}
+            </div>
+          )}
           <p className="mt-1 text-xs text-muted-foreground">
-            {step
-              ? `Revenez ce jour-là pour débloquer "${step}" et poursuivre le parcours.`
-              : "Revenez ce jour-là pour débloquer la suite du parcours."}
+            {unlockNote ??
+              (step
+                ? `Revenez ce jour-là pour débloquer "${step}" et poursuivre le parcours.`
+                : "Revenez ce jour-là pour débloquer la suite du parcours.")}
           </p>
         </div>
       ) : (
@@ -114,7 +149,7 @@ export function LockedPage({
             }
           >
             <CalendarCheck2 className="mr-1.5 h-4 w-4" aria-hidden="true" />
-            {isPendingMeeting ? "Revoir mon rendez-vous" : "Réserver un créneau dans l’agenda"}
+            {isPendingMeeting ? "Reprogrammer mon rendez-vous" : "Réserver un créneau dans l’agenda"}
             <ArrowRight className="ml-1 h-4 w-4" aria-hidden="true" />
           </Link>
         </Button>
