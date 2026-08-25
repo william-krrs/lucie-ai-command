@@ -55,6 +55,7 @@ function RdvTest() {
         description="Une session dédiée avec l'équipe Lucie pour tester votre assistante en conditions réelles, valider les scénarios et finaliser le paramétrage."
       />
       <BookingEmbed
+        bookingType="setup_test"
         url={BOOKING_URL_SETUP}
         eyebrow="RDV Test & paramétrage"
         title="Choisissez un créneau pour la mise en service"
