@@ -121,6 +121,26 @@ function computeStatus(date: string, current: BookingStatus | undefined): Bookin
   return "completed";
 }
 
+const STATUS_NORMS: BookingStatusNorm[] = [
+  "pending",
+  "confirmed",
+  "cancelled",
+  "rescheduled",
+  "completed",
+  "no_show",
+];
+
+/**
+ * Un RDV pris via l'agenda iClosed est confirmé par défaut : la valeur n'est
+ * dégradée que si le serveur (webhook/Realtime) renvoie un autre statut.
+ */
+function normalizeStatusNorm(raw: unknown, status: BookingStatus): BookingStatusNorm {
+  if (typeof raw === "string" && (STATUS_NORMS as string[]).includes(raw)) {
+    return raw as BookingStatusNorm;
+  }
+  return status === "cancelled" ? "cancelled" : "confirmed";
+}
+
 function normalize(raw: unknown, fallbackType: BookingType = DEFAULT_BOOKING_TYPE): Booking | null {
   if (!raw || typeof raw !== "object") return null;
   const r = raw as Partial<Booking> & Record<string, unknown>;
