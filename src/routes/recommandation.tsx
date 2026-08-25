@@ -34,6 +34,7 @@ import { formatEUR, useLucie, useMetrics, useRecommendation } from "@/lib/lucie-
 import { PLAN_LABELS, PLAN_TAGLINES, PRIORITY_CTA } from "@/lib/recommendation";
 import { createSharedDiagnostic } from "@/lib/share.functions";
 import { addPdfHistoryEntry } from "@/lib/pdf-history";
+import { useJourneyAccess } from "@/lib/journey-access";
 import {
   addShareHistoryEntry,
   clearShareHistory,
@@ -85,6 +86,7 @@ function RecommandationPage() {
   const [prospectEmail, setProspectEmail] = useState("");
   const [shareHistory, setShareHistory] = useState<ShareHistoryEntry[]>([]);
   const createShare = useServerFn(createSharedDiagnostic);
+  const journey = useJourneyAccess();
 
   useEffect(() => {
     setShareHistory(getShareHistory());
@@ -935,7 +937,14 @@ function RecommandationPage() {
       </div>
 
       <div id="rdv" className="scroll-mt-24">
-        <BookingEmbed bookingType="r2_demo" />
+        <BookingEmbed
+          bookingType="r2_demo"
+          authoritativeR2={{
+            statusNorm: journey.demoBookingStatusNorm,
+            meetingAt: journey.demoMeetingAt,
+            loading: journey.loading,
+          }}
+        />
       </div>
 
       <RoiBreakdown />

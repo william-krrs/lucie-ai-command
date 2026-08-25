@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { readAdminMode } from "@/lib/admin-mode";
+import { useBooking } from "@/lib/booking-store";
 import { UNLOCK_ALL_PAGES } from "@/lib/config";
 import {
   completeDemo as completeDemoFn,
@@ -18,6 +19,8 @@ export type JourneyAccess = {
   canViewDemonstration: boolean;
   /** meeting_at du RDV Démo confirmé (ISO), sinon null. */
   demoMeetingAt: string | null;
+  /** Statut du dernier RDV Démo lu depuis le serveur. */
+  demoBookingStatusNorm: JourneyStateDTO["demoBookingStatusNorm"];
   /** Instant d'ouverture de la démonstration (meeting_at - 15 min, ISO). */
   demoUnlockAt: string | null;
   /** journey_state.demo_completed_at IS NOT NULL. */
@@ -39,6 +42,7 @@ const FALLBACK: JourneyStateDTO = {
   paymentStatus: "unpaid",
   installationStatus: "not_started",
   demoBookingConfirmed: false,
+  demoBookingStatusNorm: null,
   demoMeetingAt: null,
   demoUnlockAt: null,
   configurationSubmitted: false,
@@ -50,6 +54,7 @@ export const JOURNEY_QUERY_KEY = ["journey-state"] as const;
 
 export function JourneyAccessProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient();
+  const { clearBookingFor } = useBooking();
   const [bypass, setBypass] = useState(false);
   const [authed, setAuthed] = useState(false);
   const [now, setNow] = useState(() => Date.now());
@@ -78,6 +83,34 @@ export function JourneyAccessProvider({ children }: { children: ReactNode }) {
     enabled: authed,
     staleTime: 15_000,
   });
+
+  // Toute écriture serveur sur un rendez-vous force une nouvelle lecture de la
+  // source de vérité. Cela couvre notamment les confirmations et annulations
+  // reçues pendant que l'utilisateur garde l'application ouverte.
+  useEffect(() => {
+    if (!authed) return;
+    const channel = supabase
+      .channel("journey:r2-booking-state")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "bookings" },
+        () => {
+          void queryClient.invalidateQueries({ queryKey: JOURNEY_QUERY_KEY });
+        },
+      )
+      .subscribe();
+    return () => {
+      void supabase.removeChannel(channel);
+    };
+  }, [authed, queryClient]);
+
+  // localStorage n'est qu'un cache UX : un statut annulé côté serveur gagne
+  // toujours, après hydratation comme après chaque refetch/realtime.
+  useEffect(() => {
+    if (data?.demoBookingStatusNorm === "cancelled") {
+      clearBookingFor("r2_demo");
+    }
+  }, [clearBookingFor, data?.demoBookingStatusNorm]);
 
   // Réévalue la fenêtre H-15 sans rechargement manuel.
   const unlockAt = data?.demoUnlockAt ?? null;
@@ -109,6 +142,7 @@ export function JourneyAccessProvider({ children }: { children: ReactNode }) {
         effective.demoBookingConfirmed ||
         (effective.demoUnlockAt !== null && new Date(effective.demoUnlockAt).getTime() <= now),
       demoMeetingAt: effective.demoMeetingAt,
+      demoBookingStatusNorm: effective.demoBookingStatusNorm,
       demoUnlockAt: effective.demoUnlockAt,
       canViewOffers: bypass || effective.demoCompletedAt !== null,
       canConfigure: bypass || effective.paymentStatus === "paid",
