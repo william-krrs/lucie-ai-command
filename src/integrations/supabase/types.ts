@@ -64,55 +64,73 @@ export type Database = {
       }
       bookings: {
         Row: {
+          booking_type: Database["public"]["Enums"]["booking_type"]
+          canceled_at: string | null
           client_ref: string
           created_at: string
           email: string
+          iclosed_event_id: string | null
           id: string
           last_error: string | null
           meeting_at: string
           meeting_date: string
+          meeting_location: string | null
           meeting_time: string | null
           name: string | null
           phone: string | null
           reminder_24h_sent_at: string | null
           reminder_2h_sent_at: string | null
+          rescheduled_from: string | null
           status: string
+          status_norm: Database["public"]["Enums"]["booking_status"]
           timezone: string
           updated_at: string
           user_id: string | null
         }
         Insert: {
+          booking_type?: Database["public"]["Enums"]["booking_type"]
+          canceled_at?: string | null
           client_ref: string
           created_at?: string
           email: string
+          iclosed_event_id?: string | null
           id?: string
           last_error?: string | null
           meeting_at: string
           meeting_date: string
+          meeting_location?: string | null
           meeting_time?: string | null
           name?: string | null
           phone?: string | null
           reminder_24h_sent_at?: string | null
           reminder_2h_sent_at?: string | null
+          rescheduled_from?: string | null
           status?: string
+          status_norm?: Database["public"]["Enums"]["booking_status"]
           timezone?: string
           updated_at?: string
           user_id?: string | null
         }
         Update: {
+          booking_type?: Database["public"]["Enums"]["booking_type"]
+          canceled_at?: string | null
           client_ref?: string
           created_at?: string
           email?: string
+          iclosed_event_id?: string | null
           id?: string
           last_error?: string | null
           meeting_at?: string
           meeting_date?: string
+          meeting_location?: string | null
           meeting_time?: string | null
           name?: string | null
           phone?: string | null
           reminder_24h_sent_at?: string | null
           reminder_2h_sent_at?: string | null
+          rescheduled_from?: string | null
           status?: string
+          status_norm?: Database["public"]["Enums"]["booking_status"]
           timezone?: string
           updated_at?: string
           user_id?: string | null
@@ -280,7 +298,14 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      booking_status:
+        | "pending"
+        | "confirmed"
+        | "cancelled"
+        | "rescheduled"
+        | "completed"
+        | "no_show"
+      booking_type: "r1_discovery" | "r2_demo" | "setup_test"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -407,6 +432,16 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      booking_status: [
+        "pending",
+        "confirmed",
+        "cancelled",
+        "rescheduled",
+        "completed",
+        "no_show",
+      ],
+      booking_type: ["r1_discovery", "r2_demo", "setup_test"],
+    },
   },
 } as const
