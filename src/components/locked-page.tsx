@@ -37,32 +37,36 @@ export function LockedPage({
   description?: string;
   /** Nom de l'étape verrouillée, affiché dans le message (ex: "Démonstration"). */
   step?: string;
-  /** meeting_at (ISO) du RDV confirmé : active le compte à rebours. */
+  /** meeting_at (ISO) du RDV confirmé : affiché comme date du rendez-vous. */
   meetingAt?: string | null;
+  /** Instant exact de déverrouillage (ISO) : base du compte à rebours. */
+  unlockAt?: string | null;
   /** Note affichée sous le compte à rebours. */
   unlockNote?: string;
 }) {
   const { booking, isPendingMeeting } = useBooking();
-  const countdown = useCountdown(meetingAt ?? null);
+  const countdown = useCountdown(unlockAt ?? meetingAt ?? null);
 
-  const daysUntil = (() => {
-    if (!booking) return null;
-    const [y, m, d] = booking.date.split("-").map(Number);
-    const target = new Date(y, (m ?? 1) - 1, d ?? 1);
-    target.setHours(0, 0, 0, 0);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    return Math.round((target.getTime() - today.getTime()) / 86400000);
+  const meetingLabel = (() => {
+    if (meetingAt) {
+      const d = new Date(meetingAt);
+      if (!Number.isNaN(d.getTime())) {
+        return new Intl.DateTimeFormat("fr-FR", {
+          weekday: "long",
+          day: "numeric",
+          month: "long",
+          hour: "2-digit",
+          minute: "2-digit",
+        }).format(d);
+      }
+    }
+    if (booking) {
+      return `${formatBookingDate(booking.date)}${booking.time ? ` · ${booking.time}` : ""}`;
+    }
+    return null;
   })();
 
-  const daysLabel =
-    daysUntil == null
-      ? null
-      : daysUntil <= 0
-        ? "Aujourd'hui"
-        : daysUntil === 1
-          ? "Dans 1 jour"
-          : `Dans ${daysUntil} jours`;
+  const hasMeeting = Boolean(meetingAt) || (isPendingMeeting && !!booking);
 
   return (
     <section
