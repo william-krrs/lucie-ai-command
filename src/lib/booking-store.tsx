@@ -5,6 +5,7 @@ import {
   useEffect,
   useMemo,
   useState,
+  type Context,
   type ReactNode,
 } from "react";
 
@@ -64,7 +65,16 @@ type Ctx = {
   isPendingMeeting: boolean;
 };
 
-const BookingCtx = createContext<Ctx | null>(null);
+type BookingGlobal = typeof globalThis & {
+  __lucieBookingContext?: Context<Ctx | null>;
+};
+
+// Keep one context identity across Vite hot updates. Without this, the provider
+// and a freshly reloaded consumer can temporarily reference different contexts.
+const bookingGlobal = globalThis as BookingGlobal;
+const BookingCtx =
+  bookingGlobal.__lucieBookingContext ?? createContext<Ctx | null>(null);
+bookingGlobal.__lucieBookingContext = BookingCtx;
 
 function computeStatus(date: string, current: BookingStatus | undefined): BookingStatus {
   if (current === "cancelled") return "cancelled";
