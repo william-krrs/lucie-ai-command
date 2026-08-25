@@ -11,17 +11,27 @@ export type JourneyStateDTO = {
   installationStatus: InstallationStatus;
   /** true si un RDV Démo (r2_demo) est confirmé côté base. */
   demoBookingConfirmed: boolean;
+  /** meeting_at (ISO/timestamptz) du RDV Démo confirmé, sinon null. */
+  demoMeetingAt: string | null;
+  /** Ouverture temporelle : meeting_at - 15 min (ISO), sinon null. */
+  demoUnlockAt: string | null;
   /** true si une configuration (preparation_submissions) a été soumise. */
   configurationSubmitted: boolean;
 };
+
+/** Fenêtre d'ouverture avant le rendez-vous (ms). */
+export const DEMO_UNLOCK_LEAD_MS = 15 * 60 * 1000;
 
 const EMPTY: JourneyStateDTO = {
   demoCompletedAt: null,
   paymentStatus: "unpaid",
   installationStatus: "not_started",
   demoBookingConfirmed: false,
+  demoMeetingAt: null,
+  demoUnlockAt: null,
   configurationSubmitted: false,
 };
+
 
 /**
  * Source de vérité serveur du parcours. Toutes les permissions client
