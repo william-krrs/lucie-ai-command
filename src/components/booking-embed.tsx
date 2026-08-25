@@ -231,6 +231,10 @@ export function BookingEmbed({
               typeof row.iclosed_event_id === "string" ? row.iclosed_event_id : undefined,
             meetingLocation:
               typeof row.meeting_location === "string" ? row.meeting_location : undefined,
+            statusNorm:
+              typeof row.status_norm === "string"
+                ? (row.status_norm as Booking["statusNorm"])
+                : undefined,
           });
         },
       )
