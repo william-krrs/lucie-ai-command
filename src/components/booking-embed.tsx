@@ -656,6 +656,13 @@ export function BookingEmbed({
           </div>
         </div>
       </div>
+      ) : (
+        <p className="mt-6 rounded-2xl border border-border bg-card p-4 text-sm text-muted-foreground sm:p-5">
+          Votre réservation est détectée automatiquement dès que le créneau est
+          confirmé dans l'agenda ci-dessus — aucune saisie manuelle n'est nécessaire.
+        </p>
+      )}
     </section>
+
   );
 }
