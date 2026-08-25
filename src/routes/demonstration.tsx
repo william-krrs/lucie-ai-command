@@ -65,6 +65,7 @@ function Demonstration() {
         title="Démonstration verrouillée"
         step="Démonstration"
         meetingAt={demoMeetingAt}
+        unlockAt={demoUnlockAt}
         unlockNote="Votre démonstration sera accessible 15 minutes avant notre rendez-vous."
         description={
           demoMeetingAt
