@@ -10,6 +10,9 @@
  */
 export const AUDIT_MODE = false;
 
+/** Ouvre toutes les étapes du parcours à tous les visiteurs (aucun verrouillage). */
+export const UNLOCK_ALL_PAGES = true;
+
 /** Nombre d'entreprises affiché dans le badge social proof de la page d'accueil. */
 export const SOCIAL_PROOF_COMPANY_COUNT = 25;
 
