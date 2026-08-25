@@ -10,8 +10,10 @@ import {
 } from "react";
 import { readAdminMode } from "@/lib/admin-mode";
 import { UNLOCK_ALL_PAGES } from "@/lib/config";
+import { BOOKING_TYPES, DEFAULT_BOOKING_TYPE, isBookingType, type BookingType } from "@/lib/booking-types";
 
-const STORAGE_KEY = "lucie:booking:v2";
+const STORAGE_KEY = "lucie:booking:v3";
+const LEGACY_KEY_V2 = "lucie:booking:v2";
 const LEGACY_KEY = "lucie:booking:v1";
 const CLIENT_REF_KEY = "lucie:booking:clientRef";
 
@@ -50,20 +52,38 @@ export type Booking = {
   user?: BookingUser;
   /** Statut calculé/enregistré du RDV. */
   status: BookingStatus;
+  /** Type métier du rendez-vous (Découverte / Démo / Test & paramétrage). */
+  bookingType: BookingType;
+  /** Identifiant de l'événement côté agenda externe (iClosed), si connu. */
+  iclosedEventId?: string;
+  /** Lieu ou lien de la réunion. */
+  meetingLocation?: string;
   /** Timestamp de création (ISO). */
   createdAt: string;
   /** Timestamp de dernière mise à jour (ISO). */
   updatedAt: string;
 };
 
+export type BookingMap = Partial<Record<BookingType, Booking>>;
+
+type BookingInput = Omit<Booking, "status" | "updatedAt" | "createdAt" | "bookingType"> &
+  Partial<Pick<Booking, "status" | "createdAt" | "updatedAt" | "bookingType">>;
+
 type Ctx = {
+  /** Tous les rendez-vous connus, indexés par type. */
+  bookings: BookingMap;
+  /** Raccourci historique : le RDV Démo (r2_demo). */
   booking: Booking | null;
-  setBooking: (b: Omit<Booking, "status" | "updatedAt" | "createdAt"> & Partial<Pick<Booking, "status" | "createdAt" | "updatedAt">>) => void;
+  getBookingFor: (type: BookingType) => Booking | null;
+  setBookingFor: (type: BookingType, b: BookingInput) => void;
+  updateBookingFor: (type: BookingType, patch: Partial<Booking>) => void;
+  clearBookingFor: (type: BookingType) => void;
+  setBooking: (b: BookingInput) => void;
   updateBooking: (patch: Partial<Booking>) => void;
   clearBooking: () => void;
-  /** true dès qu'un RDV confirmé existe (status !== cancelled). */
+  /** true dès qu'un RDV Démo confirmé existe (status !== cancelled). */
   isUnlocked: boolean;
-  /** true si un RDV existe mais est dans le futur (status !== cancelled). */
+  /** true si le RDV Démo existe mais est dans le futur (status !== cancelled). */
   isPendingMeeting: boolean;
 };
 
@@ -86,7 +106,7 @@ function computeStatus(date: string, current: BookingStatus | undefined): Bookin
   return "completed";
 }
 
-function normalize(raw: unknown): Booking | null {
+function normalize(raw: unknown, fallbackType: BookingType = DEFAULT_BOOKING_TYPE): Booking | null {
   if (!raw || typeof raw !== "object") return null;
   const r = raw as Partial<Booking> & Record<string, unknown>;
   if (!r.date || typeof r.date !== "string") return null;
@@ -104,36 +124,50 @@ function normalize(raw: unknown): Booking | null {
           }
         : undefined,
     status,
+    bookingType: isBookingType(r.bookingType) ? r.bookingType : fallbackType,
+    iclosedEventId: typeof r.iclosedEventId === "string" ? r.iclosedEventId : undefined,
+    meetingLocation: typeof r.meetingLocation === "string" ? r.meetingLocation : undefined,
     createdAt,
     updatedAt: typeof r.updatedAt === "string" ? r.updatedAt : createdAt,
   };
 }
 
-function read(): Booking | null {
-  if (typeof window === "undefined") return null;
+function normalizeMap(raw: unknown): BookingMap {
+  if (!raw || typeof raw !== "object") return {};
+  const out: BookingMap = {};
+  for (const type of BOOKING_TYPES) {
+    const entry = normalize((raw as Record<string, unknown>)[type], type);
+    if (entry) out[type] = { ...entry, bookingType: type };
+  }
+  return out;
+}
+
+function read(): BookingMap {
+  if (typeof window === "undefined") return {};
   try {
-    let raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) {
-      // Migrate legacy v1 record if present.
-      const legacy = window.localStorage.getItem(LEGACY_KEY);
-      if (!legacy) return null;
-      const migrated = normalize(JSON.parse(legacy));
-      if (migrated) {
-        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(migrated));
-        window.localStorage.removeItem(LEGACY_KEY);
-        return migrated;
-      }
-      return null;
-    }
-    return normalize(JSON.parse(raw));
+    const raw = window.localStorage.getItem(STORAGE_KEY);
+    if (raw) return normalizeMap(JSON.parse(raw));
+
+    // Migration des formats précédents : un RDV unique = un RDV Démo.
+    const legacy =
+      window.localStorage.getItem(LEGACY_KEY_V2) ?? window.localStorage.getItem(LEGACY_KEY);
+    if (!legacy) return {};
+    const migrated = normalize(JSON.parse(legacy), DEFAULT_BOOKING_TYPE);
+    if (!migrated) return {};
+    const map: BookingMap = { [DEFAULT_BOOKING_TYPE]: migrated };
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(map));
+    window.localStorage.removeItem(LEGACY_KEY_V2);
+    window.localStorage.removeItem(LEGACY_KEY);
+    return map;
   } catch {
-    return null;
+    return {};
   }
 }
 
-function persist(b: Booking | null) {
+function persist(map: BookingMap) {
   if (typeof window === "undefined") return;
-  if (b) window.localStorage.setItem(STORAGE_KEY, JSON.stringify(b));
+  const hasAny = Object.values(map).some(Boolean);
+  if (hasAny) window.localStorage.setItem(STORAGE_KEY, JSON.stringify(map));
   else window.localStorage.removeItem(STORAGE_KEY);
 }
 
@@ -144,7 +178,15 @@ function todayISO(): string {
   ).padStart(2, "0")}`;
 }
 
-function bookingFromIclosedConfirmation(event: MessageEvent): Omit<Booking, "status" | "updatedAt"> | null {
+/** Le type de RDV concerné dépend de la page en cours (fallback : Démo). */
+function bookingTypeForCurrentPage(): BookingType {
+  if (typeof window === "undefined") return DEFAULT_BOOKING_TYPE;
+  return window.location.pathname.startsWith("/rdv-test") ? "setup_test" : DEFAULT_BOOKING_TYPE;
+}
+
+function bookingFromIclosedConfirmation(
+  event: MessageEvent,
+): Omit<Booking, "status" | "updatedAt" | "bookingType"> | null {
   if (event.origin !== "https://app.iclosed.io") return null;
   if (!event.data || typeof event.data !== "object") return null;
   const data = event.data as Record<string, unknown>;
@@ -178,6 +220,7 @@ function bookingFromIclosedConfirmation(event: MessageEvent): Omit<Booking, "sta
       time,
       inviteeName: name,
       user: email ? { name, email } : undefined,
+      iclosedEventId: confirmationId,
       createdAt: new Date().toISOString(),
     };
   } catch {
@@ -186,19 +229,21 @@ function bookingFromIclosedConfirmation(event: MessageEvent): Omit<Booking, "sta
 }
 
 export function BookingProvider({ children }: { children: ReactNode }) {
-  const [booking, setBookingState] = useState<Booking | null>(null);
+  const [bookings, setBookings] = useState<BookingMap>({});
   const [adminPreview, setAdminPreview] = useState(false);
 
   useEffect(() => {
     setAdminPreview(readAdminMode());
-    setBookingState(read());
+    setBookings(read());
     const onStorage = (e: StorageEvent) => {
-      if (e.key === STORAGE_KEY || e.key === LEGACY_KEY) setBookingState(read());
+      if (e.key === STORAGE_KEY || e.key === LEGACY_KEY_V2 || e.key === LEGACY_KEY) {
+        setBookings(read());
+      }
     };
     window.addEventListener("storage", onStorage);
 
     // Re-evaluate status when day changes / tab is refocused after midnight.
-    const onFocus = () => setBookingState((prev) => (prev ? normalize(prev) : null));
+    const onFocus = () => setBookings((prev) => normalizeMap(prev));
     window.addEventListener("focus", onFocus);
     document.addEventListener("visibilitychange", onFocus);
     return () => {
@@ -208,70 +253,90 @@ export function BookingProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  const setBooking = useCallback<Ctx["setBooking"]>((b) => {
+  const setBookingFor = useCallback<Ctx["setBookingFor"]>((type, b) => {
     const now = new Date().toISOString();
-    const next: Booking = normalize({
-      ...b,
-      createdAt: b.createdAt ?? now,
-      updatedAt: now,
-      status: b.status ?? computeStatus(b.date, undefined),
-    })!;
-    persist(next);
-    setBookingState(next);
-  }, []);
-
-  useEffect(() => {
-    const onIclosedConfirmation = (event: MessageEvent) => {
-      const confirmed = bookingFromIclosedConfirmation(event);
-      if (confirmed) setBooking(confirmed);
-    };
-    // The provider mounts before the external widget script, so this listener
-    // records the confirmation before iClosed redirects the parent tab.
-    window.addEventListener("message", onIclosedConfirmation);
-    return () => window.removeEventListener("message", onIclosedConfirmation);
-  }, [setBooking]);
-
-  const updateBooking = useCallback<Ctx["updateBooking"]>((patch) => {
-    setBookingState((prev) => {
-      if (!prev) return prev;
-      const merged = normalize({
-        ...prev,
-        ...patch,
-        user: patch.user ? { ...prev.user, ...patch.user } : prev.user,
-        updatedAt: new Date().toISOString(),
-      });
+    const next = normalize(
+      {
+        ...b,
+        bookingType: type,
+        createdAt: b.createdAt ?? now,
+        updatedAt: now,
+        status: b.status ?? computeStatus(b.date, undefined),
+      },
+      type,
+    );
+    if (!next) return;
+    setBookings((prev) => {
+      const merged: BookingMap = { ...prev, [type]: next };
       persist(merged);
       return merged;
     });
   }, []);
 
-  const clearBooking = useCallback(() => {
-    setBookingState((prev) => {
-      if (prev) {
-        // Persist a cancelled marker briefly for audit, then clear.
-        const cancelled: Booking = {
-          ...prev,
-          status: "cancelled",
+  const updateBookingFor = useCallback<Ctx["updateBookingFor"]>((type, patch) => {
+    setBookings((prev) => {
+      const current = prev[type];
+      if (!current) return prev;
+      const next = normalize(
+        {
+          ...current,
+          ...patch,
+          bookingType: type,
+          user: patch.user ? { ...current.user, ...patch.user } : current.user,
           updatedAt: new Date().toISOString(),
-        };
-        persist(cancelled);
-      }
-      persist(null);
-      return null;
+        },
+        type,
+      );
+      if (!next) return prev;
+      const merged: BookingMap = { ...prev, [type]: next };
+      persist(merged);
+      return merged;
     });
   }, []);
 
+  const clearBookingFor = useCallback<Ctx["clearBookingFor"]>((type) => {
+    setBookings((prev) => {
+      const merged: BookingMap = { ...prev };
+      delete merged[type];
+      persist(merged);
+      return merged;
+    });
+  }, []);
+
+  useEffect(() => {
+    const onIclosedConfirmation = (event: MessageEvent) => {
+      const confirmed = bookingFromIclosedConfirmation(event);
+      if (confirmed) setBookingFor(bookingTypeForCurrentPage(), confirmed);
+    };
+    // The provider mounts before the external widget script, so this listener
+    // records the confirmation before iClosed redirects the parent tab.
+    window.addEventListener("message", onIclosedConfirmation);
+    return () => window.removeEventListener("message", onIclosedConfirmation);
+  }, [setBookingFor]);
+
   const value = useMemo<Ctx>(() => {
-    const active = !!booking && booking.status !== "cancelled";
+    const demo = bookings[DEFAULT_BOOKING_TYPE] ?? null;
+    const active = !!demo && demo.status !== "cancelled";
     const today = todayISO();
-    // A confirmed future appointment unlocks the journey immediately. The
-    // previous date gate kept legitimate prospects blocked until appointment day.
-    // Internal preview mode lets the Lucie team review every stage without
-    // creating a fake customer booking. Prospect access remains unchanged.
+    // Seul un RDV Démo confirmé (r2_demo) débloque la suite du parcours.
+    // Le mode aperçu interne permet à l'équipe Lucie de revoir chaque étape
+    // sans créer de faux rendez-vous prospect.
     const isUnlocked = UNLOCK_ALL_PAGES || active || adminPreview;
-    const isPendingMeeting = active && booking.date > today;
-    return { booking, setBooking, updateBooking, clearBooking, isUnlocked, isPendingMeeting };
-  }, [adminPreview, booking, setBooking, updateBooking, clearBooking]);
+    const isPendingMeeting = active && demo!.date > today;
+    return {
+      bookings,
+      booking: demo,
+      getBookingFor: (type) => bookings[type] ?? null,
+      setBookingFor,
+      updateBookingFor,
+      clearBookingFor,
+      setBooking: (b) => setBookingFor(DEFAULT_BOOKING_TYPE, b),
+      updateBooking: (patch) => updateBookingFor(DEFAULT_BOOKING_TYPE, patch),
+      clearBooking: () => clearBookingFor(DEFAULT_BOOKING_TYPE),
+      isUnlocked,
+      isPendingMeeting,
+    };
+  }, [adminPreview, bookings, setBookingFor, updateBookingFor, clearBookingFor]);
 
   return <BookingCtx.Provider value={value}>{children}</BookingCtx.Provider>;
 }
