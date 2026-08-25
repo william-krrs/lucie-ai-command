@@ -22,6 +22,9 @@ import { useLucie, useMetrics, useRecommendation } from "@/lib/lucie-store";
 import { addShareHistoryEntry } from "@/lib/share-history";
 import { toast } from "sonner";
 
+/** Source du script du widget inline iClosed. */
+const ICLOSED_WIDGET_SRC = "https://app.iclosed.io/assets/widget.js";
+
 function todayISO() {
   const d = new Date();
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(
@@ -53,11 +56,9 @@ export function CalendlyEmbed({
   const [manualTime, setManualTime] = useState("10:00");
   const dateInputRef = useRef<HTMLInputElement>(null);
   const confirmPanelRef = useRef<HTMLDivElement>(null);
-  const [iframeLoaded, setIframeLoaded] = useState(false);
-  const [iframeError, setIframeError] = useState<null | "timeout" | "error">(null);
-  const [iframeKey, setIframeKey] = useState(0);
-  const [inviteeEmail, setInviteeEmail] = useState<string | undefined>();
-  const [inviteeName, setInviteeName] = useState<string | undefined>();
+  const widgetContainerRef = useRef<HTMLDivElement>(null);
+  const [scriptError, setScriptError] = useState(false);
+  const [widgetKey, setWidgetKey] = useState(0);
   const upsertBookingFn = useServerFn(upsertBooking);
   const cancelBookingFn = useServerFn(cancelBooking);
   const createShareFn = useServerFn(createSharedDiagnostic);
@@ -65,58 +66,70 @@ export function CalendlyEmbed({
   const metrics = useMetrics();
   const recommendation = useRecommendation();
 
-  // Build a Calendly URL prefilled with prospect information so the invitee
-  // doesn't have to retype what we already know (name, email, company, phone,
-  // and a summary of the diagnostic).
-  const calendlyUrl = (() => {
-    const base = url ?? CALENDLY_URL;
-    try {
-      const u = new URL(base);
-      const name = booking?.user?.name?.trim();
-      const email = booking?.user?.email?.trim();
-      const company = state.companyName?.trim();
-      const phone = (state as unknown as { phone?: string }).phone?.trim();
-      if (name) u.searchParams.set("name", name);
-      if (email) u.searchParams.set("email", email);
-      // Custom Calendly questions map to a1, a2, a3… in order of appearance.
-      const answers: string[] = [];
-      if (company) answers.push(`Entreprise : ${company}`);
-      if (state.activity) answers.push(`Activité : ${state.activity}`);
-      if (state.city) answers.push(`Ville : ${state.city}`);
-      if (state.missedCalls)
-        answers.push(`Appels manqués / semaine : ${state.missedCalls}`);
-      if (recommendation.plan)
-        answers.push(
-          `Recommandation Lucie : ${recommendation.plan} (score ${recommendation.score}/100)`,
-        );
-      if (answers.length) u.searchParams.set("a1", answers.join(" · "));
-      if (phone) u.searchParams.set("a2", phone);
-      // Hidden UTM-like tracking so the receiving mailbox sees the source.
-      u.searchParams.set("utm_source", "lucie-command-center");
-      u.searchParams.set("utm_medium", "recommandation");
-      if (company) u.searchParams.set("utm_campaign", company);
-      return u.toString();
-    } catch {
-      return base;
-    }
-  })();
+  /**
+   * URL brute de l'événement iClosed (servant à la fois de `data-url` pour le
+   * widget inline et de lien « ouvrir dans un nouvel onglet »). iClosed récupère
+   * automatiquement les paramètres UTM depuis les cookies et le référent, il n'y
+   * donc pas de pré-remplissage d'URL à construire comme avec Calendly.
+   */
+  const bookingUrl = url ?? CALENDLY_URL;
 
   const [recapUrl, setRecapUrl] = useState<string | null>(null);
   const [sharing, setSharing] = useState(false);
 
-  // Detect failed iframe load (blocked by network, tracker blockers, or CSP)
+  // Monte le widget inline iClosed de façon impérative : on crée le
+  // <div class="iclosed-widget"> et on charge widget.js une seule fois. Le
+  // MutationObserver interne de iClosed détecte alors le div et l'initialise
+  // (création de l'iframe + squelette de chargement). On procède impérativement
+  // pour éviter que React n'écrase le DOM manipulé par le widget.
   useEffect(() => {
-    if (iframeLoaded || iframeError || booking) return;
-    const t = window.setTimeout(() => {
-      if (!iframeLoaded) setIframeError("timeout");
-    }, 12000);
-    return () => window.clearTimeout(t);
-  }, [iframeLoaded, iframeError, iframeKey, booking]);
+    const container = widgetContainerRef.current;
+    if (!container) return;
+    setScriptError(false);
+    container.innerHTML = "";
 
-  function retryIframe() {
-    setIframeLoaded(false);
-    setIframeError(null);
-    setIframeKey((k) => k + 1);
+    const widget = document.createElement("div");
+    widget.className = "iclosed-widget";
+    widget.setAttribute("data-url", bookingUrl);
+    widget.setAttribute("data-resize", "true");
+    widget.setAttribute(
+      "title",
+      title ?? "Prise de rendez-vous avec l'équipe Lucie",
+    );
+    widget.style.width = "100%";
+    widget.style.height = "620px";
+    container.appendChild(widget);
+
+    // Retire un éventuel script précédemment en échec pour pouvoir réessayer.
+    const previousFailed = document.querySelector<HTMLScriptElement>(
+      `script[src="${ICLOSED_WIDGET_SRC}"][data-failed="true"]`,
+    );
+    if (previousFailed) previousFailed.remove();
+
+    let script = document.querySelector<HTMLScriptElement>(
+      `script[src="${ICLOSED_WIDGET_SRC}"]`,
+    );
+    if (!script) {
+      script = document.createElement("script");
+      script.src = ICLOSED_WIDGET_SRC;
+      script.async = true;
+      script.addEventListener("error", () => {
+        script?.setAttribute("data-failed", "true");
+        setScriptError(true);
+      });
+      document.body.appendChild(script);
+    }
+    // Si le script était déjà chargé avec succès, son MutationObserver
+    // ré-initialise automatiquement ce nouveau div .iclosed-widget.
+
+    return () => {
+      container.innerHTML = "";
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bookingUrl, title, widgetKey]);
+
+  function retryWidget() {
+    setWidgetKey((k) => k + 1);
     toast.info("Nouvelle tentative de chargement du calendrier…");
   }
 
@@ -161,11 +174,11 @@ export function CalendlyEmbed({
           },
         },
       });
-      const url = `${window.location.origin}/d/${token}`;
-      setRecapUrl(url);
-      addShareHistoryEntry({ url, token, companyName: state.companyName || "Récap RDV" });
+      const link = `${window.location.origin}/d/${token}`;
+      setRecapUrl(link);
+      addShareHistoryEntry({ url: link, token, companyName: state.companyName || "Récap RDV" });
       try {
-        await navigator.clipboard.writeText(url);
+        await navigator.clipboard.writeText(link);
         toast.success("Lien récap copié — envoyez-le au prospect.");
       } catch {
         toast.info("Lien récap généré — copiez-le ci-dessous.");
@@ -188,90 +201,14 @@ export function CalendlyEmbed({
     }
   }
 
-  useEffect(() => {
-    function onMessage(e: MessageEvent) {
-      if (typeof e.origin === "string" && !e.origin.includes("calendly.com")) return;
-      const data = e.data as
-        | { event?: string; payload?: { event?: { start_time?: string } } }
-        | undefined;
-      if (!data || typeof data !== "object" || typeof data.event !== "string") return;
-      if (!data.event.startsWith("calendly.")) return;
-
-      if (data.event === "calendly.event_scheduled") {
-        const start = data.payload?.event?.start_time;
-        if (start) {
-          const d = new Date(start);
-          if (!Number.isNaN(d.getTime())) {
-            setManualDate(
-              `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(
-                d.getDate(),
-              ).padStart(2, "0")}`,
-            );
-            setManualTime(
-              `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`,
-            );
-          }
-        }
-        // Try to grab invitee name/email from Calendly payload for auto-registration.
-        const invitee = (data as any).payload?.invitee as
-          | { name?: string; email?: string }
-          | undefined;
-        if (invitee?.email) setInviteeEmail(invitee.email);
-        if (invitee?.name) setInviteeName(invitee.name);
-        setAwaitingConfirm(true);
-        toast.success("Créneau réservé ! Confirmez la date pour débloquer la suite.");
-        // Smart, non-intrusive scroll & focus for mobile:
-        // - Wait a frame so the panel is mounted with its new styles.
-        // - Only scroll if the panel isn't already comfortably visible.
-        // - Focus the panel container (tabindex=-1) instead of the date input
-        //   to avoid popping the on-screen keyboard on mobile.
-        // - Respect prefers-reduced-motion.
-        window.requestAnimationFrame(() => {
-          window.setTimeout(() => {
-            const panel = confirmPanelRef.current;
-            if (!panel) return;
-            const rect = panel.getBoundingClientRect();
-            const vh = window.innerHeight || document.documentElement.clientHeight;
-            const isMobile = window.matchMedia("(max-width: 767px)").matches;
-            const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-            const topVisible = rect.top >= 72 && rect.top <= vh * 0.75;
-            const fullyVisible = rect.top >= 0 && rect.bottom <= vh;
-            if (!topVisible && !fullyVisible) {
-              // Mobile: align near top with a small offset for sticky headers.
-              // Desktop: keep it centered where it feels natural.
-              if (isMobile) {
-                const offset = 80; // sticky top bar allowance
-                const target = window.scrollY + rect.top - offset;
-                window.scrollTo({
-                  top: Math.max(0, target),
-                  behavior: reduce ? "auto" : "smooth",
-                });
-              } else {
-                panel.scrollIntoView({
-                  behavior: reduce ? "auto" : "smooth",
-                  block: "center",
-                });
-              }
-            }
-            // Focus the panel (not the input) so screen readers announce it
-            // and keyboard users land on it, without opening the mobile keyboard.
-            panel.focus({ preventScroll: true });
-          }, 120);
-        });
-      }
-    }
-    window.addEventListener("message", onMessage);
-    return () => window.removeEventListener("message", onMessage);
-  }, []);
-
   async function confirm() {
     if (!manualDate) {
       toast.error("Sélectionnez la date de votre rendez-vous.");
       dateInputRef.current?.focus();
       return;
     }
-    const email = inviteeEmail ?? booking?.user?.email;
-    const name = inviteeName ?? booking?.user?.name;
+    const email = booking?.user?.email;
+    const name = booking?.user?.name;
     setBooking({
       date: manualDate,
       time: manualTime || undefined,
@@ -460,21 +397,10 @@ export function CalendlyEmbed({
       </div>
 
       <div className="relative mt-6 overflow-hidden rounded-2xl border border-border bg-card">
-        {!iframeLoaded && !iframeError && (
-          <div
-            className="absolute inset-0 z-10 grid animate-pulse place-items-center bg-card"
-            aria-hidden="true"
-          >
-            <div className="flex flex-col items-center gap-2 text-muted-foreground">
-              <CalendarCheck2 className="h-8 w-8" />
-              <span className="text-xs">Chargement du calendrier…</span>
-            </div>
-          </div>
-        )}
-        {iframeError ? (
+        {scriptError && (
           <div
             role="alert"
-            className="flex min-h-[560px] flex-col items-center justify-center gap-4 bg-card p-6 text-center"
+            className="absolute inset-0 z-20 flex min-h-[400px] flex-col items-center justify-center gap-4 bg-card p-6 text-center"
           >
             <span className="grid h-12 w-12 place-items-center rounded-full bg-destructive/10 text-destructive">
               <AlertTriangle className="h-6 w-6" aria-hidden="true" />
@@ -484,18 +410,17 @@ export function CalendlyEmbed({
                 Impossible de charger le calendrier
               </h3>
               <p className="mt-1 text-sm text-muted-foreground">
-                {iframeError === "timeout"
-                  ? "Le calendrier met trop de temps à répondre. Un bloqueur de scripts, une extension ou une connexion instable peuvent en être la cause."
-                  : "Une erreur est survenue lors de l'ouverture du calendrier."}
+                Le module de réservation iClosed n'a pas pu se charger. Un bloqueur de
+                scripts, une extension ou une connexion instable peuvent en être la cause.
               </p>
             </div>
             <div className="flex flex-wrap justify-center gap-2">
-              <Button onClick={retryIframe} className="min-h-11 rounded-xl">
+              <Button onClick={retryWidget} className="min-h-11 rounded-xl">
                 <RotateCcw className="mr-1.5 h-4 w-4" aria-hidden="true" />
                 Réessayer
               </Button>
               <a
-                href={calendlyUrl}
+                href={bookingUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex min-h-11 items-center gap-1.5 rounded-xl border border-border bg-background px-4 text-sm font-medium text-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
@@ -509,28 +434,15 @@ export function CalendlyEmbed({
               votre RDV pris.
             </p>
           </div>
-        ) : (
-          <iframe
-            key={iframeKey}
-            src={calendlyUrl}
-            title="Prise de rendez-vous Calendly avec l'équipe Lucie"
-            onLoad={() => {
-              setIframeLoaded(true);
-              setIframeError(null);
-            }}
-            onError={() => setIframeError("error")}
-            loading="lazy"
-            className="block h-[720px] w-full min-h-[560px] sm:h-[680px] md:h-[720px] lg:h-[760px]"
-            allow="camera; microphone; autoplay; fullscreen; payment"
-            style={{ colorScheme: "light" }}
-          />
         )}
+        {/* Conteneur du widget inline iClosed (géré impérativement). */}
+        <div ref={widgetContainerRef} className="min-h-[400px]" />
       </div>
 
       <p className="mt-3 text-center text-xs text-muted-foreground">
         Le calendrier ne s'affiche pas ?{" "}
         <a
-          href={calendlyUrl}
+          href={bookingUrl}
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex items-center gap-1 text-primary underline underline-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded"
@@ -569,7 +481,7 @@ export function CalendlyEmbed({
         <p className="mt-1 text-sm text-muted-foreground">
           {awaitingConfirm
             ? "Vérifiez la date et l'heure prérenseignées, puis validez. La suite du parcours se débloquera automatiquement le jour J."
-            : "Renseignez la date choisie pour débloquer automatiquement la suite du parcours le jour J."}
+            : "Une fois votre créneau réservé dans le calendrier ci-dessus, renseignez la date choisie pour débloquer automatiquement la suite du parcours le jour J."}
         </p>
         <div className="mt-3 grid gap-3 sm:grid-cols-[1fr_140px_auto]">
           <div>
