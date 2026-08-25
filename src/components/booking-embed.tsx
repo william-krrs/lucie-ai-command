@@ -113,14 +113,15 @@ export function parseIclosedBooking(raw: unknown): DetectedBooking | null {
     "date",
   ]);
   if (!looksBooked || !start) return null;
+  const wallClock = start.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/);
   const d = new Date(start);
   if (Number.isNaN(d.getTime())) return null;
-  const date = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(
-    d.getDate(),
-  ).padStart(2, "0")}`;
-  const time = `${String(d.getHours()).padStart(2, "0")}:${String(
-    d.getMinutes(),
-  ).padStart(2, "0")}`;
+  const date = wallClock
+    ? `${wallClock[1]}-${wallClock[2]}-${wallClock[3]}`
+    : `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  const time = wallClock
+    ? `${wallClock[4]}:${wallClock[5]}`
+    : `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
   return {
     date,
     time,

@@ -44,7 +44,7 @@ function Demonstration() {
       <LockedPage
         title="Démonstration verrouillée"
         step="Démonstration"
-        description="La démonstration se débloquera automatiquement le jour de votre rendez-vous. Prenez d'abord votre créneau depuis la recommandation."
+        description="La démonstration se débloquera automatiquement dès la confirmation de votre rendez-vous. Prenez d'abord votre créneau depuis la recommandation."
       />
     );
   }

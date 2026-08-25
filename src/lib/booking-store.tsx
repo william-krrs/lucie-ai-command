@@ -158,12 +158,13 @@ function bookingFromIclosedConfirmation(event: MessageEvent): Omit<Booking, "sta
 
     const dateTime = new Date(start);
     if (Number.isNaN(dateTime.getTime())) return null;
-    const date = `${dateTime.getFullYear()}-${String(dateTime.getMonth() + 1).padStart(2, "0")}-${String(
-      dateTime.getDate(),
-    ).padStart(2, "0")}`;
-    const time = `${String(dateTime.getHours()).padStart(2, "0")}:${String(
-      dateTime.getMinutes(),
-    ).padStart(2, "0")}`;
+    const wallClock = start.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/);
+    const date = wallClock
+      ? `${wallClock[1]}-${wallClock[2]}-${wallClock[3]}`
+      : `${dateTime.getFullYear()}-${String(dateTime.getMonth() + 1).padStart(2, "0")}-${String(dateTime.getDate()).padStart(2, "0")}`;
+    const time = wallClock
+      ? `${wallClock[4]}:${wallClock[5]}`
+      : `${String(dateTime.getHours()).padStart(2, "0")}:${String(dateTime.getMinutes()).padStart(2, "0")}`;
     const name = confirmation.searchParams.get("invitee_full_name") ?? undefined;
     const email =
       confirmation.searchParams.get("Invitee_email") ??
