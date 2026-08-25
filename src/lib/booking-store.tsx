@@ -9,6 +9,7 @@ import {
   type ReactNode,
 } from "react";
 import { readAdminMode } from "@/lib/admin-mode";
+import { UNLOCK_ALL_PAGES } from "@/lib/config";
 
 const STORAGE_KEY = "lucie:booking:v2";
 const LEGACY_KEY = "lucie:booking:v1";
