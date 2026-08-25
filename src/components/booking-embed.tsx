@@ -495,7 +495,7 @@ export function BookingEmbed({
               </h2>
               <p className="mt-1 max-w-xl text-sm text-muted-foreground">
                 {bookedDescription ??
-                  "La démonstration, les offres, l'installation et la configuration personnalisée sont maintenant débloquées."}
+                  "Votre rendez-vous est confirmé. La Démonstration sera accessible au moment de votre rendez-vous. Les étapes suivantes se débloqueront progressivement au fil de votre accompagnement."}
               </p>
             </div>
           </div>
