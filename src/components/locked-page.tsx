@@ -107,12 +107,10 @@ export function LockedPage({
               <CalendarCheck2 className="h-4 w-4" aria-hidden="true" />
               Rendez-vous confirmé
             </div>
-            {countdown && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-medium tabular-nums text-primary">
-                <Clock className="h-3 w-3" aria-hidden="true" />
-                Disponible dans {countdown}
-              </span>
-            )}
+            <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary">
+              <Clock className="h-3 w-3" aria-hidden="true" />
+              Verrouillé
+            </span>
           </div>
           {meetingLabel && (
             <div className="mt-1 text-sm font-medium text-foreground">{meetingLabel}</div>
