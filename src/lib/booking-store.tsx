@@ -10,7 +10,13 @@ import {
 } from "react";
 import { readAdminMode } from "@/lib/admin-mode";
 import { UNLOCK_ALL_PAGES } from "@/lib/config";
-import { BOOKING_TYPES, DEFAULT_BOOKING_TYPE, isBookingType, type BookingType } from "@/lib/booking-types";
+import {
+  BOOKING_TYPES,
+  DEFAULT_BOOKING_TYPE,
+  isBookingType,
+  type BookingType,
+  type BookingStatusNorm,
+} from "@/lib/booking-types";
 
 const STORAGE_KEY = "lucie:booking:v3";
 const LEGACY_KEY_V2 = "lucie:booking:v2";
@@ -52,6 +58,12 @@ export type Booking = {
   user?: BookingUser;
   /** Statut calculé/enregistré du RDV. */
   status: BookingStatus;
+  /**
+   * Statut normalisé côté base (`bookings.status_norm`). Un RDV créé depuis
+   * l'agenda iClosed est confirmé par défaut ; le webhook/Realtime peut le
+   * repasser à `pending`, `cancelled`, etc.
+   */
+  statusNorm: BookingStatusNorm;
   /** Type métier du rendez-vous (Découverte / Démo / Test & paramétrage). */
   bookingType: BookingType;
   /** Identifiant de l'événement côté agenda externe (iClosed), si connu. */
@@ -66,8 +78,11 @@ export type Booking = {
 
 export type BookingMap = Partial<Record<BookingType, Booking>>;
 
-type BookingInput = Omit<Booking, "status" | "updatedAt" | "createdAt" | "bookingType"> &
-  Partial<Pick<Booking, "status" | "createdAt" | "updatedAt" | "bookingType">>;
+type BookingInput = Omit<
+  Booking,
+  "status" | "statusNorm" | "updatedAt" | "createdAt" | "bookingType"
+> &
+  Partial<Pick<Booking, "status" | "statusNorm" | "createdAt" | "updatedAt" | "bookingType">>;
 
 type Ctx = {
   /** Tous les rendez-vous connus, indexés par type. */
@@ -106,6 +121,26 @@ function computeStatus(date: string, current: BookingStatus | undefined): Bookin
   return "completed";
 }
 
+const STATUS_NORMS: BookingStatusNorm[] = [
+  "pending",
+  "confirmed",
+  "cancelled",
+  "rescheduled",
+  "completed",
+  "no_show",
+];
+
+/**
+ * Un RDV pris via l'agenda iClosed est confirmé par défaut : la valeur n'est
+ * dégradée que si le serveur (webhook/Realtime) renvoie un autre statut.
+ */
+function normalizeStatusNorm(raw: unknown, status: BookingStatus): BookingStatusNorm {
+  if (typeof raw === "string" && (STATUS_NORMS as string[]).includes(raw)) {
+    return raw as BookingStatusNorm;
+  }
+  return status === "cancelled" ? "cancelled" : "confirmed";
+}
+
 function normalize(raw: unknown, fallbackType: BookingType = DEFAULT_BOOKING_TYPE): Booking | null {
   if (!raw || typeof raw !== "object") return null;
   const r = raw as Partial<Booking> & Record<string, unknown>;
@@ -124,6 +159,7 @@ function normalize(raw: unknown, fallbackType: BookingType = DEFAULT_BOOKING_TYP
           }
         : undefined,
     status,
+    statusNorm: normalizeStatusNorm(r.statusNorm, status),
     bookingType: isBookingType(r.bookingType) ? r.bookingType : fallbackType,
     iclosedEventId: typeof r.iclosedEventId === "string" ? r.iclosedEventId : undefined,
     meetingLocation: typeof r.meetingLocation === "string" ? r.meetingLocation : undefined,
@@ -186,7 +222,7 @@ function bookingTypeForCurrentPage(): BookingType {
 
 function bookingFromIclosedConfirmation(
   event: MessageEvent,
-): Omit<Booking, "status" | "updatedAt" | "bookingType"> | null {
+): Omit<Booking, "status" | "statusNorm" | "updatedAt" | "bookingType"> | null {
   if (event.origin !== "https://app.iclosed.io") return null;
   if (!event.data || typeof event.data !== "object") return null;
   const data = event.data as Record<string, unknown>;
@@ -316,11 +352,11 @@ export function BookingProvider({ children }: { children: ReactNode }) {
 
   const value = useMemo<Ctx>(() => {
     const demo = bookings[DEFAULT_BOOKING_TYPE] ?? null;
-    const active = !!demo && demo.status !== "cancelled";
+    // Seul un RDV Démo (booking_type = 'r2_demo') avec status_norm = 'confirmed'
+    // débloque la suite du parcours. Le mode aperçu interne permet à l'équipe
+    // Lucie de revoir chaque étape sans créer de faux rendez-vous prospect.
+    const active = !!demo && demo.status !== "cancelled" && demo.statusNorm === "confirmed";
     const today = todayISO();
-    // Seul un RDV Démo confirmé (r2_demo) débloque la suite du parcours.
-    // Le mode aperçu interne permet à l'équipe Lucie de revoir chaque étape
-    // sans créer de faux rendez-vous prospect.
     const isUnlocked = UNLOCK_ALL_PAGES || active || adminPreview;
     const isPendingMeeting = active && demo!.date > today;
     return {
