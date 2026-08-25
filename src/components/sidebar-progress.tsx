@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { Check, CircleDashed, ClipboardList, CalendarCheck2, FileText, Rocket } from "lucide-react";
+import { Check, CircleDashed, ClipboardList, CalendarCheck2, FileText, Rocket, Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLucie } from "@/lib/lucie-store";
 import { useBooking } from "@/lib/booking-store";
@@ -13,6 +13,7 @@ type Step = {
   icon: typeof ClipboardList;
   done: boolean;
   pending?: boolean;
+  locked?: boolean;
   hint?: string;
 };
 
@@ -81,6 +82,7 @@ export function SidebarProgress({ onNavigate }: { onNavigate?: () => void }) {
       icon: FileText,
       done: configDone,
       pending: !configDone && access.canConfigure,
+      locked: !configDone && !access.canConfigure,
       hint: configDone ? "Envoyée" : access.canConfigure ? "À remplir" : "Après le paiement",
     },
     {
@@ -90,6 +92,7 @@ export function SidebarProgress({ onNavigate }: { onNavigate?: () => void }) {
       icon: Rocket,
       done: installationDone,
       pending: !installationDone && access.canViewInstallation,
+      locked: !installationDone && !access.canViewInstallation,
       hint: installationDone ? "Prête au test" : access.canViewInstallation ? "En cours" : "Verrouillée",
     },
   ];
@@ -144,13 +147,17 @@ export function SidebarProgress({ onNavigate }: { onNavigate?: () => void }) {
                       ? "border-success bg-success text-success-foreground"
                       : step.pending
                         ? "border-primary/60 bg-primary/10 text-primary"
-                        : "border-border bg-background text-muted-foreground",
+                        : step.locked
+                          ? "border-border bg-muted text-muted-foreground/80"
+                          : "border-border bg-background text-muted-foreground",
                   )}
                 >
                   {step.done ? (
                     <Check className="h-3 w-3" strokeWidth={3} />
                   ) : step.pending ? (
                     <CircleDashed className="h-3 w-3 animate-[spin_6s_linear_infinite]" />
+                  ) : step.locked ? (
+                    <Lock className="h-3 w-3" />
                   ) : (
                     <Icon className="h-3 w-3" />
                   )}
