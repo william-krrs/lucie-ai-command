@@ -45,7 +45,7 @@ export const getJourneyState = createServerFn({ method: "GET" })
   .handler(async ({ context }): Promise<JourneyStateDTO> => {
     const { supabase, userId } = context;
 
-    const [stateRes, bookingRes, prepRes] = await Promise.all([
+    const [stateRes, confirmedBookingRes, latestBookingRes, prepRes] = await Promise.all([
       supabase
         .from("journey_state")
         .select("demo_completed_at, payment_status, installation_status")
@@ -53,7 +53,15 @@ export const getJourneyState = createServerFn({ method: "GET" })
         .maybeSingle(),
       supabase
         .from("bookings")
-        .select("id, meeting_at, status_norm")
+        .select("id, meeting_at")
+        .eq("user_id", userId)
+        .eq("booking_type", "r2_demo")
+        .eq("status_norm", "confirmed")
+        .order("meeting_at", { ascending: true })
+        .limit(1),
+      supabase
+        .from("bookings")
+        .select("status_norm")
         .eq("user_id", userId)
         .eq("booking_type", "r2_demo")
         .order("updated_at", { ascending: false })
@@ -62,14 +70,17 @@ export const getJourneyState = createServerFn({ method: "GET" })
     ]);
 
     if (stateRes.error) console.error("[getJourneyState] state", stateRes.error);
-    if (bookingRes.error) console.error("[getJourneyState] booking", bookingRes.error);
+    if (confirmedBookingRes.error) console.error("[getJourneyState] confirmed booking", confirmedBookingRes.error);
+    if (latestBookingRes.error) console.error("[getJourneyState] latest booking", latestBookingRes.error);
     if (prepRes.error) console.error("[getJourneyState] prep", prepRes.error);
 
     const row = stateRes.data;
     // meeting_at est un timestamptz : la comparaison se fait en UTC côté serveur.
-    const booking = bookingRes.data?.[0] ?? null;
-    const bookingStatus = booking?.status_norm ?? null;
-    const meetingAtRaw = bookingStatus === "confirmed" ? booking?.meeting_at ?? null : null;
+    const confirmedBooking = confirmedBookingRes.data?.[0] ?? null;
+    const bookingStatus = confirmedBooking
+      ? "confirmed"
+      : latestBookingRes.data?.[0]?.status_norm ?? null;
+    const meetingAtRaw = confirmedBooking?.meeting_at ?? null;
     const meetingAt = meetingAtRaw ? new Date(meetingAtRaw) : null;
     const unlockAt = meetingAt ? new Date(meetingAt.getTime() - DEMO_UNLOCK_LEAD_MS) : null;
 
