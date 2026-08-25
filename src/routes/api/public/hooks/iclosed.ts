@@ -69,6 +69,15 @@ function verifySignature(rawBody: string, header: string | null, secret: string)
   return timingSafeEqual(a, b);
 }
 
+/** Comparaison en temps constant entre le token reçu dans l'URL et le secret serveur. */
+function verifyToken(received: string | null, secret: string): boolean {
+  if (!received) return false;
+  const a = Buffer.from(received);
+  const b = Buffer.from(secret);
+  if (a.length !== b.length) return false;
+  return timingSafeEqual(a, b);
+}
+
 async function handle(request: Request): Promise<Response> {
   const secret = process.env["ICLOSED_WEBHOOK_SECRET"];
   if (!secret) {
@@ -77,12 +86,24 @@ async function handle(request: Request): Promise<Response> {
   }
 
   const rawBody = await request.text();
+
+  // Authentification : token dans l'URL (?token=...) OU signature HMAC valide.
+  // Le token URL est suffisant ; la signature reste supportée en complément.
+  let url: URL;
+  try {
+    url = new URL(request.url);
+  } catch {
+    return new Response("Invalid request URL", { status: 400 });
+  }
+  const tokenOk = verifyToken(url.searchParams.get("token"), secret);
   const signature =
     request.headers.get("x-iclosed-signature") ??
     request.headers.get("x-webhook-signature") ??
     request.headers.get("x-signature");
-  if (!verifySignature(rawBody, signature, secret)) {
-    return new Response("Invalid signature", { status: 401 });
+  const signatureOk = verifySignature(rawBody, signature, secret);
+
+  if (!tokenOk && !signatureOk) {
+    return new Response("Unauthorized", { status: 401 });
   }
 
   let payload: unknown;
