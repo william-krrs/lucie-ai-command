@@ -10,7 +10,13 @@ import {
 } from "react";
 import { readAdminMode } from "@/lib/admin-mode";
 import { UNLOCK_ALL_PAGES } from "@/lib/config";
-import { BOOKING_TYPES, DEFAULT_BOOKING_TYPE, isBookingType, type BookingType } from "@/lib/booking-types";
+import {
+  BOOKING_TYPES,
+  DEFAULT_BOOKING_TYPE,
+  isBookingType,
+  type BookingType,
+  type BookingStatusNorm,
+} from "@/lib/booking-types";
 
 const STORAGE_KEY = "lucie:booking:v3";
 const LEGACY_KEY_V2 = "lucie:booking:v2";
