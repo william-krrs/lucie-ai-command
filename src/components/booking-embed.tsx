@@ -32,6 +32,81 @@ function todayISO() {
   ).padStart(2, "0")}`;
 }
 
+export type DetectedBooking = {
+  date: string;
+  time?: string;
+  name?: string;
+  email?: string;
+};
+
+function pick(obj: Record<string, unknown>, keys: string[]): string | undefined {
+  for (const k of Object.keys(obj)) {
+    if (keys.includes(k.toLowerCase()) && typeof obj[k] === "string" && obj[k]) {
+      return obj[k] as string;
+    }
+  }
+  return undefined;
+}
+
+function flatten(value: unknown, out: Record<string, unknown> = {}, depth = 0) {
+  if (depth > 4 || !value || typeof value !== "object") return out;
+  for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
+    if (v && typeof v === "object") flatten(v, out, depth + 1);
+    else if (!(k in out)) out[k] = v;
+  }
+  return out;
+}
+
+/**
+ * Analyse un message posté par le widget iClosed et en extrait la réservation
+ * si l'événement correspond à un créneau confirmé.
+ */
+export function parseIclosedBooking(raw: unknown): DetectedBooking | null {
+  let data: unknown = raw;
+  if (typeof data === "string") {
+    try {
+      data = JSON.parse(data);
+    } catch {
+      return null;
+    }
+  }
+  if (!data || typeof data !== "object") return null;
+  const flat = flatten(data);
+  const kind = String(
+    pick(flat, ["event", "type", "action", "name", "status"]) ?? "",
+  ).toLowerCase();
+  const looksBooked =
+    /book|schedul|appointment|meeting|confirm|complete/.test(kind) &&
+    !/cancel/.test(kind);
+  const start = pick(flat, [
+    "starttime",
+    "start_time",
+    "startsat",
+    "starts_at",
+    "eventstarttime",
+    "scheduledat",
+    "scheduled_at",
+    "datetime",
+    "date",
+  ]);
+  if (!looksBooked || !start) return null;
+  const d = new Date(start);
+  if (Number.isNaN(d.getTime())) return null;
+  const date = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(
+    d.getDate(),
+  ).padStart(2, "0")}`;
+  const time = `${String(d.getHours()).padStart(2, "0")}:${String(
+    d.getMinutes(),
+  ).padStart(2, "0")}`;
+  return {
+    date,
+    time,
+    name: pick(flat, ["name", "invitee", "inviteename", "fullname", "firstname"]),
+    email: pick(flat, ["email", "inviteeemail", "useremail"]),
+  };
+}
+
+
 export type BookingEmbedProps = {
   url?: string;
   eyebrow?: string;
