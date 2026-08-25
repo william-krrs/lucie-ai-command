@@ -12,7 +12,7 @@ import {
 import { PageHeader } from "@/components/app-shell";
 import { StepNav } from "@/components/step-nav";
 import { LockedPage } from "@/components/locked-page";
-import { useBooking } from "@/lib/booking-store";
+import { useJourneyAccess } from "@/lib/journey-access";
 
 export const Route = createFileRoute("/installation")({
   head: () => ({
@@ -42,13 +42,13 @@ const STEPS = [
 ];
 
 function Installation() {
-  const { isUnlocked } = useBooking();
-  if (!isUnlocked) {
+  const { canViewInstallation } = useJourneyAccess();
+  if (!canViewInstallation) {
     return (
       <LockedPage
         title="Installation verrouillée"
         step="Installation"
-        description="Cette page se débloque le jour de votre rendez-vous, une fois votre formule choisie."
+        description="L'installation se débloque une fois votre configuration personnalisée envoyée et validée."
       />
     );
   }

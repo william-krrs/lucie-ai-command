@@ -1,9 +1,12 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { ArrowRight, Loader2 } from "lucide-react";
 import { X, Check } from "lucide-react";
 import { PageHeader } from "@/components/app-shell";
 import { StepNav } from "@/components/step-nav";
 import { LockedPage } from "@/components/locked-page";
-import { useBooking } from "@/lib/booking-store";
+import { useJourneyAccess } from "@/lib/journey-access";
 
 export const Route = createFileRoute("/demonstration")({
   head: () => ({
@@ -38,8 +41,25 @@ const AFTER = [
 ];
 
 function Demonstration() {
-  const { isUnlocked } = useBooking();
-  if (!isUnlocked) {
+  const { canViewDemonstration, completeDemo } = useJourneyAccess();
+  const navigate = useNavigate();
+  const [pending, setPending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const onContinue = async () => {
+    setPending(true);
+    setError(null);
+    try {
+      await completeDemo();
+      await navigate({ to: "/offres" });
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Une erreur est survenue.");
+    } finally {
+      setPending(false);
+    }
+  };
+
+  if (!canViewDemonstration) {
     return (
       <LockedPage
         title="Démonstration verrouillée"
@@ -105,6 +125,33 @@ function Demonstration() {
           </ul>
         </div>
       </div>
+      <section className="rounded-3xl border border-primary/20 bg-primary/[0.04] p-6 text-center sm:p-8">
+        <h2 className="text-lg font-semibold tracking-tight text-foreground">
+          Démonstration terminée ?
+        </h2>
+        <p className="mx-auto mt-1 max-w-md text-sm text-muted-foreground">
+          Validez la fin de la démonstration pour débloquer vos offres et votre recommandation
+          personnalisée.
+        </p>
+        <Button
+          className="mt-5 min-h-11 rounded-xl"
+          onClick={onContinue}
+          disabled={pending}
+          aria-label="Marquer la démonstration comme terminée et continuer vers ma recommandation"
+        >
+          {pending ? (
+            <Loader2 className="mr-1.5 h-4 w-4 animate-spin" aria-hidden="true" />
+          ) : null}
+          Continuer vers ma recommandation
+          <ArrowRight className="ml-1 h-4 w-4" aria-hidden="true" />
+        </Button>
+        {error && (
+          <p role="alert" className="mt-3 text-sm text-destructive">
+            {error}
+          </p>
+        )}
+      </section>
+
       <StepNav current="/demonstration" />
     </div>
   );
