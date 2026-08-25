@@ -59,7 +59,7 @@ type Ctx = {
   setBooking: (b: Omit<Booking, "status" | "updatedAt" | "createdAt"> & Partial<Pick<Booking, "status" | "createdAt" | "updatedAt">>) => void;
   updateBooking: (patch: Partial<Booking>) => void;
   clearBooking: () => void;
-  /** true si un RDV existe et que la date est aujourd'hui ou passée (status !== cancelled). */
+  /** true dès qu'un RDV confirmé existe (status !== cancelled). */
   isUnlocked: boolean;
   /** true si un RDV existe mais est dans le futur (status !== cancelled). */
   isPendingMeeting: boolean;
@@ -208,8 +208,10 @@ export function BookingProvider({ children }: { children: ReactNode }) {
   const value = useMemo<Ctx>(() => {
     const active = !!booking && booking.status !== "cancelled";
     const today = todayISO();
-    const isUnlocked = active && booking!.date <= today;
-    const isPendingMeeting = active && booking!.date > today;
+    // A confirmed future appointment unlocks the journey immediately. The
+    // previous date gate kept legitimate prospects blocked until appointment day.
+    const isUnlocked = active;
+    const isPendingMeeting = active && booking.date > today;
     return { booking, setBooking, updateBooking, clearBooking, isUnlocked, isPendingMeeting };
   }, [booking, setBooking, updateBooking, clearBooking]);
 
