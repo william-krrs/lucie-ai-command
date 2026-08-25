@@ -58,6 +58,12 @@ export type Booking = {
   user?: BookingUser;
   /** Statut calculé/enregistré du RDV. */
   status: BookingStatus;
+  /**
+   * Statut normalisé côté base (`bookings.status_norm`). Un RDV créé depuis
+   * l'agenda iClosed est confirmé par défaut ; le webhook/Realtime peut le
+   * repasser à `pending`, `cancelled`, etc.
+   */
+  statusNorm: BookingStatusNorm;
   /** Type métier du rendez-vous (Découverte / Démo / Test & paramétrage). */
   bookingType: BookingType;
   /** Identifiant de l'événement côté agenda externe (iClosed), si connu. */
