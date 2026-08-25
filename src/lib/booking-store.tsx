@@ -9,6 +9,7 @@ import {
   type ReactNode,
 } from "react";
 import { readAdminMode } from "@/lib/admin-mode";
+import { UNLOCK_ALL_PAGES } from "@/lib/config";
 
 const STORAGE_KEY = "lucie:booking:v2";
 const LEGACY_KEY = "lucie:booking:v1";
@@ -267,7 +268,7 @@ export function BookingProvider({ children }: { children: ReactNode }) {
     // previous date gate kept legitimate prospects blocked until appointment day.
     // Internal preview mode lets the Lucie team review every stage without
     // creating a fake customer booking. Prospect access remains unchanged.
-    const isUnlocked = active || adminPreview;
+    const isUnlocked = UNLOCK_ALL_PAGES || active || adminPreview;
     const isPendingMeeting = active && booking.date > today;
     return { booking, setBooking, updateBooking, clearBooking, isUnlocked, isPendingMeeting };
   }, [adminPreview, booking, setBooking, updateBooking, clearBooking]);
