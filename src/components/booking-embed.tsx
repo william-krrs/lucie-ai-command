@@ -582,6 +582,7 @@ export function BookingEmbed({
         </a>
       </p>
 
+      {isAdmin || awaitingConfirm ? (
       <div
         ref={confirmPanelRef}
         tabIndex={-1}
@@ -594,6 +595,7 @@ export function BookingEmbed({
             : "border-border bg-card")
         }
       >
+
         <div
           className={
             "flex items-center gap-2 text-[11px] font-medium uppercase tracking-widest " +
