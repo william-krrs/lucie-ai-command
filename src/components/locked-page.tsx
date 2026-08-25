@@ -100,27 +100,26 @@ export function LockedPage({
             : "Réservez d'abord un créneau avec l'équipe Lucie pour débloquer cette étape.")}
       </p>
 
-      {isPendingMeeting && booking ? (
+      {hasMeeting ? (
         <div className="mx-auto mt-6 max-w-md rounded-2xl border border-primary/30 bg-primary/[0.05] p-4 text-left">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-2 text-[11px] font-medium uppercase tracking-widest text-primary">
               <CalendarCheck2 className="h-4 w-4" aria-hidden="true" />
               Rendez-vous confirmé
             </div>
-            {daysLabel && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary">
+            {countdown && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-medium tabular-nums text-primary">
                 <Clock className="h-3 w-3" aria-hidden="true" />
-                {daysLabel}
+                Disponible dans {countdown}
               </span>
             )}
           </div>
-          <div className="mt-1 text-sm font-medium text-foreground">
-            {formatBookingDate(booking.date)}
-            {booking.time ? ` · ${booking.time}` : ""}
-          </div>
+          {meetingLabel && (
+            <div className="mt-1 text-sm font-medium text-foreground">{meetingLabel}</div>
+          )}
           {countdown && (
             <div className="mt-2 font-mono text-sm tabular-nums text-foreground">
-              Dans {countdown}
+              Disponible dans {countdown}
             </div>
           )}
           <p className="mt-1 text-xs text-muted-foreground">
