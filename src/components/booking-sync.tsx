@@ -10,6 +10,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
 import {
   formatBookingDate,
   getClientRef,
@@ -55,12 +56,19 @@ export function BookingSync() {
   useEffect(() => {
     if (checkedRef.current) return;
     if (typeof window === "undefined") return;
-    const clientRef = getClientRef();
-    if (!clientRef) return;
-    checkedRef.current = true;
-
     let cancelled = false;
-    (async () => {
+    let syncing = false;
+
+    const syncBooking = async () => {
+      if (cancelled || checkedRef.current || syncing) return;
+      const { data } = await supabase.auth.getSession();
+      if (!data.session) return;
+
+      const clientRef = getClientRef();
+      if (!clientRef) return;
+      syncing = true;
+      checkedRef.current = true;
+
       try {
         const { booking: server } = await getServer({ data: { clientRef } });
         if (cancelled) return;
@@ -115,11 +123,19 @@ export function BookingSync() {
         setConflict({ local: booking, server });
       } catch (e) {
         console.warn("[booking-sync] check failed", e);
+      } finally {
+        syncing = false;
       }
-    })();
+    };
+
+    void syncBooking();
+    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session) void syncBooking();
+    });
 
     return () => {
       cancelled = true;
+      authListener.subscription.unsubscribe();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
