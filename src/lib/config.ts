@@ -22,15 +22,15 @@ export const EMAIL_FROM: string = env.VITE_EMAIL_FROM ?? `Lucie <${CONTACT_EMAIL
 export const BRAND_NAME: string = env.VITE_BRAND_NAME ?? "Lucie Assistant";
 
 /**
- * URL Calendly incrustée sur la page /recommandation.
- * Remplacez ce lien par votre URL Calendly personnelle (ex: https://calendly.com/mon-compte/decouverte).
+ * URL du module de prise de rendez-vous iClosed incrusté sur /recommandation
+ * (démonstration commerciale) et utilisée pour le RDV « Test & paramétrage ».
+ * Remplacez ce lien par votre URL d'événement iClosed
+ * (ex: https://app.iclosed.io/e/votre-compte/votre-evenement).
  */
-export const CALENDLY_URL =
-  "https://calendly.com/contact-lucieassistant/30-minute-meeting-clone";
+export const CALENDLY_URL = "https://app.iclosed.io/e/Iucie/demo-lucie";
 
 /**
- * URL Calendly du RDV « Test & paramétrage » (post-installation).
- * Remplacez ce lien par votre URL Calendly dédiée à la mise en service.
+ * URL du RDV « Test & paramétrage » (post-installation) sur iClosed.
+ * Remplacez ce lien par votre URL d'événement iClosed dédiée à la mise en service.
  */
-export const CALENDLY_URL_SETUP =
-  "https://calendly.com/contact-lucieassistant/30-minute-meeting-clone";
+export const CALENDLY_URL_SETUP = "https://app.iclosed.io/e/Iucie/demo-lucie";
