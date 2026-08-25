@@ -608,15 +608,16 @@ export function BookingEmbed({
               Créneau réservé — confirmez pour débloquer la suite
             </>
           ) : (
-            "Vous avez déjà réservé ?"
+            "Saisie manuelle (mode admin)"
           )}
         </div>
         <p className="mt-1 text-sm text-muted-foreground">
           {awaitingConfirm
             ? "Vérifiez la date et l'heure prérenseignées, puis validez. La suite du parcours se débloquera automatiquement le jour J."
-            : "Une fois votre créneau réservé dans le calendrier ci-dessus, renseignez la date choisie pour débloquer automatiquement la suite du parcours le jour J."}
+            : "Réservé à l'équipe : renseignez un créneau de test pour débloquer la suite du parcours."}
         </p>
         <div className="mt-3 grid gap-3 sm:grid-cols-[1fr_140px_auto]">
+
           <div>
             <Label htmlFor="booking-date" className="text-xs">
               Date du rendez-vous
