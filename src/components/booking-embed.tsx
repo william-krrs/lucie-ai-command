@@ -15,6 +15,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { BOOKING_URL } from "@/lib/config";
+import { useAdminMode } from "@/lib/admin-mode";
+
 import { useBooking, formatBookingDate, getClientRef } from "@/lib/booking-store";
 import { upsertBooking, cancelBooking } from "@/lib/bookings.functions";
 import { createSharedDiagnostic } from "@/lib/share.functions";
@@ -31,6 +33,81 @@ function todayISO() {
     d.getDate(),
   ).padStart(2, "0")}`;
 }
+
+export type DetectedBooking = {
+  date: string;
+  time?: string;
+  name?: string;
+  email?: string;
+};
+
+function pick(obj: Record<string, unknown>, keys: string[]): string | undefined {
+  for (const k of Object.keys(obj)) {
+    if (keys.includes(k.toLowerCase()) && typeof obj[k] === "string" && obj[k]) {
+      return obj[k] as string;
+    }
+  }
+  return undefined;
+}
+
+function flatten(value: unknown, out: Record<string, unknown> = {}, depth = 0) {
+  if (depth > 4 || !value || typeof value !== "object") return out;
+  for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
+    if (v && typeof v === "object") flatten(v, out, depth + 1);
+    else if (!(k in out)) out[k] = v;
+  }
+  return out;
+}
+
+/**
+ * Analyse un message posté par le widget iClosed et en extrait la réservation
+ * si l'événement correspond à un créneau confirmé.
+ */
+export function parseIclosedBooking(raw: unknown): DetectedBooking | null {
+  let data: unknown = raw;
+  if (typeof data === "string") {
+    try {
+      data = JSON.parse(data);
+    } catch {
+      return null;
+    }
+  }
+  if (!data || typeof data !== "object") return null;
+  const flat = flatten(data);
+  const kind = String(
+    pick(flat, ["event", "type", "action", "name", "status"]) ?? "",
+  ).toLowerCase();
+  const looksBooked =
+    /book|schedul|appointment|meeting|confirm|complete/.test(kind) &&
+    !/cancel/.test(kind);
+  const start = pick(flat, [
+    "starttime",
+    "start_time",
+    "startsat",
+    "starts_at",
+    "eventstarttime",
+    "scheduledat",
+    "scheduled_at",
+    "datetime",
+    "date",
+  ]);
+  if (!looksBooked || !start) return null;
+  const d = new Date(start);
+  if (Number.isNaN(d.getTime())) return null;
+  const date = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(
+    d.getDate(),
+  ).padStart(2, "0")}`;
+  const time = `${String(d.getHours()).padStart(2, "0")}:${String(
+    d.getMinutes(),
+  ).padStart(2, "0")}`;
+  return {
+    date,
+    time,
+    name: pick(flat, ["name", "invitee", "inviteename", "fullname", "firstname"]),
+    email: pick(flat, ["email", "inviteeemail", "useremail"]),
+  };
+}
+
 
 export type BookingEmbedProps = {
   url?: string;
@@ -50,6 +127,8 @@ export function BookingEmbed({
   bookedDescription,
 }: BookingEmbedProps = {}) {
   const { booking, setBooking, clearBooking } = useBooking();
+  const isAdmin = useAdminMode();
+
   const [awaitingConfirm, setAwaitingConfirm] = useState(false);
   const [rescheduling, setRescheduling] = useState(false);
   const [manualDate, setManualDate] = useState(todayISO());
@@ -128,10 +207,66 @@ export function BookingEmbed({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bookingUrl, title, widgetKey]);
 
+  // Écoute les messages postés par l'iframe iClosed : dès qu'un créneau est
+  // réservé, on récupère la date/heure (et le contact si fourni) et on confirme
+  // automatiquement le rendez-vous — plus besoin de saisie manuelle.
+  useEffect(() => {
+    function onMessage(event: MessageEvent) {
+      try {
+        if (!/(^|\.)iclosed\.io$/i.test(new URL(event.origin).hostname)) return;
+      } catch {
+        return;
+      }
+      const parsed = parseIclosedBooking(event.data);
+      if (!parsed) return;
+      void applyDetectedBooking(parsed);
+    }
+    window.addEventListener("message", onMessage);
+    return () => window.removeEventListener("message", onMessage);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  async function applyDetectedBooking(detected: DetectedBooking) {
+    const email = detected.email ?? booking?.user?.email;
+    const name = detected.name ?? booking?.user?.name;
+    setBooking({
+      date: detected.date,
+      time: detected.time,
+      inviteeName: name,
+      user: email ? { name, email } : booking?.user,
+      createdAt: new Date().toISOString(),
+    });
+    setAwaitingConfirm(false);
+    setRescheduling(false);
+    setManualDate(detected.date);
+    if (detected.time) setManualTime(detected.time);
+    toast.success("Rendez-vous détecté et enregistré automatiquement.");
+    if (email) {
+      try {
+        const meetingAt = new Date(
+          `${detected.date}T${detected.time || "10:00"}:00`,
+        ).toISOString();
+        await upsertBookingFn({
+          data: {
+            clientRef: getClientRef(),
+            email,
+            name,
+            meetingDate: detected.date,
+            meetingTime: detected.time,
+            meetingAt,
+          },
+        });
+      } catch (e) {
+        console.warn("[booking sync] failed", e);
+      }
+    }
+  }
+
   function retryWidget() {
     setWidgetKey((k) => k + 1);
     toast.info("Nouvelle tentative de chargement du calendrier…");
   }
+
 
   async function generateRecap() {
     if (!booking || sharing) return;
@@ -451,6 +586,7 @@ export function BookingEmbed({
         </a>
       </p>
 
+      {isAdmin || awaitingConfirm ? (
       <div
         ref={confirmPanelRef}
         tabIndex={-1}
@@ -463,6 +599,7 @@ export function BookingEmbed({
             : "border-border bg-card")
         }
       >
+
         <div
           className={
             "flex items-center gap-2 text-[11px] font-medium uppercase tracking-widest " +
@@ -475,15 +612,16 @@ export function BookingEmbed({
               Créneau réservé — confirmez pour débloquer la suite
             </>
           ) : (
-            "Vous avez déjà réservé ?"
+            "Saisie manuelle (mode admin)"
           )}
         </div>
         <p className="mt-1 text-sm text-muted-foreground">
           {awaitingConfirm
             ? "Vérifiez la date et l'heure prérenseignées, puis validez. La suite du parcours se débloquera automatiquement le jour J."
-            : "Une fois votre créneau réservé dans le calendrier ci-dessus, renseignez la date choisie pour débloquer automatiquement la suite du parcours le jour J."}
+            : "Réservé à l'équipe : renseignez un créneau de test pour débloquer la suite du parcours."}
         </p>
         <div className="mt-3 grid gap-3 sm:grid-cols-[1fr_140px_auto]">
+
           <div>
             <Label htmlFor="booking-date" className="text-xs">
               Date du rendez-vous
@@ -522,6 +660,13 @@ export function BookingEmbed({
           </div>
         </div>
       </div>
+      ) : (
+        <p className="mt-6 rounded-2xl border border-border bg-card p-4 text-sm text-muted-foreground sm:p-5">
+          Votre réservation est détectée automatiquement dès que le créneau est
+          confirmé dans l'agenda ci-dessus — aucune saisie manuelle n'est nécessaire.
+        </p>
+      )}
     </section>
+
   );
 }
