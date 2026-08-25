@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight, PhoneCall, Sparkles, Zap, Clock, Users, LineChart, Info, MapPin, Building2, ExternalLink } from "lucide-react";
-import { useEffect, useState, type KeyboardEvent } from "react";
+import * as React from "react";
+import type { KeyboardEvent } from "react";
 import { PageHeader } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
 import { StepNav } from "@/components/step-nav";
@@ -30,10 +31,10 @@ function CompanyLogo({
 }) {
   const source = logoUrl?.trim() || (domain ? `https://www.google.com/s2/favicons?domain=${domain}&sz=${size}` : null);
   const cacheKey = logoUrl?.trim() ? logoCacheKey(logoUrl, size) : domain ? logoCacheKey(domain, size) : null;
-  const [status, setStatus] = useState<LogoStatus>(source ? "loading" : "error");
+  const [status, setStatus] = React.useState<LogoStatus>(source ? "loading" : "error");
 
   // Le cache est lu après hydratation pour garder un rendu SSR/client identique.
-  useEffect(() => {
+  React.useEffect(() => {
     if (!source || !cacheKey) return;
     const cached = getLogoStatus(cacheKey);
     if (cached) setStatus(cached);
@@ -203,7 +204,7 @@ const COMPANIES: Company[] = [
 ];
 
 function Home() {
-  const [selected, setSelected] = useState<Company | null>(null);
+  const [selected, setSelected] = React.useState<Company | null>(null);
   return (
     <div className="space-y-14">
       <PageHeader
