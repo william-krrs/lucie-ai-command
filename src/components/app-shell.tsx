@@ -262,7 +262,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           key={pathname}
           className="mx-auto w-full max-w-6xl min-w-0 px-4 py-6 sm:px-6 sm:py-8 lg:px-10 lg:py-12 animate-fade-in focus:outline-none"
         >
-          {children}
+          {AUDIT_MODE ? <AuditGate /> : children}
         </div>
       </main>
       <BookingSync />
