@@ -52,9 +52,9 @@ function actionFromLabel(value: string): Action | null {
   const normalized = normalizeEventLabel(value);
   if (normalized === "closer") return null;
 
-  if (/^(appel )?(annule|cancelled|canceled)$/.test(normalized)) return "cancelled";
-  if (/^(appel )?(reporte|rescheduled|reschedule|moved)$/.test(normalized)) return "rescheduled";
-  if (/^(appel )?(reserve|booked|scheduled|created|confirmed)$/.test(normalized)) return "booked";
+  if (/^(appel |call )?(annule|cancelled|canceled|cancel)$/.test(normalized)) return "cancelled";
+  if (/^(appel |call )?(reporte|rescheduled|reschedule|resched|moved)$/.test(normalized)) return "rescheduled";
+  if (/^(appel |call )?(reserve|booked|scheduled|created|confirmed|book)$/.test(normalized)) return "booked";
   return null;
 }
 
