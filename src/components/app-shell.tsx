@@ -271,6 +271,37 @@ export function AppShell({ children }: { children: ReactNode }) {
   );
 }
 
+function AuditGate() {
+  const { useState } = require("react") as typeof import("react");
+  const [open, setOpen] = useState(true);
+  return (
+    <section
+      role="region"
+      aria-labelledby="audit-title"
+      aria-live="polite"
+      className="mx-auto max-w-2xl rounded-3xl border border-border bg-card p-8 text-center shadow-[var(--shadow-card)] sm:p-12"
+    >
+      <span className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-primary/10 text-primary" aria-hidden="true">
+        <Sparkles className="h-6 w-6" aria-hidden="true" />
+      </span>
+      <div className="mt-4 text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
+        Mode Audit · Maintenance temporaire
+      </div>
+      <h1 id="audit-title" className="mt-2 text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
+        Toutes les pages sont temporairement désactivées
+      </h1>
+      <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
+        L'application est en mode audit pour une révision globale. Aucune page
+        du parcours n'est accessible pendant cette période.
+      </p>
+      <div className="mt-6 inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/[0.05] px-3 py-1.5 text-[11px] font-medium text-primary">
+        <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+        Audit en cours
+      </div>
+    </section>
+  );
+}
+
 export function PageHeader({
   eyebrow,
   title,
