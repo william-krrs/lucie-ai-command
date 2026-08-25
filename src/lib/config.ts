@@ -27,10 +27,10 @@ export const BRAND_NAME: string = env.VITE_BRAND_NAME ?? "Lucie Assistant";
  * Remplacez ce lien par votre URL d'événement iClosed
  * (ex: https://app.iclosed.io/e/votre-compte/votre-evenement).
  */
-export const CALENDLY_URL = "https://app.iclosed.io/e/Iucie/demo-lucie";
+export const BOOKING_URL = "https://app.iclosed.io/e/Iucie/demo-lucie";
 
 /**
  * URL du RDV « Test & paramétrage » (post-installation) sur iClosed.
  * Remplacez ce lien par votre URL d'événement iClosed dédiée à la mise en service.
  */
-export const CALENDLY_URL_SETUP = "https://app.iclosed.io/e/Iucie/demo-lucie";
+export const BOOKING_URL_SETUP = "https://app.iclosed.io/e/Iucie/demo-lucie";

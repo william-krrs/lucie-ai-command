@@ -20,7 +20,7 @@ import { useRecommendation } from "@/lib/lucie-store";
 import { PLAN_LABELS, PLAN_TAGLINES, TIER_LABELS, PRIORITY_CTA } from "@/lib/recommendation";
 import { LockedPage } from "@/components/locked-page";
 import { useBooking } from "@/lib/booking-store";
-import { CALENDLY_URL_SETUP } from "@/lib/config";
+import { BOOKING_URL_SETUP } from "@/lib/config";
 import { useUniqueModule, MODULE_IDS } from "@/lib/module-registry";
 
 export const Route = createFileRoute("/offres")({
@@ -378,7 +378,7 @@ function Offres() {
             className="h-11 shrink-0 rounded-xl bg-primary text-primary-foreground shadow-[var(--shadow-elevated)] hover:bg-primary/90"
           >
             <a
-              href={CALENDLY_URL_SETUP}
+              href={BOOKING_URL_SETUP}
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Prendre rendez-vous test avec Lucie (ouvre un nouvel onglet)"

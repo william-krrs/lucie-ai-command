@@ -41,5 +41,5 @@ export function __resetModuleRegistry() {
 export const MODULE_IDS = {
   paymentPlans: "payment-plans",
   preparationForm: "preparation-form",
-  calendlySetup: "calendly-setup",
+  bookingSetup: "booking-setup",
 } as const;

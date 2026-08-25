@@ -106,7 +106,7 @@ export function LockedPage({
         <Button asChild className="min-h-11 rounded-xl">
           <Link
             to="/recommandation"
-            hash="calendly"
+            hash="rdv"
             aria-label={
               isPendingMeeting
                 ? "Revoir mon rendez-vous sur la page Recommandation"
