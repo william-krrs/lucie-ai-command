@@ -76,7 +76,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       {NAV.map((item, i) => {
         const active = pathname === item.to;
         const Icon = item.icon;
-        const locked = "gated" in item && item.gated && !isUnlocked;
+        const locked = AUDIT_MODE || ("gated" in item && item.gated && !isUnlocked);
         return (
           <li key={item.to}>
             <Link
