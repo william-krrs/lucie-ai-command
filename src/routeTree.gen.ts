@@ -24,6 +24,7 @@ import { Route as DemoRouteImport } from './routes/demo'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DTokenRouteImport } from './routes/d.$token'
 import { Route as ApiPublicHooksSendRemindersRouteImport } from './routes/api/public/hooks/send-reminders'
+import { Route as ApiPublicHooksIclosedRouteImport } from './routes/api/public/hooks/iclosed'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
@@ -101,6 +102,11 @@ const ApiPublicHooksSendRemindersRoute =
     path: '/api/public/hooks/send-reminders',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicHooksIclosedRoute = ApiPublicHooksIclosedRouteImport.update({
+  id: '/api/public/hooks/iclosed',
+  path: '/api/public/hooks/iclosed',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -117,6 +123,7 @@ export interface FileRoutesByFullPath {
   '/roi': typeof RoiRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/d/$token': typeof DTokenRoute
+  '/api/public/hooks/iclosed': typeof ApiPublicHooksIclosedRoute
   '/api/public/hooks/send-reminders': typeof ApiPublicHooksSendRemindersRoute
 }
 export interface FileRoutesByTo {
@@ -134,6 +141,7 @@ export interface FileRoutesByTo {
   '/roi': typeof RoiRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/d/$token': typeof DTokenRoute
+  '/api/public/hooks/iclosed': typeof ApiPublicHooksIclosedRoute
   '/api/public/hooks/send-reminders': typeof ApiPublicHooksSendRemindersRoute
 }
 export interface FileRoutesById {
@@ -152,6 +160,7 @@ export interface FileRoutesById {
   '/roi': typeof RoiRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/d/$token': typeof DTokenRoute
+  '/api/public/hooks/iclosed': typeof ApiPublicHooksIclosedRoute
   '/api/public/hooks/send-reminders': typeof ApiPublicHooksSendRemindersRoute
 }
 export interface FileRouteTypes {
@@ -171,6 +180,7 @@ export interface FileRouteTypes {
     | '/roi'
     | '/sitemap.xml'
     | '/d/$token'
+    | '/api/public/hooks/iclosed'
     | '/api/public/hooks/send-reminders'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -188,6 +198,7 @@ export interface FileRouteTypes {
     | '/roi'
     | '/sitemap.xml'
     | '/d/$token'
+    | '/api/public/hooks/iclosed'
     | '/api/public/hooks/send-reminders'
   id:
     | '__root__'
@@ -205,6 +216,7 @@ export interface FileRouteTypes {
     | '/roi'
     | '/sitemap.xml'
     | '/d/$token'
+    | '/api/public/hooks/iclosed'
     | '/api/public/hooks/send-reminders'
   fileRoutesById: FileRoutesById
 }
@@ -223,6 +235,7 @@ export interface RootRouteChildren {
   RoiRoute: typeof RoiRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   DTokenRoute: typeof DTokenRoute
+  ApiPublicHooksIclosedRoute: typeof ApiPublicHooksIclosedRoute
   ApiPublicHooksSendRemindersRoute: typeof ApiPublicHooksSendRemindersRoute
 }
 
@@ -333,6 +346,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksSendRemindersRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/iclosed': {
+      id: '/api/public/hooks/iclosed'
+      path: '/api/public/hooks/iclosed'
+      fullPath: '/api/public/hooks/iclosed'
+      preLoaderRoute: typeof ApiPublicHooksIclosedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -351,6 +371,7 @@ const rootRouteChildren: RootRouteChildren = {
   RoiRoute: RoiRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   DTokenRoute: DTokenRoute,
+  ApiPublicHooksIclosedRoute: ApiPublicHooksIclosedRoute,
   ApiPublicHooksSendRemindersRoute: ApiPublicHooksSendRemindersRoute,
 }
 export const routeTree = rootRouteImport
