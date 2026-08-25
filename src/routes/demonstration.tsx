@@ -41,7 +41,7 @@ const AFTER = [
 ];
 
 function Demonstration() {
-  const { canViewDemonstration, demoMeetingAt, completeDemo } = useJourneyAccess();
+  const { canViewDemonstration, demoMeetingAt, demoUnlockAt, completeDemo } = useJourneyAccess();
   const navigate = useNavigate();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
