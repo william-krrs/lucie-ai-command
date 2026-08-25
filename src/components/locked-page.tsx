@@ -96,7 +96,7 @@ export function LockedPage({
             Aucun rendez-vous détecté
           </div>
           <p className="mt-1 text-xs text-muted-foreground">
-            Réservez un créneau via Calendly depuis la page Recommandation pour
+            Réservez un créneau dans l’agenda depuis la page Recommandation pour
             débloquer automatiquement la suite.
           </p>
         </div>
@@ -106,15 +106,15 @@ export function LockedPage({
         <Button asChild className="min-h-11 rounded-xl">
           <Link
             to="/recommandation"
-            hash="calendly"
+            hash="rdv"
             aria-label={
               isPendingMeeting
                 ? "Revoir mon rendez-vous sur la page Recommandation"
-                : "Ouvrir Calendly pour réserver un rendez-vous"
+                : "Ouvrir l’agenda pour réserver un rendez-vous"
             }
           >
             <CalendarCheck2 className="mr-1.5 h-4 w-4" aria-hidden="true" />
-            {isPendingMeeting ? "Revoir mon rendez-vous" : "Réserver sur Calendly"}
+            {isPendingMeeting ? "Revoir mon rendez-vous" : "Réserver un créneau dans l’agenda"}
             <ArrowRight className="ml-1 h-4 w-4" aria-hidden="true" />
           </Link>
         </Button>

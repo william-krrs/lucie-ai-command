@@ -14,7 +14,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { CALENDLY_URL } from "@/lib/config";
+import { BOOKING_URL } from "@/lib/config";
 import { useBooking, formatBookingDate, getClientRef } from "@/lib/booking-store";
 import { upsertBooking, cancelBooking } from "@/lib/bookings.functions";
 import { createSharedDiagnostic } from "@/lib/share.functions";
@@ -32,7 +32,7 @@ function todayISO() {
   ).padStart(2, "0")}`;
 }
 
-export type CalendlyEmbedProps = {
+export type BookingEmbedProps = {
   url?: string;
   eyebrow?: string;
   title?: string;
@@ -41,14 +41,14 @@ export type CalendlyEmbedProps = {
   bookedDescription?: string;
 };
 
-export function CalendlyEmbed({
+export function BookingEmbed({
   url,
   eyebrow,
   title,
   description,
   bookedTitle,
   bookedDescription,
-}: CalendlyEmbedProps = {}) {
+}: BookingEmbedProps = {}) {
   const { booking, setBooking, clearBooking } = useBooking();
   const [awaitingConfirm, setAwaitingConfirm] = useState(false);
   const [rescheduling, setRescheduling] = useState(false);
@@ -70,9 +70,9 @@ export function CalendlyEmbed({
    * URL brute de l'événement iClosed (servant à la fois de `data-url` pour le
    * widget inline et de lien « ouvrir dans un nouvel onglet »). iClosed récupère
    * automatiquement les paramètres UTM depuis les cookies et le référent, il n'y
-   * donc pas de pré-remplissage d'URL à construire comme avec Calendly.
+   * donc pas de pré-remplissage d'URL à construire comme avec l’ancien outil de réservation.
    */
-  const bookingUrl = url ?? CALENDLY_URL;
+  const bookingUrl = url ?? BOOKING_URL;
 
   const [recapUrl, setRecapUrl] = useState<string | null>(null);
   const [sharing, setSharing] = useState(false);
@@ -244,7 +244,7 @@ export function CalendlyEmbed({
   if (booking && !rescheduling) {
     return (
       <section
-        aria-labelledby="calendly-booked-title"
+        aria-labelledby="booking-booked-title"
         aria-live="polite"
         className="rounded-3xl border border-[oklch(0.65_0.17_155)]/40 bg-[oklch(0.65_0.17_155)]/[0.06] p-6 shadow-[var(--shadow-card)] sm:p-8"
       >
@@ -258,7 +258,7 @@ export function CalendlyEmbed({
                 Rendez-vous confirmé
               </div>
               <h2
-                id="calendly-booked-title"
+                id="booking-booked-title"
                 className="mt-1 text-lg font-semibold tracking-tight text-foreground sm:text-xl"
               >
                 {bookedTitle
@@ -372,7 +372,7 @@ export function CalendlyEmbed({
 
   return (
     <section
-      aria-labelledby="calendly-title"
+      aria-labelledby="booking-title"
       className="rounded-3xl border border-primary/30 bg-primary/[0.04] p-6 shadow-[var(--shadow-card)] sm:p-8"
     >
       <div className="flex min-w-0 items-start gap-3">
@@ -384,7 +384,7 @@ export function CalendlyEmbed({
             {eyebrow ?? "Étape suivante · Réservez votre rendez-vous"}
           </div>
           <h2
-            id="calendly-title"
+            id="booking-title"
             className="mt-1 text-lg font-semibold tracking-tight text-foreground sm:text-xl"
           >
             {title ?? "Choisissez un créneau avec l'équipe Lucie"}

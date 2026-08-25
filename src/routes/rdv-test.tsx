@@ -1,10 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { PageHeader } from "@/components/app-shell";
 import { StepNav } from "@/components/step-nav";
-import { CalendlyEmbed } from "@/components/calendly-embed";
+import { BookingEmbed } from "@/components/booking-embed";
 import { LockedPage } from "@/components/locked-page";
 import { useBooking } from "@/lib/booking-store";
-import { CALENDLY_URL_SETUP } from "@/lib/config";
+import { BOOKING_URL_SETUP } from "@/lib/config";
 
 export const Route = createFileRoute("/rdv-test")({
   head: () => ({
@@ -54,8 +54,8 @@ function RdvTest() {
         title="Réservez votre RDV de mise en service"
         description="Une session dédiée avec l'équipe Lucie pour tester votre assistante en conditions réelles, valider les scénarios et finaliser le paramétrage."
       />
-      <CalendlyEmbed
-        url={CALENDLY_URL_SETUP}
+      <BookingEmbed
+        url={BOOKING_URL_SETUP}
         eyebrow="RDV Test & paramétrage"
         title="Choisissez un créneau pour la mise en service"
         description="Ce rendez-vous a lieu après l'installation. Nous testons ensemble le comportement de Lucie, ajustons les réponses et validons les scénarios critiques."

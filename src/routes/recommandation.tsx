@@ -29,7 +29,7 @@ import { StepNav } from "@/components/step-nav";
 import { RecommendationCard } from "@/components/recommendation-card";
 import { RoiBreakdown } from "@/components/roi-breakdown";
 import { QrCodeCard } from "@/components/qr-code";
-import { CalendlyEmbed } from "@/components/calendly-embed";
+import { BookingEmbed } from "@/components/booking-embed";
 import { formatEUR, useLucie, useMetrics, useRecommendation } from "@/lib/lucie-store";
 import { PLAN_LABELS, PLAN_TAGLINES, PRIORITY_CTA } from "@/lib/recommendation";
 import { createSharedDiagnostic } from "@/lib/share.functions";
@@ -934,8 +934,8 @@ function RecommandationPage() {
         <RecommendationCard showCta={false} />
       </div>
 
-      <div id="calendly" className="scroll-mt-24">
-        <CalendlyEmbed />
+      <div id="rdv" className="scroll-mt-24">
+        <BookingEmbed />
       </div>
 
       <RoiBreakdown />

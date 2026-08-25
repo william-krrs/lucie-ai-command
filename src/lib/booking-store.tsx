@@ -37,11 +37,11 @@ export type BookingUser = {
 };
 
 export type Booking = {
-  /** ISO date (YYYY-MM-DD) du RDV pris via Calendly. */
+  /** ISO date (YYYY-MM-DD) du RDV pris dans l’agenda en ligne. */
   date: string;
   /** Horaire HH:MM lisible optionnel. */
   time?: string;
-  /** Nom d'invitee retourné par Calendly (optionnel). */
+  /** Nom du participant retourné par l’agenda en ligne (optionnel). */
   inviteeName?: string;
   /** Contact associé au RDV (nom + email). */
   user?: BookingUser;

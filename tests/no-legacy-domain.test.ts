@@ -8,7 +8,7 @@ import { join, relative } from "node:path";
  * constantes centralisées de `src/lib/config.ts` (SITE_DOMAIN, CONTACT_EMAIL,
  * EMAIL_FROM, EMAIL_SENDER_DOMAIN…).
  *
- * Pour ajouter une exception légitime (ex. slug Calendly propriétaire),
+ * Pour ajouter une exception légitime (ex. slug de réservation propriétaire),
  * ajouter le chemin + motif dans ALLOWLIST ci-dessous avec un commentaire.
  */
 
@@ -55,7 +55,7 @@ describe("no legacy domain (lucieassistant.fr) in source", () => {
     const lines = src.split("\n");
     lines.forEach((line, i) => {
       if (!/lucieassistant\.fr/i.test(line)) return;
-      // Le slug Calendly `contact-lucieassistant` (sans `.fr`) reste autorisé.
+      // Le slug de réservation `contact-lucieassistant` (sans `.fr`) reste autorisé.
       if (isAllowed(rel, line)) return;
       offenders.push(`${rel}:${i + 1}  ${line.trim()}`);
     });

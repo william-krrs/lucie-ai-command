@@ -35,7 +35,7 @@ const STEPS = [
   { icon: ScanSearch, title: "Analyse", desc: "Audit de vos flux d'appels, de vos scripts et de vos objectifs commerciaux.", duration: "1 à 2 jours" },
   { icon: Settings2, title: "Paramétrage Lucie", desc: "Configuration de sa voix, ses réponses, ses règles de qualification.", duration: "2 à 3 jours" },
   { icon: FlaskConical, title: "Tests", desc: "Simulations d'appels réels pour valider le comportement de Lucie.", duration: "2 jours" },
-  { icon: Calendar, title: "Connexion agenda", desc: "Synchronisation Google / Outlook / Calendly avec règles de disponibilité.", duration: "1 jour" },
+  { icon: Calendar, title: "Connexion agenda", desc: "Synchronisation Google / Outlook / agenda en ligne avec règles de disponibilité.", duration: "1 jour" },
   { icon: PhoneCall, title: "Connexion téléphone", desc: "Portage ou renvoi de votre numéro professionnel, sans coupure.", duration: "1 à 3 jours" },
   { icon: Rocket, title: "Mise en production", desc: "Lucie prend ses premiers appels réels, monitoring 24/7 activé.", duration: "Jour J" },
   { icon: Repeat, title: "Optimisation continue", desc: "Suivi hebdomadaire des performances et ajustements précis.", duration: "En continu" },

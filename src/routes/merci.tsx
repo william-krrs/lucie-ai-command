@@ -19,7 +19,7 @@ import { Button } from "@/components/ui/button";
 import { ExportHistory } from "@/components/export-history";
 import { CrmExport } from "@/components/crm-export";
 import { cn } from "@/lib/utils";
-import { CALENDLY_URL_SETUP, CONTACT_EMAIL } from "@/lib/config";
+import { BOOKING_URL_SETUP, CONTACT_EMAIL } from "@/lib/config";
 
 const planSearchSchema = z.object({
   plan: z.enum(["essential", "pro", "premium"]).optional(),
@@ -341,7 +341,7 @@ function Merci() {
             className="h-11 shrink-0 rounded-xl bg-primary text-primary-foreground shadow-[var(--shadow-elevated)] hover:bg-primary/90"
           >
             <a
-              href={CALENDLY_URL_SETUP}
+              href={BOOKING_URL_SETUP}
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Prendre rendez-vous test et paramétrage avec Lucie (ouvre un nouvel onglet)"

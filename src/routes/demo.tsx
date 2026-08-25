@@ -25,7 +25,7 @@ import { cn } from "@/lib/utils";
 import { CountUp, useReducedMotion } from "@/components/count-up";
 import { LucieMascot } from "@/components/lucie-mascot";
 import { createSharedDiagnostic, sendSharedDiagnosticEmail } from "@/lib/share.functions";
-import { CALENDLY_URL } from "@/lib/config";
+import { BOOKING_URL } from "@/lib/config";
 
 export const Route = createFileRoute("/demo")({
   head: () => ({
@@ -546,7 +546,7 @@ function DemoMode() {
                 ))}
               </ol>
               <a
-                href={CALENDLY_URL}
+                href={BOOKING_URL}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex h-12 items-center gap-2 rounded-xl bg-primary px-7 text-sm font-medium text-primary-foreground shadow-[var(--elev-glow)]"

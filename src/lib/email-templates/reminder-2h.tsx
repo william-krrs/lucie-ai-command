@@ -27,7 +27,7 @@ const Email = ({ name, meetingDateLabel, meetingTime, calendarUrl }: Props) => (
             <Text style={cardValue}>{meetingDateLabel}{meetingTime ? ` · ${meetingTime}` : ""}</Text>
           </Section>
           <Text style={text}>
-            Rejoignez la visio depuis l'invitation Calendly reçue lors de votre réservation.
+            Rejoignez la visio depuis l’invitation reçue lors de votre réservation.
             Prévoyez un environnement calme et un casque pour un son optimal.
           </Text>
           {calendarUrl && (

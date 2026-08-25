@@ -34,7 +34,7 @@ import {
  *  - Les deux divergent :
  *      • Un côté est annulé : on adopte l'état non annulé le plus récent
  *        automatiquement (comportement attendu quand le prospect a annulé
- *        depuis Calendly).
+ *        depuis l’agenda de réservation).
  *      • Sinon on ouvre une boîte de dialogue de résolution manuelle.
  */
 export function BookingSync() {
@@ -220,7 +220,7 @@ export function BookingSync() {
         </div>
 
         <p className="mt-1 text-xs text-muted-foreground">
-          Astuce : le serveur est mis à jour par Calendly et par vos autres
+          Astuce : le serveur est mis à jour par l’agenda de réservation et par vos autres
           appareils. Choisissez « Serveur » sauf si vous venez de modifier le
           RDV sur cet appareil sans connexion.
         </p>
