@@ -39,11 +39,21 @@ function str(flat: Flat, keys: string[]): string | undefined {
 type Action = "booked" | "cancelled" | "rescheduled";
 
 function actionFrom(flat: Flat): Action | null {
-  const raw = (str(flat, ["event", "event_type", "type", "action", "topic"]) ?? "").toLowerCase();
-  if (/cancel/.test(raw)) return "cancelled";
-  if (/reschedul|resched|moved/.test(raw)) return "rescheduled";
-  if (/book|schedul|created|confirm/.test(raw)) return "booked";
-  return null;
+  const normalizedEvent = (str(flat, ["event", "event_type", "type", "action", "topic"]) ?? "")
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+
+  let action: Action | null = null;
+  if (/cancel|annul/.test(normalizedEvent)) action = "cancelled";
+  else if (/reschedul|resched|moved|report/.test(normalizedEvent)) action = "rescheduled";
+  else if (/book|schedul|created|confirm|reserv/.test(normalizedEvent)) action = "booked";
+
+  console.info(
+    `[iclosed webhook] event=${normalizedEvent || "unknown"} action=${action ?? "ignored"}`,
+  );
+  return action;
 }
 
 function splitDateTime(iso: string): { date: string; time: string; at: string } | null {
