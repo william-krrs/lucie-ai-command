@@ -128,10 +128,66 @@ export function BookingEmbed({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bookingUrl, title, widgetKey]);
 
+  // Écoute les messages postés par l'iframe iClosed : dès qu'un créneau est
+  // réservé, on récupère la date/heure (et le contact si fourni) et on confirme
+  // automatiquement le rendez-vous — plus besoin de saisie manuelle.
+  useEffect(() => {
+    function onMessage(event: MessageEvent) {
+      try {
+        if (!/(^|\.)iclosed\.io$/i.test(new URL(event.origin).hostname)) return;
+      } catch {
+        return;
+      }
+      const parsed = parseIclosedBooking(event.data);
+      if (!parsed) return;
+      void applyDetectedBooking(parsed);
+    }
+    window.addEventListener("message", onMessage);
+    return () => window.removeEventListener("message", onMessage);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  async function applyDetectedBooking(detected: DetectedBooking) {
+    const email = detected.email ?? booking?.user?.email;
+    const name = detected.name ?? booking?.user?.name;
+    setBooking({
+      date: detected.date,
+      time: detected.time,
+      inviteeName: name,
+      user: email ? { name, email } : booking?.user,
+      createdAt: new Date().toISOString(),
+    });
+    setAwaitingConfirm(false);
+    setRescheduling(false);
+    setManualDate(detected.date);
+    if (detected.time) setManualTime(detected.time);
+    toast.success("Rendez-vous détecté et enregistré automatiquement.");
+    if (email) {
+      try {
+        const meetingAt = new Date(
+          `${detected.date}T${detected.time || "10:00"}:00`,
+        ).toISOString();
+        await upsertBookingFn({
+          data: {
+            clientRef: getClientRef(),
+            email,
+            name,
+            meetingDate: detected.date,
+            meetingTime: detected.time,
+            meetingAt,
+          },
+        });
+      } catch (e) {
+        console.warn("[booking sync] failed", e);
+      }
+    }
+  }
+
   function retryWidget() {
     setWidgetKey((k) => k + 1);
     toast.info("Nouvelle tentative de chargement du calendrier…");
   }
+
 
   async function generateRecap() {
     if (!booking || sharing) return;
