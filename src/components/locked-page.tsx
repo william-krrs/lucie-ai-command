@@ -22,7 +22,8 @@ function useCountdown(targetIso: string | null | undefined) {
   const seconds = Math.floor((diff % 60000) / 1000);
   if (days > 0) return `${days} j ${hours} h ${minutes} min`;
   if (hours > 0) return `${hours} h ${minutes} min`;
-  return `${minutes} min ${String(seconds).padStart(2, "0")} s`;
+  if (minutes > 0) return `${minutes} min ${String(seconds).padStart(2, "0")} s`;
+  return `${seconds} s`;
 }
 
 export function LockedPage({
