@@ -15,6 +15,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { BOOKING_URL } from "@/lib/config";
+import { useAdminMode } from "@/lib/admin-mode";
+
 import { useBooking, formatBookingDate, getClientRef } from "@/lib/booking-store";
 import { upsertBooking, cancelBooking } from "@/lib/bookings.functions";
 import { createSharedDiagnostic } from "@/lib/share.functions";
