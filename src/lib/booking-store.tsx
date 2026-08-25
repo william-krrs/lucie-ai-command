@@ -352,11 +352,11 @@ export function BookingProvider({ children }: { children: ReactNode }) {
 
   const value = useMemo<Ctx>(() => {
     const demo = bookings[DEFAULT_BOOKING_TYPE] ?? null;
-    const active = !!demo && demo.status !== "cancelled";
+    // Seul un RDV Démo (booking_type = 'r2_demo') avec status_norm = 'confirmed'
+    // débloque la suite du parcours. Le mode aperçu interne permet à l'équipe
+    // Lucie de revoir chaque étape sans créer de faux rendez-vous prospect.
+    const active = !!demo && demo.status !== "cancelled" && demo.statusNorm === "confirmed";
     const today = todayISO();
-    // Seul un RDV Démo confirmé (r2_demo) débloque la suite du parcours.
-    // Le mode aperçu interne permet à l'équipe Lucie de revoir chaque étape
-    // sans créer de faux rendez-vous prospect.
     const isUnlocked = UNLOCK_ALL_PAGES || active || adminPreview;
     const isPendingMeeting = active && demo!.date > today;
     return {
