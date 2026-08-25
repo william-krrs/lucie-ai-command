@@ -455,6 +455,7 @@ export function BookingEmbed({
             meetingDate: manualDate,
             meetingTime: manualTime || undefined,
             meetingAt,
+            bookingType,
           },
         });
       } catch (e) {
