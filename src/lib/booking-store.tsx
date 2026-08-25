@@ -8,6 +8,7 @@ import {
   type Context,
   type ReactNode,
 } from "react";
+import { readAdminMode } from "@/lib/admin-mode";
 
 const STORAGE_KEY = "lucie:booking:v2";
 const LEGACY_KEY = "lucie:booking:v1";
@@ -185,8 +186,10 @@ function bookingFromIclosedConfirmation(event: MessageEvent): Omit<Booking, "sta
 
 export function BookingProvider({ children }: { children: ReactNode }) {
   const [booking, setBookingState] = useState<Booking | null>(null);
+  const [adminPreview, setAdminPreview] = useState(false);
 
   useEffect(() => {
+    setAdminPreview(readAdminMode());
     setBookingState(read());
     const onStorage = (e: StorageEvent) => {
       if (e.key === STORAGE_KEY || e.key === LEGACY_KEY) setBookingState(read());
@@ -262,10 +265,12 @@ export function BookingProvider({ children }: { children: ReactNode }) {
     const today = todayISO();
     // A confirmed future appointment unlocks the journey immediately. The
     // previous date gate kept legitimate prospects blocked until appointment day.
-    const isUnlocked = active;
+    // Internal preview mode lets the Lucie team review every stage without
+    // creating a fake customer booking. Prospect access remains unchanged.
+    const isUnlocked = active || adminPreview;
     const isPendingMeeting = active && booking.date > today;
     return { booking, setBooking, updateBooking, clearBooking, isUnlocked, isPendingMeeting };
-  }, [booking, setBooking, updateBooking, clearBooking]);
+  }, [adminPreview, booking, setBooking, updateBooking, clearBooking]);
 
   return <BookingCtx.Provider value={value}>{children}</BookingCtx.Provider>;
 }
