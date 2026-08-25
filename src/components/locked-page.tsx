@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { Lock, CalendarCheck2, ArrowRight, CalendarPlus, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useBooking, formatBookingDate } from "@/lib/booking-store";
+import type { BookingStatusNorm } from "@/lib/booking-types";
 
 function useCountdown(targetIso: string | null | undefined) {
   const [now, setNow] = useState(() => Date.now());
@@ -32,6 +32,7 @@ export function LockedPage({
   step,
   meetingAt,
   unlockAt,
+  bookingStatus,
   unlockNote,
 }: {
   title: string;
@@ -42,10 +43,11 @@ export function LockedPage({
   meetingAt?: string | null;
   /** Instant exact de déverrouillage (ISO) : base du compte à rebours. */
   unlockAt?: string | null;
+  /** Statut du RDV issu exclusivement du serveur. */
+  bookingStatus?: BookingStatusNorm | null;
   /** Note affichée sous le compte à rebours. */
   unlockNote?: string;
 }) {
-  const { booking, isPendingMeeting } = useBooking();
   const countdown = useCountdown(unlockAt ?? meetingAt ?? null);
 
   const meetingLabel = (() => {
@@ -61,13 +63,10 @@ export function LockedPage({
         }).format(d);
       }
     }
-    if (booking) {
-      return `${formatBookingDate(booking.date)}${booking.time ? ` · ${booking.time}` : ""}`;
-    }
     return null;
   })();
 
-  const hasMeeting = Boolean(meetingAt) || (isPendingMeeting && !!booking);
+  const hasMeeting = bookingStatus === "confirmed" && Boolean(meetingAt);
 
   return (
     <section
@@ -95,7 +94,7 @@ export function LockedPage({
       </h1>
       <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
         {description ??
-          (isPendingMeeting
+          (hasMeeting
             ? "Cette page se débloquera automatiquement le jour de votre rendez-vous avec l'équipe Lucie."
             : "Réservez d'abord un créneau avec l'équipe Lucie pour débloquer cette étape.")}
       </p>
@@ -146,13 +145,13 @@ export function LockedPage({
             to="/recommandation"
             hash="rdv"
             aria-label={
-              isPendingMeeting
+              hasMeeting
                 ? "Revoir mon rendez-vous sur la page Recommandation"
                 : "Ouvrir l’agenda pour réserver un rendez-vous"
             }
           >
             <CalendarCheck2 className="mr-1.5 h-4 w-4" aria-hidden="true" />
-            {isPendingMeeting ? "Reprogrammer mon rendez-vous" : "Réserver un créneau dans l’agenda"}
+            {hasMeeting ? "Reprogrammer mon rendez-vous" : "Réserver un créneau dans l’agenda"}
             <ArrowRight className="ml-1 h-4 w-4" aria-hidden="true" />
           </Link>
         </Button>

@@ -3,7 +3,6 @@ import { Link } from "@tanstack/react-router";
 import { Check, CircleDashed, ClipboardList, CalendarCheck2, FileText, Rocket, Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLucie } from "@/lib/lucie-store";
-import { useBooking } from "@/lib/booking-store";
 import { useJourneyAccess } from "@/lib/journey-access";
 
 type Step = {
@@ -31,7 +30,6 @@ function readConfigurationDone(): boolean {
 
 export function SidebarProgress({ onNavigate }: { onNavigate?: () => void }) {
   const { state } = useLucie();
-  const { booking, isPendingMeeting } = useBooking();
   const access = useJourneyAccess();
   const [configurationDone, setConfigurationDone] = useState(false);
 
@@ -52,7 +50,7 @@ export function SidebarProgress({ onNavigate }: { onNavigate?: () => void }) {
   }, []);
 
   const diagnosticDone = (state.activity ?? "").trim().length > 0;
-  const rdvDone = !!booking;
+  const rdvDone = access.demoBookingStatusNorm === "confirmed";
   // Source de vérité serveur : la configuration est "faite" dès qu'une
   // soumission existe ; l'installation est "faite" quand elle est prête au test.
   const configDone = access.state?.configurationSubmitted ?? configurationDone;
@@ -73,7 +71,7 @@ export function SidebarProgress({ onNavigate }: { onNavigate?: () => void }) {
       to: "/recommandation",
       icon: CalendarCheck2,
       done: rdvDone,
-      hint: rdvDone ? (isPendingMeeting ? "Confirmé" : "Passé") : "À planifier",
+      hint: rdvDone ? "Confirmé" : "À planifier",
     },
     {
       key: "configuration",

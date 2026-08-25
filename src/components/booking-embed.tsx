@@ -23,6 +23,7 @@ import { useBooking, formatBookingDate, getClientRef, type Booking } from "@/lib
 import { upsertBooking, cancelBooking } from "@/lib/bookings.functions";
 import { createSharedDiagnostic } from "@/lib/share.functions";
 import { useLucie, useMetrics, useRecommendation } from "@/lib/lucie-store";
+import { useJourneyAccess } from "@/lib/journey-access";
 import { addShareHistoryEntry } from "@/lib/share-history";
 import { toast } from "sonner";
 
@@ -149,6 +150,12 @@ export type BookingEmbedProps = {
   description?: string;
   bookedTitle?: string;
   bookedDescription?: string;
+  /** État R2 serveur faisant autorité sur le cache local. */
+  authoritativeR2?: {
+    statusNorm: Booking["statusNorm"] | null;
+    meetingAt: string | null;
+    loading: boolean;
+  };
 };
 
 export function BookingEmbed({
@@ -159,9 +166,38 @@ export function BookingEmbed({
   description,
   bookedTitle,
   bookedDescription,
+  authoritativeR2,
 }: BookingEmbedProps = {}) {
   const { getBookingFor, setBookingFor, clearBookingFor } = useBooking();
-  const booking = getBookingFor(bookingType);
+  const cachedBooking = getBookingFor(bookingType);
+  const booking = (() => {
+    if (!authoritativeR2) return cachedBooking;
+    if (authoritativeR2.loading || authoritativeR2.statusNorm !== "confirmed" || !authoritativeR2.meetingAt) {
+      return null;
+    }
+    const date = new Date(authoritativeR2.meetingAt);
+    if (Number.isNaN(date.getTime())) return null;
+    return {
+      ...(cachedBooking ?? {}),
+      date: new Intl.DateTimeFormat("fr-CA", {
+        timeZone: "Europe/Paris",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+      }).format(date),
+      time: new Intl.DateTimeFormat("fr-FR", {
+        timeZone: "Europe/Paris",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+      }).format(date),
+      status: "pending" as const,
+      statusNorm: "confirmed" as const,
+      bookingType,
+      createdAt: cachedBooking?.createdAt ?? authoritativeR2.meetingAt,
+      updatedAt: cachedBooking?.updatedAt ?? authoritativeR2.meetingAt,
+    } satisfies Booking;
+  })();
   const setBooking = (b: Parameters<typeof setBookingFor>[1]) => setBookingFor(bookingType, b);
   const clearBooking = () => clearBookingFor(bookingType);
   const isAdmin = useAdminMode();
@@ -181,6 +217,7 @@ export function BookingEmbed({
   const { state } = useLucie();
   const metrics = useMetrics();
   const recommendation = useRecommendation();
+  const { refresh: refreshJourney } = useJourneyAccess();
 
   /**
    * URL brute de l'événement iClosed (servant à la fois de `data-url` pour le
@@ -348,6 +385,7 @@ export function BookingEmbed({
             bookingType,
           },
         });
+        await refreshJourney();
       } catch (e) {
         console.warn("[booking sync] failed", e);
       }
@@ -462,6 +500,7 @@ export function BookingEmbed({
             bookingType,
           },
         });
+        await refreshJourney();
       } catch (e) {
         console.warn("[booking sync] failed", e);
       }
@@ -523,6 +562,7 @@ export function BookingEmbed({
                 setRecapUrl(null);
                 try {
                   await cancelBookingFn({ data: { clientRef: getClientRef(), bookingType } });
+                  await refreshJourney();
                 } catch {
                   /* silent */
                 }

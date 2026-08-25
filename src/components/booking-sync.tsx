@@ -111,14 +111,8 @@ export function BookingSync() {
           return;
         }
         if (serverCancelled && !localCancelled) {
-          const localTime = Date.parse(booking.updatedAt);
-          const serverTime = Date.parse(server.updatedAt);
-          if (Number.isFinite(localTime) && localTime >= serverTime) {
-            await pushLocal(booking);
-          } else {
-            clearBooking();
-            toast.info("Le RDV a été annulé côté serveur — synchronisé.");
-          }
+          clearBooking();
+          toast.info("Le RDV a été annulé côté serveur — synchronisé.");
           return;
         }
 

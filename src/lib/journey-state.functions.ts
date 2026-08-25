@@ -11,6 +11,8 @@ export type JourneyStateDTO = {
   installationStatus: InstallationStatus;
   /** true si un RDV Démo (r2_demo) est confirmé côté base. */
   demoBookingConfirmed: boolean;
+  /** Statut normalisé du dernier RDV Démo connu côté serveur. */
+  demoBookingStatusNorm: "pending" | "confirmed" | "cancelled" | "rescheduled" | "completed" | "no_show" | null;
   /** meeting_at (ISO/timestamptz) du RDV Démo confirmé, sinon null. */
   demoMeetingAt: string | null;
   /** Ouverture temporelle : meeting_at - 15 min (ISO), sinon null. */
@@ -27,6 +29,7 @@ const EMPTY: JourneyStateDTO = {
   paymentStatus: "unpaid",
   installationStatus: "not_started",
   demoBookingConfirmed: false,
+  demoBookingStatusNorm: null,
   demoMeetingAt: null,
   demoUnlockAt: null,
   configurationSubmitted: false,
@@ -42,7 +45,7 @@ export const getJourneyState = createServerFn({ method: "GET" })
   .handler(async ({ context }): Promise<JourneyStateDTO> => {
     const { supabase, userId } = context;
 
-    const [stateRes, bookingRes, prepRes] = await Promise.all([
+    const [stateRes, confirmedBookingRes, latestBookingRes, prepRes] = await Promise.all([
       supabase
         .from("journey_state")
         .select("demo_completed_at, payment_status, installation_status")
@@ -56,16 +59,28 @@ export const getJourneyState = createServerFn({ method: "GET" })
         .eq("status_norm", "confirmed")
         .order("meeting_at", { ascending: true })
         .limit(1),
+      supabase
+        .from("bookings")
+        .select("status_norm")
+        .eq("user_id", userId)
+        .eq("booking_type", "r2_demo")
+        .order("updated_at", { ascending: false })
+        .limit(1),
       supabase.from("preparation_submissions").select("id").eq("user_id", userId).limit(1),
     ]);
 
     if (stateRes.error) console.error("[getJourneyState] state", stateRes.error);
-    if (bookingRes.error) console.error("[getJourneyState] booking", bookingRes.error);
+    if (confirmedBookingRes.error) console.error("[getJourneyState] confirmed booking", confirmedBookingRes.error);
+    if (latestBookingRes.error) console.error("[getJourneyState] latest booking", latestBookingRes.error);
     if (prepRes.error) console.error("[getJourneyState] prep", prepRes.error);
 
     const row = stateRes.data;
     // meeting_at est un timestamptz : la comparaison se fait en UTC côté serveur.
-    const meetingAtRaw = bookingRes.data?.[0]?.meeting_at ?? null;
+    const confirmedBooking = confirmedBookingRes.data?.[0] ?? null;
+    const bookingStatus = confirmedBooking
+      ? "confirmed"
+      : latestBookingRes.data?.[0]?.status_norm ?? null;
+    const meetingAtRaw = confirmedBooking?.meeting_at ?? null;
     const meetingAt = meetingAtRaw ? new Date(meetingAtRaw) : null;
     const unlockAt = meetingAt ? new Date(meetingAt.getTime() - DEMO_UNLOCK_LEAD_MS) : null;
 
@@ -77,6 +92,7 @@ export const getJourneyState = createServerFn({ method: "GET" })
         (row?.installation_status as InstallationStatus | undefined) ?? "not_started",
       // Confirmé ET fenêtre temporelle atteinte (meeting_at - 15 min <= now).
       demoBookingConfirmed: !!unlockAt && unlockAt.getTime() <= Date.now(),
+      demoBookingStatusNorm: bookingStatus,
       demoMeetingAt: meetingAt ? meetingAt.toISOString() : null,
       demoUnlockAt: unlockAt ? unlockAt.toISOString() : null,
       configurationSubmitted: (prepRes.data?.length ?? 0) > 0,

@@ -41,7 +41,13 @@ const AFTER = [
 ];
 
 function Demonstration() {
-  const { canViewDemonstration, demoMeetingAt, demoUnlockAt, completeDemo } = useJourneyAccess();
+  const {
+    canViewDemonstration,
+    demoMeetingAt,
+    demoUnlockAt,
+    demoBookingStatusNorm,
+    completeDemo,
+  } = useJourneyAccess();
   const navigate = useNavigate();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -66,6 +72,7 @@ function Demonstration() {
         step="Démonstration"
         meetingAt={demoMeetingAt}
         unlockAt={demoUnlockAt}
+        bookingStatus={demoBookingStatusNorm}
         unlockNote="Votre démonstration sera accessible 15 minutes avant notre rendez-vous."
         description={
           demoMeetingAt
