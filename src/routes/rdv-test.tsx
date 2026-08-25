@@ -3,7 +3,7 @@ import { PageHeader } from "@/components/app-shell";
 import { StepNav } from "@/components/step-nav";
 import { BookingEmbed } from "@/components/booking-embed";
 import { LockedPage } from "@/components/locked-page";
-import { useBooking } from "@/lib/booking-store";
+import { useJourneyAccess } from "@/lib/journey-access";
 import { BOOKING_URL_SETUP } from "@/lib/config";
 
 export const Route = createFileRoute("/rdv-test")({
@@ -37,13 +37,13 @@ export const Route = createFileRoute("/rdv-test")({
 });
 
 function RdvTest() {
-  const { isUnlocked } = useBooking();
-  if (!isUnlocked) {
+  const { canBookSetupTest } = useJourneyAccess();
+  if (!canBookSetupTest) {
     return (
       <LockedPage
         title="RDV Test & paramétrage verrouillé"
         step="RDV Test & paramétrage"
-        description="Ce rendez-vous se débloque après votre RDV de démarrage et une fois l'installation lancée."
+        description="Ce rendez-vous se débloque dès que votre installation est prête pour la phase de test."
       />
     );
   }

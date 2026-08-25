@@ -19,7 +19,7 @@ import { StepNav } from "@/components/step-nav";
 import { useRecommendation } from "@/lib/lucie-store";
 import { PLAN_LABELS, PLAN_TAGLINES, TIER_LABELS, PRIORITY_CTA } from "@/lib/recommendation";
 import { LockedPage } from "@/components/locked-page";
-import { useBooking } from "@/lib/booking-store";
+import { useJourneyAccess } from "@/lib/journey-access";
 import { BOOKING_URL_SETUP } from "@/lib/config";
 import { useUniqueModule, MODULE_IDS } from "@/lib/module-registry";
 
@@ -135,7 +135,7 @@ const COMPARISON: { label: string; values: Record<PlanKey, string | boolean> }[]
 function Offres() {
   useUniqueModule(MODULE_IDS.paymentPlans);
   const rec = useRecommendation();
-  const { isUnlocked } = useBooking();
+  const { canViewOffers } = useJourneyAccess();
   const recommendedPlan: PlanKey = rec.plan ?? "pro";
   const [selected, setSelected] = useState<PlanKey>(recommendedPlan);
 
@@ -144,12 +144,12 @@ function Offres() {
     setSelected(recommendedPlan);
   }, [recommendedPlan]);
 
-  if (!isUnlocked) {
+  if (!canViewOffers) {
     return (
       <LockedPage
         title="Offres verrouillées"
         step="Offres & pricing"
-        description="Vous pourrez choisir votre formule le jour de votre rendez-vous. En attendant, la formule recommandée reste consultable dans le diagnostic final."
+        description="Les offres se débloquent une fois votre démonstration terminée. Rendez-vous sur la page Démonstration et validez « Continuer vers ma recommandation »."
       />
     );
   }

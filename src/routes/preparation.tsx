@@ -3,7 +3,7 @@ import { z } from "zod";
 import { PageHeader } from "@/components/app-shell";
 import { PreparationForm } from "@/components/preparation-form";
 import { LockedPage } from "@/components/locked-page";
-import { useBooking } from "@/lib/booking-store";
+import { useJourneyAccess } from "@/lib/journey-access";
 
 const searchSchema = z.object({
   plan: z.enum(["essential", "pro", "premium"]).optional(),
@@ -52,15 +52,15 @@ export const Route = createFileRoute("/preparation")({
 
 function Preparation() {
   const { plan } = Route.useSearch();
-  const { isUnlocked } = useBooking();
+  const { canConfigure } = useJourneyAccess();
   const planLabel = plan ? PLAN_LABELS[plan] : "Non précisée";
 
-  if (!isUnlocked) {
+  if (!canConfigure) {
     return (
       <LockedPage
         title="Configuration verrouillée"
         step="Configuration personnalisée"
-        description="La configuration personnalisée se débloque le jour de votre rendez-vous, après avoir choisi votre formule."
+        description="La configuration personnalisée se débloque dès que votre paiement est confirmé par notre système."
       />
     );
   }

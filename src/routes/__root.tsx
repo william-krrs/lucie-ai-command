@@ -14,6 +14,7 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { LucieProvider } from "@/lib/lucie-store";
 import { BookingProvider } from "@/lib/booking-store";
+import { JourneyAccessProvider } from "@/lib/journey-access";
 import { AppShell } from "@/components/app-shell";
 import { AnonAuthBootstrap } from "@/components/anon-auth-bootstrap";
 
@@ -177,6 +178,7 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <LucieProvider>
         <BookingProvider>
+          <JourneyAccessProvider>
           <AnonAuthBootstrap />
           {isStandalone ? (
             <Outlet />
@@ -185,6 +187,7 @@ function RootComponent() {
               <Outlet />
             </AppShell>
           )}
+          </JourneyAccessProvider>
         </BookingProvider>
       </LucieProvider>
     </QueryClientProvider>
