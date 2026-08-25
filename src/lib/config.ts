@@ -8,7 +8,7 @@
  * verrouillées et affichent un écran d'audit global. Passer à false pour
  * réactiver l'application normalement.
  */
-export const AUDIT_MODE = true;
+export const AUDIT_MODE = false;
 
 /** Nombre d'entreprises affiché dans le badge social proof de la page d'accueil. */
 export const SOCIAL_PROOF_COMPANY_COUNT = 25;
