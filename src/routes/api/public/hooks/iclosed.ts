@@ -460,7 +460,7 @@ async function handle(request: Request): Promise<Response> {
     return Response.json({ ok: true, action, matched: true });
   }
 
-  const slot = start ? splitDateTime(start) : null;
+  const slot = start ? splitDateTime(start, timezone) : null;
   if (!slot) return new Response("Missing start_time", { status: 400 });
 
   const common = {
