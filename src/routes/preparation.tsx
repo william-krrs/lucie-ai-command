@@ -61,9 +61,15 @@ function Preparation() {
         title="Configuration verrouillée"
         step="Configuration personnalisée"
         description="La configuration personnalisée se débloque dès que votre paiement est confirmé par notre système."
+        waitingFor="step"
+        waitingTitle="Paiement en attente de confirmation"
+        waitingText="Dès que votre paiement est confirmé, le formulaire de configuration s'ouvre automatiquement sur cette page."
+        backTo="/offres"
+        backLabel="Revoir les offres"
       />
     );
   }
+
 
   return (
     <div className="space-y-8">
