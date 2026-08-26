@@ -5,6 +5,7 @@ import {
   isBookingType,
   type BookingType,
 } from "@/lib/booking-types";
+import { verifyBookingToken } from "@/lib/booking-token.server";
 
 /**
  * Webhook iClosed direct (sans Zapier).
@@ -169,6 +170,47 @@ function verifyToken(received: string | null, secret: string): boolean {
   return timingSafeEqual(a, b);
 }
 
+/**
+ * Résout le `user_id` propriétaire d'un RDV à partir du token signé
+ * `utm_booking_token` présent dans l'URL iClosed. Le token ne contient qu'un
+ * `sid` opaque : la correspondance `sid -> user_id/client_ref/booking_type` est
+ * lue côté serveur dans `booking_correlations` (table non lisible par le client).
+ * Renvoie `null` si le token est absent, invalide, expiré ou introuvable.
+ */
+async function resolveFromBookingToken(
+  url: URL,
+  supabaseAdmin: Awaited<typeof import("@/integrations/supabase/client.server")>["supabaseAdmin"],
+): Promise<{ userId: string; clientRef: string; bookingType: BookingType } | null> {
+  const rawToken = url.searchParams.get("utm_booking_token");
+  if (!rawToken) return null;
+  const verified = verifyBookingToken(rawToken);
+  if (!verified) {
+    console.info("[iclosed webhook] booking token present but invalid");
+    return null;
+  }
+  const { data, error } = await supabaseAdmin
+    .from("booking_correlations")
+    .select("user_id, client_ref, booking_type, expires_at")
+    .eq("sid", verified.sid)
+    .maybeSingle();
+  if (error || !data) {
+    console.info("[iclosed webhook] correlation sid not found", { sid: verified.sid });
+    return null;
+  }
+  // Double vérification d'expiration côté base.
+  const expiresAt = new Date(data.expires_at as string).getTime();
+  if (Number.isNaN(expiresAt) || expiresAt < Date.now()) {
+    console.info("[iclosed webhook] correlation sid expired", { sid: verified.sid });
+    return null;
+  }
+  if (!isBookingType(data.booking_type as string)) return null;
+  return {
+    userId: data.user_id as string,
+    clientRef: data.client_ref as string,
+    bookingType: data.booking_type as BookingType,
+  };
+}
+
 async function handle(request: Request): Promise<Response> {
   const secret = process.env["ICLOSED_WEBHOOK_SECRET"];
   if (!secret) {
@@ -225,6 +267,15 @@ async function handle(request: Request): Promise<Response> {
 
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
+  // --- Résolution prioritaire : token signé utm_booking_token ---
+  // Source de vérité pour le user_id propriétaire du RDV. Ne fait jamais
+  // confiance à un user_id venant du payload. Les valeurs du token (client_ref,
+  // booking_type) priment sur celles du payload car elles sont signées serveur.
+  const correlation = await resolveFromBookingToken(url, supabaseAdmin);
+  const userId = correlation?.userId ?? null;
+  const effectiveClientRef = correlation?.clientRef ?? clientRef;
+  const effectiveBookingType = correlation?.bookingType ?? bookingType;
+
   // --- Corrélation : event_id -> utm_client_ref -> email ---
   let rowId: string | null = null;
   if (eventId) {
@@ -235,12 +286,12 @@ async function handle(request: Request): Promise<Response> {
       .maybeSingle();
     rowId = data?.id ?? null;
   }
-  if (!rowId && clientRef) {
+  if (!rowId && effectiveClientRef) {
     const { data } = await supabaseAdmin
       .from("bookings")
       .select("id")
-      .eq("client_ref", clientRef)
-      .eq("booking_type", bookingType)
+      .eq("client_ref", effectiveClientRef)
+      .eq("booking_type", effectiveBookingType)
       .maybeSingle();
     rowId = data?.id ?? null;
   }
@@ -249,7 +300,7 @@ async function handle(request: Request): Promise<Response> {
       .from("bookings")
       .select("id")
       .eq("email", email)
-      .eq("booking_type", bookingType)
+      .eq("booking_type", effectiveBookingType)
       .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle();
@@ -278,7 +329,7 @@ async function handle(request: Request): Promise<Response> {
   if (!slot) return new Response("Missing start_time", { status: 400 });
 
   const common = {
-    booking_type: bookingType,
+    booking_type: effectiveBookingType,
     email: email ?? "unknown@unknown.invalid",
     name: name ?? null,
     phone: phone ?? null,
@@ -295,6 +346,7 @@ async function handle(request: Request): Promise<Response> {
     // Un nouveau créneau doit redéclencher les rappels.
     reminder_24h_sent_at: null,
     reminder_2h_sent_at: null,
+    user_id: userId,
   };
 
   if (rowId) {
@@ -303,21 +355,20 @@ async function handle(request: Request): Promise<Response> {
       console.error("[iclosed webhook] update failed", error.message);
       return new Response("Update failed", { status: 500 });
     }
-    return Response.json({ ok: true, action, matched: true });
+    return Response.json({ ok: true, action, matched: true, userResolved: !!userId });
   }
 
-  // Aucune correspondance : on crée une ligne orpheline rattachable plus tard
-  // par e-mail. client_ref est généré pour respecter la contrainte d'unicité.
+  // Aucune correspondance : on crée une ligne rattachée au user_id résolu via
+  // le token signé (si présent), sinon orpheline rattachable plus tard par e-mail.
   const { error } = await supabaseAdmin.from("bookings").insert({
     ...common,
-    client_ref: clientRef ?? crypto.randomUUID(),
-    user_id: null,
+    client_ref: effectiveClientRef ?? crypto.randomUUID(),
   });
   if (error) {
     console.error("[iclosed webhook] insert failed", error.message);
     return new Response("Insert failed", { status: 500 });
   }
-  return Response.json({ ok: true, action, matched: false, created: true });
+  return Response.json({ ok: true, action, matched: false, created: true, userResolved: !!userId });
 }
 
 export const Route = createFileRoute("/api/public/hooks/iclosed")({
