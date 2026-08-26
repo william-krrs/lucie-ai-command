@@ -26,6 +26,15 @@ function useCountdown(targetIso: string | null | undefined) {
   return `${seconds} s`;
 }
 
+type LockedRoute =
+  | "/recommandation"
+  | "/demonstration"
+  | "/offres"
+  | "/merci"
+  | "/preparation"
+  | "/installation"
+  | "/diagnostic";
+
 export function LockedPage({
   title,
   description,
@@ -34,6 +43,11 @@ export function LockedPage({
   unlockAt,
   bookingStatus,
   unlockNote,
+  waitingFor = "r2_booking",
+  waitingTitle,
+  waitingText,
+  backTo = "/diagnostic",
+  backLabel = "Revenir au diagnostic",
 }: {
   title: string;
   description?: string;
@@ -47,7 +61,17 @@ export function LockedPage({
   bookingStatus?: BookingStatusNorm | null;
   /** Note affichée sous le compte à rebours. */
   unlockNote?: string;
+  /** Condition attendue pour déverrouiller l'étape. */
+  waitingFor?: "r2_booking" | "step";
+  /** Titre du bloc d'attente contextuel (waitingFor="step"). */
+  waitingTitle?: string;
+  /** Texte du bloc d'attente contextuel (waitingFor="step"). */
+  waitingText?: string;
+  /** Route de repli (étape précédente réelle du parcours). */
+  backTo?: LockedRoute;
+  backLabel?: string;
 }) {
+
   const countdown = useCountdown(unlockAt ?? meetingAt ?? null);
 
   const meetingLabel = (() => {
@@ -66,7 +90,8 @@ export function LockedPage({
     return null;
   })();
 
-  const hasMeeting = bookingStatus === "confirmed" && Boolean(meetingAt);
+  const isR2 = waitingFor === "r2_booking";
+  const hasMeeting = isR2 && bookingStatus === "confirmed" && Boolean(meetingAt);
 
   return (
     <section
@@ -96,7 +121,9 @@ export function LockedPage({
         {description ??
           (hasMeeting
             ? "Cette page se débloquera automatiquement le jour de votre rendez-vous avec l'équipe Lucie."
-            : "Réservez d'abord un créneau avec l'équipe Lucie pour débloquer cette étape.")}
+            : isR2
+              ? "Réservez d'abord un créneau avec l'équipe Lucie pour débloquer cette étape."
+              : "Cette étape se débloquera automatiquement dès que l'étape précédente du parcours sera validée.")}
       </p>
 
       {hasMeeting ? (
@@ -126,7 +153,7 @@ export function LockedPage({
                 : "Revenez ce jour-là pour débloquer la suite du parcours.")}
           </p>
         </div>
-      ) : (
+      ) : isR2 ? (
         <div className="mx-auto mt-6 max-w-md rounded-2xl border border-dashed border-border bg-muted/40 p-4 text-left">
           <div className="flex items-center gap-2 text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
             <CalendarPlus className="h-4 w-4" aria-hidden="true" />
@@ -137,27 +164,50 @@ export function LockedPage({
             débloquer automatiquement la suite.
           </p>
         </div>
+      ) : (
+        <div className="mx-auto mt-6 max-w-md rounded-2xl border border-dashed border-border bg-muted/40 p-4 text-left">
+          <div className="flex items-center gap-2 text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
+            <Clock className="h-4 w-4" aria-hidden="true" />
+            {waitingTitle ?? "Étape précédente en attente"}
+          </div>
+          <p className="mt-1 text-xs text-muted-foreground">
+            {waitingText ??
+              "Terminez l'étape précédente du parcours : cette page se débloquera automatiquement."}
+          </p>
+        </div>
       )}
 
       <div className="mt-6 flex flex-wrap justify-center gap-2">
-        <Button asChild className="min-h-11 rounded-xl">
-          <Link
-            to="/recommandation"
-            hash="rdv"
-            aria-label={
-              hasMeeting
-                ? "Revoir mon rendez-vous sur la page Recommandation"
-                : "Ouvrir l’agenda pour réserver un rendez-vous"
-            }
-          >
-            <CalendarCheck2 className="mr-1.5 h-4 w-4" aria-hidden="true" />
-            {hasMeeting ? "Reprogrammer mon rendez-vous" : "Réserver un créneau dans l’agenda"}
-            <ArrowRight className="ml-1 h-4 w-4" aria-hidden="true" />
-          </Link>
-        </Button>
-        <Button asChild variant="outline" className="min-h-11 rounded-xl">
-          <Link to="/diagnostic">Revenir au diagnostic</Link>
-        </Button>
+        {isR2 ? (
+          <Button asChild className="min-h-11 rounded-xl">
+            <Link
+              to="/recommandation"
+              hash="rdv"
+              aria-label={
+                hasMeeting
+                  ? "Revoir mon rendez-vous sur la page Recommandation"
+                  : "Ouvrir l’agenda pour réserver un rendez-vous"
+              }
+            >
+              <CalendarCheck2 className="mr-1.5 h-4 w-4" aria-hidden="true" />
+              {hasMeeting ? "Reprogrammer mon rendez-vous" : "Réserver un créneau dans l’agenda"}
+              <ArrowRight className="ml-1 h-4 w-4" aria-hidden="true" />
+            </Link>
+          </Button>
+        ) : (
+          <Button asChild className="min-h-11 rounded-xl">
+            <Link to={backTo} aria-label={backLabel}>
+              {backLabel}
+              <ArrowRight className="ml-1 h-4 w-4" aria-hidden="true" />
+            </Link>
+          </Button>
+        )}
+        {isR2 && (
+          <Button asChild variant="outline" className="min-h-11 rounded-xl">
+            <Link to="/diagnostic">Revenir au diagnostic</Link>
+          </Button>
+        )}
+
       </div>
     </section>
   );

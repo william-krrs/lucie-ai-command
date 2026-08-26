@@ -31,7 +31,7 @@ function Roi() {
   return (
     <div className="space-y-10">
       <PageHeader
-        eyebrow="Étape 02 · ROI"
+        eyebrow="Étape 03 · ROI"
         title="Calculateur de ROI"
         description="Ajustez les curseurs pour projeter le chiffre d'affaires que vous récupérez avec Lucie."
       />

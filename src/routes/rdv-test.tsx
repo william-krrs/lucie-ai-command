@@ -44,13 +44,19 @@ function RdvTest() {
         title="RDV Test & paramétrage verrouillé"
         step="RDV Test & paramétrage"
         description="Ce rendez-vous se débloque dès que votre installation est prête pour la phase de test."
+        waitingFor="step"
+        waitingTitle="Installation en cours"
+        waitingText="Dès que votre installation passe au statut « prête pour le test », le calendrier de mise en service s'ouvre automatiquement ici."
+        backTo="/installation"
+        backLabel="Suivre mon installation"
       />
+
     );
   }
   return (
     <div className="space-y-10">
       <PageHeader
-        eyebrow="Étape finale · Test & paramétrage"
+        eyebrow="Étape 10 · Test & paramétrage"
         title="Réservez votre RDV de mise en service"
         description="Une session dédiée avec l'équipe Lucie pour tester votre assistante en conditions réelles, valider les scénarios et finaliser le paramétrage."
       />

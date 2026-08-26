@@ -61,14 +61,20 @@ function Preparation() {
         title="Configuration verrouillée"
         step="Configuration personnalisée"
         description="La configuration personnalisée se débloque dès que votre paiement est confirmé par notre système."
+        waitingFor="step"
+        waitingTitle="Paiement en attente de confirmation"
+        waitingText="Dès que votre paiement est confirmé, le formulaire de configuration s'ouvre automatiquement sur cette page."
+        backTo="/offres"
+        backLabel="Revoir les offres"
       />
     );
   }
 
+
   return (
     <div className="space-y-8">
       <PageHeader
-        eyebrow={`Formule ${planLabel}`}
+        eyebrow={`Étape 08 · Configuration — Formule ${planLabel}`}
         title="Configuration personnalisée"
         description="Un formulaire sur mesure pour tout centraliser. Une fois validé, votre assistante sera prête pour une phase de test sous 72 h ouvrées."
       />

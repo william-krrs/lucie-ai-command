@@ -49,13 +49,19 @@ function Installation() {
         title="Installation verrouillée"
         step="Installation"
         description="L'installation se débloque une fois votre configuration personnalisée envoyée et validée."
+        waitingFor="step"
+        waitingTitle="Configuration à envoyer"
+        waitingText="Complétez et envoyez le formulaire de configuration personnalisée : le suivi d'installation s'ouvrira automatiquement."
+        backTo="/preparation"
+        backLabel="Ouvrir la configuration personnalisée"
       />
+
     );
   }
   return (
     <div className="space-y-10">
       <PageHeader
-        eyebrow="Étape 04 · Déploiement"
+        eyebrow="Étape 09 · Déploiement"
         title="Timeline d'installation"
         description="Un parcours de mise en production précis, industriel, mené par nos équipes."
       />

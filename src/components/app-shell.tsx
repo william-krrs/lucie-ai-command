@@ -131,7 +131,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                     active ? "text-primary-foreground/70" : "text-muted-foreground/50",
                   )}
                 >
-                  0{i + 1}
+                  {String(i + 1).padStart(2, "0")}
                 </span>
               )}
             </Link>

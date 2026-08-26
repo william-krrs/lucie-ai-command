@@ -12,14 +12,14 @@ import {
   ListChecks,
   CreditCard,
   ChevronRight,
-  ExternalLink,
+  ArrowRight,
 } from "lucide-react";
 import { PageHeader } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
 import { ExportHistory } from "@/components/export-history";
 import { CrmExport } from "@/components/crm-export";
 import { cn } from "@/lib/utils";
-import { BOOKING_URL_SETUP, CONTACT_EMAIL } from "@/lib/config";
+import { CONTACT_EMAIL } from "@/lib/config";
 
 const planSearchSchema = z.object({
   plan: z.enum(["essential", "pro", "premium"]).optional(),
@@ -169,7 +169,7 @@ function Merci() {
   return (
     <div className="space-y-10">
       <PageHeader
-        eyebrow="Paiement confirmé"
+        eyebrow="Étape 07 · Paiement confirmé"
         title="Merci — bienvenue chez Lucie"
         description="Votre paiement a bien été reçu. Notre équipe prend le relais pour lancer votre installation."
       />
@@ -329,10 +329,12 @@ function Merci() {
                 id="rdv-test-merci-title"
                 className="mt-1 text-lg font-semibold tracking-tight text-foreground sm:text-xl"
               >
-                Réservez votre rendez-vous test & paramétrage
+                Complétez votre configuration personnalisée
               </h2>
               <p className="mt-1.5 max-w-xl text-sm text-muted-foreground">
-                Votre paiement est confirmé. Prenez rendez-vous dès maintenant pour le test final et le paramétrage de Lucie avec votre équipe.
+                Votre paiement est confirmé. Envoyez votre configuration pour lancer
+                l'installation. Le rendez-vous de test &amp; paramétrage se débloquera
+                automatiquement dès que votre installation sera prête.
               </p>
             </div>
           </div>
@@ -340,16 +342,12 @@ function Merci() {
             asChild
             className="h-11 shrink-0 rounded-xl bg-primary text-primary-foreground shadow-[var(--shadow-elevated)] hover:bg-primary/90"
           >
-            <a
-              href={BOOKING_URL_SETUP}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Prendre rendez-vous test et paramétrage avec Lucie (ouvre un nouvel onglet)"
-            >
-              Prendre un RDV test
-              <ExternalLink className="ml-2 h-4 w-4" aria-hidden="true" />
-            </a>
+            <Link to="/preparation" search={{ plan }}>
+              Ouvrir la configuration
+              <ArrowRight className="ml-2 h-4 w-4" aria-hidden="true" />
+            </Link>
           </Button>
+
         </div>
       </section>
 

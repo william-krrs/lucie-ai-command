@@ -85,7 +85,7 @@ function Demonstration() {
   return (
     <div className="space-y-10">
       <PageHeader
-        eyebrow="Étape 03 · Démonstration"
+        eyebrow="Étape 05 · Démonstration"
         title="Avant / après Lucie"
         description="Le quotidien commercial de vos équipes, transformé."
       />
@@ -144,19 +144,20 @@ function Demonstration() {
           Démonstration terminée ?
         </h2>
         <p className="mx-auto mt-1 max-w-md text-sm text-muted-foreground">
-          Validez la fin de la démonstration pour débloquer vos offres et votre recommandation
-          personnalisée.
+          Validez la fin de la démonstration pour débloquer vos offres et vos tarifs
+          personnalisés.
         </p>
         <Button
           className="mt-5 min-h-11 rounded-xl"
           onClick={onContinue}
           disabled={pending}
-          aria-label="Marquer la démonstration comme terminée et continuer vers ma recommandation"
+          aria-label="Marquer la démonstration comme terminée et continuer vers mes offres"
         >
           {pending ? (
             <Loader2 className="mr-1.5 h-4 w-4 animate-spin" aria-hidden="true" />
           ) : null}
-          Continuer vers ma recommandation
+          Continuer vers mes offres
+
           <ArrowRight className="ml-1 h-4 w-4" aria-hidden="true" />
         </Button>
         {error && (
