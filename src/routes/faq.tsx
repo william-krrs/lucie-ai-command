@@ -56,7 +56,7 @@ function Faq() {
   return (
     <div className="space-y-10">
       <PageHeader
-        eyebrow="Étape 06 · FAQ"
+        eyebrow="Étape 11 · FAQ"
         title="Questions fréquentes"
         description="Les points que vos équipes et vos clients nous demandent le plus souvent."
       />

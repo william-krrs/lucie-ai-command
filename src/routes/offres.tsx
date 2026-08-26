@@ -166,7 +166,7 @@ function Offres() {
   return (
     <div className="space-y-14">
       <PageHeader
-        eyebrow="Étape 05 · Offres"
+        eyebrow="Étape 06 · Offres"
         title="Notre recommandation"
         description="Trois formules, une même exigence. La formule mise en avant est déterminée automatiquement par votre diagnostic."
       />

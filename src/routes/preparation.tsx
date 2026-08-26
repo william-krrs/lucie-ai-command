@@ -74,7 +74,7 @@ function Preparation() {
   return (
     <div className="space-y-8">
       <PageHeader
-        eyebrow={`Formule ${planLabel}`}
+        eyebrow={`Étape 08 · Configuration — Formule ${planLabel}`}
         title="Configuration personnalisée"
         description="Un formulaire sur mesure pour tout centraliser. Une fois validé, votre assistante sera prête pour une phase de test sous 72 h ouvrées."
       />

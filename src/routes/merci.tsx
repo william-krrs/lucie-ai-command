@@ -169,7 +169,7 @@ function Merci() {
   return (
     <div className="space-y-10">
       <PageHeader
-        eyebrow="Paiement confirmé"
+        eyebrow="Étape 07 · Paiement confirmé"
         title="Merci — bienvenue chez Lucie"
         description="Votre paiement a bien été reçu. Notre équipe prend le relais pour lancer votre installation."
       />

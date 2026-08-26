@@ -56,7 +56,7 @@ function RdvTest() {
   return (
     <div className="space-y-10">
       <PageHeader
-        eyebrow="Étape finale · Test & paramétrage"
+        eyebrow="Étape 10 · Test & paramétrage"
         title="Réservez votre RDV de mise en service"
         description="Une session dédiée avec l'équipe Lucie pour tester votre assistante en conditions réelles, valider les scénarios et finaliser le paramétrage."
       />

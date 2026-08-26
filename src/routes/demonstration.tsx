@@ -85,7 +85,7 @@ function Demonstration() {
   return (
     <div className="space-y-10">
       <PageHeader
-        eyebrow="Étape 03 · Démonstration"
+        eyebrow="Étape 05 · Démonstration"
         title="Avant / après Lucie"
         description="Le quotidien commercial de vos équipes, transformé."
       />

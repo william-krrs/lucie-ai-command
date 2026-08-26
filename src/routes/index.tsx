@@ -208,7 +208,7 @@ function Home() {
   return (
     <div className="space-y-14">
       <PageHeader
-        eyebrow="Bienvenue"
+        eyebrow="Étape 01 · Accueil"
         title="Lucie Command Center"
         description="L'assistante IA qui répond à vos appels, qualifie vos prospects et vous aide à générer plus de chiffre d'affaires."
       />

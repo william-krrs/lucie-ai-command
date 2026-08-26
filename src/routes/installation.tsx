@@ -61,7 +61,7 @@ function Installation() {
   return (
     <div className="space-y-10">
       <PageHeader
-        eyebrow="Étape 04 · Déploiement"
+        eyebrow="Étape 09 · Déploiement"
         title="Timeline d'installation"
         description="Un parcours de mise en production précis, industriel, mené par nos équipes."
       />

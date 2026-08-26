@@ -401,7 +401,7 @@ function RecommandationPage() {
   return (
     <div className="space-y-10">
       <PageHeader
-        eyebrow="Diagnostic · Synthèse"
+        eyebrow="Étape 04 · Recommandation"
         title="Votre diagnostic est terminé"
         description="Voici la synthèse objective de votre situation, la formule que Lucie recommande — ou pas — et les prochaines étapes."
         actions={
