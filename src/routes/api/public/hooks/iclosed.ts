@@ -68,6 +68,51 @@ function valueAtPath(value: unknown, path: string): unknown {
   return current;
 }
 
+const BOOKING_TOKEN_PATHS = [
+  "tracking.utm_booking_token",
+  "data.tracking.utm_booking_token",
+  "event.tracking.utm_booking_token",
+  "contact.tracking.utm_booking_token",
+] as const;
+
+/**
+ * Extrait uniquement `utm_booking_token` des données de suivi iClosed.
+ * Les chemins connus sont prioritaires, puis une recherche récursive bornée
+ * couvre les variantes imbriquées. L'URL du webhook n'est qu'un dernier repli.
+ */
+function extractBookingToken(payload: unknown, url: URL): string | null {
+  for (const path of BOOKING_TOKEN_PATHS) {
+    const value = valueAtPath(payload, path);
+    if (typeof value === "string" && value.trim()) return value.trim();
+  }
+
+  function findExactKey(value: unknown, depth: number): string | null {
+    if (depth > 7 || !value || typeof value !== "object") return null;
+
+    if (Array.isArray(value)) {
+      for (const item of value) {
+        const found = findExactKey(item, depth + 1);
+        if (found) return found;
+      }
+      return null;
+    }
+
+    for (const [key, nested] of Object.entries(value as Flat)) {
+      if (key.toLowerCase() === "utm_booking_token") {
+        if (typeof nested === "string" && nested.trim()) return nested.trim();
+        continue;
+      }
+      if (nested && typeof nested === "object") {
+        const found = findExactKey(nested, depth + 1);
+        if (found) return found;
+      }
+    }
+    return null;
+  }
+
+  return findExactKey(payload, 0) ?? url.searchParams.get("utm_booking_token");
+}
+
 type EventCandidate = { path: string; value: string; action: Action };
 
 function findEventCandidates(value: unknown): EventCandidate[] {
@@ -178,10 +223,11 @@ function verifyToken(received: string | null, secret: string): boolean {
  * Renvoie `null` si le token est absent, invalide, expiré ou introuvable.
  */
 async function resolveFromBookingToken(
+  payload: unknown,
   url: URL,
   supabaseAdmin: Awaited<typeof import("@/integrations/supabase/client.server")>["supabaseAdmin"],
 ): Promise<{ userId: string; clientRef: string; bookingType: BookingType } | null> {
-  const rawToken = url.searchParams.get("utm_booking_token");
+  const rawToken = extractBookingToken(payload, url);
   if (!rawToken) return null;
   const verified = verifyBookingToken(rawToken);
   if (!verified) {
@@ -271,7 +317,7 @@ async function handle(request: Request): Promise<Response> {
   // Source de vérité pour le user_id propriétaire du RDV. Ne fait jamais
   // confiance à un user_id venant du payload. Les valeurs du token (client_ref,
   // booking_type) priment sur celles du payload car elles sont signées serveur.
-  const correlation = await resolveFromBookingToken(url, supabaseAdmin);
+  const correlation = await resolveFromBookingToken(payload, url, supabaseAdmin);
   const userId = correlation?.userId ?? null;
   const effectiveClientRef = correlation?.clientRef ?? clientRef;
   const effectiveBookingType = correlation?.bookingType ?? bookingType;
