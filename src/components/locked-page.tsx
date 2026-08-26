@@ -26,6 +26,15 @@ function useCountdown(targetIso: string | null | undefined) {
   return `${seconds} s`;
 }
 
+type LockedRoute =
+  | "/recommandation"
+  | "/demonstration"
+  | "/offres"
+  | "/merci"
+  | "/preparation"
+  | "/installation"
+  | "/diagnostic";
+
 export function LockedPage({
   title,
   description,
@@ -34,6 +43,11 @@ export function LockedPage({
   unlockAt,
   bookingStatus,
   unlockNote,
+  waitingFor = "r2_booking",
+  waitingTitle,
+  waitingText,
+  backTo = "/diagnostic",
+  backLabel = "Revenir au diagnostic",
 }: {
   title: string;
   description?: string;
@@ -47,7 +61,17 @@ export function LockedPage({
   bookingStatus?: BookingStatusNorm | null;
   /** Note affichée sous le compte à rebours. */
   unlockNote?: string;
+  /** Condition attendue pour déverrouiller l'étape. */
+  waitingFor?: "r2_booking" | "step";
+  /** Titre du bloc d'attente contextuel (waitingFor="step"). */
+  waitingTitle?: string;
+  /** Texte du bloc d'attente contextuel (waitingFor="step"). */
+  waitingText?: string;
+  /** Route de repli (étape précédente réelle du parcours). */
+  backTo?: LockedRoute;
+  backLabel?: string;
 }) {
+
   const countdown = useCountdown(unlockAt ?? meetingAt ?? null);
 
   const meetingLabel = (() => {
