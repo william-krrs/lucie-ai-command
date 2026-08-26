@@ -62,6 +62,33 @@ export type Database = {
         }
         Relationships: []
       }
+      booking_correlations: {
+        Row: {
+          booking_type: Database["public"]["Enums"]["booking_type"]
+          client_ref: string
+          created_at: string
+          expires_at: string
+          sid: string
+          user_id: string
+        }
+        Insert: {
+          booking_type?: Database["public"]["Enums"]["booking_type"]
+          client_ref: string
+          created_at?: string
+          expires_at?: string
+          sid?: string
+          user_id: string
+        }
+        Update: {
+          booking_type?: Database["public"]["Enums"]["booking_type"]
+          client_ref?: string
+          created_at?: string
+          expires_at?: string
+          sid?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       bookings: {
         Row: {
           booking_type: Database["public"]["Enums"]["booking_type"]
