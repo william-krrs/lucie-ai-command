@@ -149,8 +149,14 @@ function Offres() {
       <LockedPage
         title="Offres verrouillées"
         step="Offres & pricing"
-        description="Les offres se débloquent une fois votre démonstration terminée. Rendez-vous sur la page Démonstration et validez « Continuer vers ma recommandation »."
+        description="Les offres se débloquent une fois votre démonstration terminée."
+        waitingFor="step"
+        waitingTitle="Démonstration à valider"
+        waitingText="Rendez-vous sur la page Démonstration et validez « Continuer vers mes offres » pour débloquer cette étape."
+        backTo="/demonstration"
+        backLabel="Aller à la démonstration"
       />
+
     );
   }
 
