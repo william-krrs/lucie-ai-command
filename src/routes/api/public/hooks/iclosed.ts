@@ -267,6 +267,15 @@ async function handle(request: Request): Promise<Response> {
 
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
+  // --- Résolution prioritaire : token signé utm_booking_token ---
+  // Source de vérité pour le user_id propriétaire du RDV. Ne fait jamais
+  // confiance à un user_id venant du payload. Les valeurs du token (client_ref,
+  // booking_type) priment sur celles du payload car elles sont signées serveur.
+  const correlation = await resolveFromBookingToken(url, supabaseAdmin);
+  const userId = correlation?.userId ?? null;
+  const effectiveClientRef = correlation?.clientRef ?? clientRef;
+  const effectiveBookingType = correlation?.bookingType ?? bookingType;
+
   // --- Corrélation : event_id -> utm_client_ref -> email ---
   let rowId: string | null = null;
   if (eventId) {
@@ -277,12 +286,12 @@ async function handle(request: Request): Promise<Response> {
       .maybeSingle();
     rowId = data?.id ?? null;
   }
-  if (!rowId && clientRef) {
+  if (!rowId && effectiveClientRef) {
     const { data } = await supabaseAdmin
       .from("bookings")
       .select("id")
-      .eq("client_ref", clientRef)
-      .eq("booking_type", bookingType)
+      .eq("client_ref", effectiveClientRef)
+      .eq("booking_type", effectiveBookingType)
       .maybeSingle();
     rowId = data?.id ?? null;
   }
@@ -291,7 +300,7 @@ async function handle(request: Request): Promise<Response> {
       .from("bookings")
       .select("id")
       .eq("email", email)
-      .eq("booking_type", bookingType)
+      .eq("booking_type", effectiveBookingType)
       .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle();
