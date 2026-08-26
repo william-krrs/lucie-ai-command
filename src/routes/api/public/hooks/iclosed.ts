@@ -329,7 +329,7 @@ async function handle(request: Request): Promise<Response> {
   if (!slot) return new Response("Missing start_time", { status: 400 });
 
   const common = {
-    booking_type: bookingType,
+    booking_type: effectiveBookingType,
     email: email ?? "unknown@unknown.invalid",
     name: name ?? null,
     phone: phone ?? null,
@@ -346,6 +346,7 @@ async function handle(request: Request): Promise<Response> {
     // Un nouveau créneau doit redéclencher les rappels.
     reminder_24h_sent_at: null,
     reminder_2h_sent_at: null,
+    user_id: userId,
   };
 
   if (rowId) {
@@ -354,21 +355,20 @@ async function handle(request: Request): Promise<Response> {
       console.error("[iclosed webhook] update failed", error.message);
       return new Response("Update failed", { status: 500 });
     }
-    return Response.json({ ok: true, action, matched: true });
+    return Response.json({ ok: true, action, matched: true, userResolved: !!userId });
   }
 
-  // Aucune correspondance : on crée une ligne orpheline rattachable plus tard
-  // par e-mail. client_ref est généré pour respecter la contrainte d'unicité.
+  // Aucune correspondance : on crée une ligne rattachée au user_id résolu via
+  // le token signé (si présent), sinon orpheline rattachable plus tard par e-mail.
   const { error } = await supabaseAdmin.from("bookings").insert({
     ...common,
-    client_ref: clientRef ?? crypto.randomUUID(),
-    user_id: null,
+    client_ref: effectiveClientRef ?? crypto.randomUUID(),
   });
   if (error) {
     console.error("[iclosed webhook] insert failed", error.message);
     return new Response("Insert failed", { status: 500 });
   }
-  return Response.json({ ok: true, action, matched: false, created: true });
+  return Response.json({ ok: true, action, matched: false, created: true, userResolved: !!userId });
 }
 
 export const Route = createFileRoute("/api/public/hooks/iclosed")({
