@@ -74,6 +74,7 @@ Aucune donnée du token n'est journalisée ; seuls `tokenValid: true|false` et u
 | `src/lib/booking-token.functions.ts` | **Nouveau** — server fn `issueBookingToken` avec `requireSupabaseAuth`, retourne le token pour le `booking_type` demandé. |
 | `src/components/booking-embed.tsx` | Récupère le token à l'affichage du widget et ajoute `utm_booking_token=<token>` à l'URL iClosed (en plus des UTM actuels). Rendu du widget après obtention du token. |
 | `src/routes/api/public/hooks/iclosed.ts` | Lecture de `utm_booking_token` (payload aplati + URL de tracking), vérification, priorité de corrélation, écriture du `user_id`. |
+| Migration | Table `booking_correlations` (`sid`, `user_id`, `client_ref`, `booking_type`, `expires_at`), accès `service_role` uniquement. |
 | Secret | `BOOKING_CORRELATION_SECRET` généré côté serveur (64 caractères). |
 
 ## 6. Réconciliation des orphelins (optionnelle, sûre)
