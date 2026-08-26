@@ -1,10 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import {
-  signBookingToken,
-  newCorrelationSid,
-} from "@/lib/booking-token.server";
 
 const ALLOWED_BOOKING_TYPES = ["r1_discovery", "r2_demo", "setup_test"] as const;
 
