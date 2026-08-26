@@ -243,12 +243,16 @@ export function BookingEmbed({
     let cancelled = false;
     async function buildUrl() {
       try {
+        const clientRef = getClientRef();
         const { token } = await issueBookingTokenFn({
-          data: { clientRef: getClientRef(), bookingType },
+          data: { clientRef, bookingType },
         });
         if (cancelled) return;
         const next = new URL(baseBookingUrl);
         next.searchParams.set("utm_booking_token", token);
+        // Corrélation secondaire conservée : le token signé reste prioritaire
+        // côté webhook, client_ref n'est qu'un repli.
+        next.searchParams.set("utm_client_ref", clientRef);
         next.searchParams.set("utm_source", "lucie-command-center");
         next.searchParams.set("utm_medium", bookingType);
         setBookingUrl(next.toString());
