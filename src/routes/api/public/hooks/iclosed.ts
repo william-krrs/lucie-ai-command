@@ -170,6 +170,47 @@ function verifyToken(received: string | null, secret: string): boolean {
   return timingSafeEqual(a, b);
 }
 
+/**
+ * Résout le `user_id` propriétaire d'un RDV à partir du token signé
+ * `utm_booking_token` présent dans l'URL iClosed. Le token ne contient qu'un
+ * `sid` opaque : la correspondance `sid -> user_id/client_ref/booking_type` est
+ * lue côté serveur dans `booking_correlations` (table non lisible par le client).
+ * Renvoie `null` si le token est absent, invalide, expiré ou introuvable.
+ */
+async function resolveFromBookingToken(
+  url: URL,
+  supabaseAdmin: Awaited<typeof import("@/integrations/supabase/client.server")>["supabaseAdmin"],
+): Promise<{ userId: string; clientRef: string; bookingType: BookingType } | null> {
+  const rawToken = url.searchParams.get("utm_booking_token");
+  if (!rawToken) return null;
+  const verified = verifyBookingToken(rawToken);
+  if (!verified) {
+    console.info("[iclosed webhook] booking token present but invalid");
+    return null;
+  }
+  const { data, error } = await supabaseAdmin
+    .from("booking_correlations")
+    .select("user_id, client_ref, booking_type, expires_at")
+    .eq("sid", verified.sid)
+    .maybeSingle();
+  if (error || !data) {
+    console.info("[iclosed webhook] correlation sid not found", { sid: verified.sid });
+    return null;
+  }
+  // Double vérification d'expiration côté base.
+  const expiresAt = new Date(data.expires_at as string).getTime();
+  if (Number.isNaN(expiresAt) || expiresAt < Date.now()) {
+    console.info("[iclosed webhook] correlation sid expired", { sid: verified.sid });
+    return null;
+  }
+  if (!isBookingType(data.booking_type as string)) return null;
+  return {
+    userId: data.user_id as string,
+    clientRef: data.client_ref as string,
+    bookingType: data.booking_type as BookingType,
+  };
+}
+
 async function handle(request: Request): Promise<Response> {
   const secret = process.env["ICLOSED_WEBHOOK_SECRET"];
   if (!secret) {
