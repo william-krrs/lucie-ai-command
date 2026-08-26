@@ -5,6 +5,7 @@ import {
   isBookingType,
   type BookingType,
 } from "@/lib/booking-types";
+import { verifyBookingToken } from "@/lib/booking-token.server";
 
 /**
  * Webhook iClosed direct (sans Zapier).
