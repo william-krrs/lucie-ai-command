@@ -183,17 +183,106 @@ function actionFrom(payload: unknown): Action | null {
   return selected?.action ?? null;
 }
 
-function splitDateTime(iso: string): { date: string; time: string; at: string } | null {
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return null;
-  const wall = iso.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/);
-  const date = wall
-    ? `${wall[1]}-${wall[2]}-${wall[3]}`
-    : `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}-${String(d.getUTCDate()).padStart(2, "0")}`;
-  const time = wall
-    ? `${wall[4]}:${wall[5]}`
-    : `${String(d.getUTCHours()).padStart(2, "0")}:${String(d.getUTCMinutes()).padStart(2, "0")}`;
-  return { date, time, at: d.toISOString() };
+/** Décalage (ms) de la timezone IANA à un instant UTC donné. */
+function tzOffsetMs(utcMs: number, timeZone: string): number {
+  const dtf = new Intl.DateTimeFormat("en-US", {
+    timeZone,
+    hour12: false,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  });
+  const parts = Object.fromEntries(
+    dtf.formatToParts(new Date(utcMs)).map((p) => [p.type, p.value]),
+  ) as Record<string, string>;
+  const asUTC = Date.UTC(
+    Number(parts["year"]),
+    Number(parts["month"]) - 1,
+    Number(parts["day"]),
+    Number(parts["hour"] === "24" ? "0" : parts["hour"]),
+    Number(parts["minute"]),
+    Number(parts["second"]),
+  );
+  return asUTC - utcMs;
+}
+
+/** Convertit une heure murale (dans `timeZone`) en instant UTC. */
+function wallToUtc(
+  y: number,
+  mo: number,
+  d: number,
+  h: number,
+  mi: number,
+  timeZone: string,
+): Date {
+  const naive = Date.UTC(y, mo - 1, d, h, mi, 0);
+  let utc = naive - tzOffsetMs(naive, timeZone);
+  // Une seconde passe corrige les bascules DST.
+  utc = naive - tzOffsetMs(utc, timeZone);
+  return new Date(utc);
+}
+
+/**
+ * Découpe un timestamp iClosed.
+ * - Offset explicite (Z ou ±HH:MM) : l'instant est conservé tel quel et
+ *   l'heure murale est recalculée dans `timeZone`.
+ * - Sans offset : la date/heure lue est une heure murale dans `timeZone`,
+ *   convertie vers UTC pour `meeting_at`.
+ */
+function splitDateTime(iso: string, timeZone: string): { date: string; time: string; at: string } | null {
+  const m = iso
+    .trim()
+    .match(/^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2})(?::(\d{2}))?(?:\.\d+)?\s*(Z|[+-]\d{2}:?\d{2})?$/i);
+
+  let zone = timeZone;
+  try {
+    new Intl.DateTimeFormat("en-US", { timeZone: zone });
+  } catch {
+    zone = "Europe/Paris";
+  }
+
+  if (!m) {
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return null;
+    return { ...wallInZone(d, zone), at: d.toISOString() };
+  }
+
+  const [, y, mo, da, h, mi, , offset] = m;
+
+  if (offset) {
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return null;
+    return { ...wallInZone(d, zone), at: d.toISOString() };
+  }
+
+  const at = wallToUtc(Number(y), Number(mo), Number(da), Number(h), Number(mi), zone);
+  if (Number.isNaN(at.getTime())) return null;
+  return { date: `${y}-${mo}-${da}`, time: `${h}:${mi}`, at: at.toISOString() };
+}
+
+/** Heure murale (date + heure) d'un instant dans une timezone donnée. */
+function wallInZone(d: Date, timeZone: string): { date: string; time: string } {
+  const parts = Object.fromEntries(
+    new Intl.DateTimeFormat("en-US", {
+      timeZone,
+      hour12: false,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+    })
+      .formatToParts(d)
+      .map((p) => [p.type, p.value]),
+  ) as Record<string, string>;
+  const hour = parts["hour"] === "24" ? "00" : parts["hour"];
+  return {
+    date: `${parts["year"]}-${parts["month"]}-${parts["day"]}`,
+    time: `${hour}:${parts["minute"]}`,
+  };
 }
 
 function verifySignature(rawBody: string, header: string | null, secret: string): boolean {
@@ -371,7 +460,7 @@ async function handle(request: Request): Promise<Response> {
     return Response.json({ ok: true, action, matched: true });
   }
 
-  const slot = start ? splitDateTime(start) : null;
+  const slot = start ? splitDateTime(start, timezone) : null;
   if (!slot) return new Response("Missing start_time", { status: 400 });
 
   const common = {
