@@ -44,7 +44,13 @@ function RdvTest() {
         title="RDV Test & paramétrage verrouillé"
         step="RDV Test & paramétrage"
         description="Ce rendez-vous se débloque dès que votre installation est prête pour la phase de test."
+        waitingFor="step"
+        waitingTitle="Installation en cours"
+        waitingText="Dès que votre installation passe au statut « prête pour le test », le calendrier de mise en service s'ouvre automatiquement ici."
+        backTo="/installation"
+        backLabel="Suivre mon installation"
       />
+
     );
   }
   return (
