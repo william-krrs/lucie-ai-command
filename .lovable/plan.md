@@ -4,40 +4,50 @@ Objectif : les rendez-vous créés par webhook doivent porter le bon `user_id`, 
 
 ## 1. Format exact du token
 
-Token compact type JWS `HS256`, en trois segments base64url séparés par des points :
+Vrai JWS compact HS256, trois segments base64url :
 
 ```text
-<payload_b64url>.<signature_b64url>
+<header_b64url>.<payload_b64url>.<signature_b64url>
 ```
 
-Payload JSON (avant encodage) :
+Header :
+
+```json
+{ "alg": "HS256", "typ": "JWT" }
+```
+
+Payload — **aucun identifiant métier lisible** (voir §1bis) :
 
 ```json
 {
   "v": 1,
-  "uid": "<user_id auth.uid()>",
-  "cref": "<client_ref>",
-  "bt": "r2_demo",
+  "sid": "<uuid opaque de corrélation>",
   "iat": 1756160000,
-  "exp": 1756246400,
-  "jti": "<uuid aléatoire>"
+  "exp": 1756246400
 }
 ```
 
-- `exp` : 24 h après émission (le créneau est réservé dans la foulée).
-- `bt` : borné à la liste `booking_type` connue.
-- Signature : `HMAC-SHA256(payload_b64url, BOOKING_CORRELATION_SECRET)`, encodée base64url.
-- Longueur ≈ 220 caractères, compatible avec un paramètre d'URL.
+- Signature : `HMAC-SHA256("<header_b64url>.<payload_b64url>", BOOKING_CORRELATION_SECRET)`, base64url.
+- `exp` : 24 h après émission.
+- Longueur ≈ 180 caractères, compatible avec un paramètre d'URL.
+
+## 1bis. Pourquoi un identifiant opaque plutôt que `uid`/`cref` en clair
+
+Un payload JWT est simplement encodé, pas chiffré : `utm_booking_token` transite dans l'URL du calendrier et se retrouve dans les logs iClosed, les référents et l'historique navigateur. Y placer `user_id` et `client_ref` exposerait inutilement des identifiants internes à un tiers.
+
+Le token ne transporte donc qu'un `sid` aléatoire, sans signification hors de notre base. La résolution se fait côté serveur : une table `booking_correlations` (`sid`, `user_id`, `client_ref`, `booking_type`, `expires_at`), écrite par la server function d'émission (RLS : aucune lecture client, accès service_role uniquement) et lue par le webhook. La signature reste utile : elle empêche l'énumération ou l'injection d'un `sid` arbitraire avant même de toucher la base.
 
 ## 2. Vérification côté webhook
 
-1. Découper sur `.` — sinon token rejeté.
-2. Recalculer le HMAC sur le segment payload et comparer en temps constant (`timingSafeEqual`). Toute différence de longueur ou de valeur → token ignoré.
-3. Décoder le JSON, valider : `v === 1`, `uid` au format UUID, `cref` UUID, `bt` dans la liste autorisée, `exp > now`.
-4. Si tout est valide → `user_id`, `client_ref`, `booking_type` proviennent du token.
-5. Si invalide/expiré → on retombe sur la chaîne de corrélation existante, jamais sur une valeur brute du payload.
+1. Découper sur `.` — trois segments attendus, sinon token rejeté.
+2. Vérifier le header (`alg` = `HS256`, `typ` = `JWT`) ; tout autre `alg`, notamment `none`, est refusé.
+3. Recalculer le HMAC sur `header.payload` et comparer en temps constant (`timingSafeEqual`). Différence de longueur ou de valeur → token ignoré.
+4. Décoder le payload, valider `v === 1`, `sid` au format UUID, `exp > now`.
+5. Charger la ligne `booking_correlations` correspondant à `sid` (non expirée) → `user_id`, `client_ref`, `booking_type`.
+6. Si le token est invalide/expiré ou le `sid` inconnu → repli sur la chaîne de corrélation existante, jamais sur une valeur brute du payload.
 
-Aucune donnée du token n'est journalisée ; seuls `tokenValid: true|false` et la raison courte le sont.
+Aucune donnée du token n'est journalisée ; seuls `tokenValid: true|false` et une raison courte le sont.
+
 
 ## 3. Ordre de corrélation (webhook)
 
