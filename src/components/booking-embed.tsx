@@ -21,6 +21,7 @@ import { useAdminMode } from "@/lib/admin-mode";
 
 import { useBooking, formatBookingDate, getClientRef, type Booking } from "@/lib/booking-store";
 import { upsertBooking, cancelBooking } from "@/lib/bookings.functions";
+import { issueBookingToken } from "@/lib/booking-token.functions";
 import { createSharedDiagnostic } from "@/lib/share.functions";
 import { useLucie, useMetrics, useRecommendation } from "@/lib/lucie-store";
 import { useJourneyAccess } from "@/lib/journey-access";
