@@ -45,6 +45,8 @@ export const ICLOSED_SLUG_TO_BOOKING_TYPE: Record<string, BookingType> = {
   "r1-decouverte": "r1_discovery",
   "test-parametrage": "setup_test",
   "mise-en-service": "setup_test",
+  "setup-test-lucie": "setup_test",
+  "setup-test": "setup_test",
 };
 
 export function bookingTypeFromIclosedSlug(slug: string | undefined | null): BookingType {
