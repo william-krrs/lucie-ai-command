@@ -1,87 +1,73 @@
-# Architecture de verrouillage par étapes métier
+# Corrélation signée des rendez-vous iClosed (utm_booking_token)
 
-Remplacer le booléen unique `isUnlocked` (basé sur le RDV Démo) par un état de parcours métier, avec la base de données comme source de vérité pour les étapes sensibles.
+Objectif : les rendez-vous créés par webhook doivent porter le bon `user_id`, sans jamais faire confiance au navigateur.
 
-## 1. Modèle d'état métier
+## 1. Format exact du token
 
-Un enregistrement de parcours par client (`journey_state`), plus les données déjà existantes :
+Token compact type JWS `HS256`, en trois segments base64url séparés par des points :
 
-| Étape | Source de vérité | Valeur par défaut |
-|---|---|---|
-| RDV Démo confirmé | `bookings` (`booking_type = 'r2_demo'`, `status_norm = 'confirmed'`) | aucun |
-| Démonstration réalisée | `journey_state.demo_completed_at` | null (verrouillé) |
-| Paiement | `journey_state.payment_status` (`unpaid` / `paid`) | `unpaid` |
-| Configuration envoyée | `preparation_submissions` (ligne existante pour l'utilisateur) | aucune |
-| Installation prête | `journey_state.installation_status` (`not_started` / `in_progress` / `ready_for_test`) | `not_started` |
-
-Aucun prospect n'est marqué payé, aucune démo n'est marquée réalisée : tout démarre verrouillé.
-
-## 2. Base de données
-
-Nouvelle table `public.journey_state` :
-- `user_id` (clé, un état par utilisateur), `client_ref`
-- `demo_completed_at` (timestamp, null)
-- `payment_status` (enum `payment_status` : `unpaid`, `paid`, `refunded`) — défaut `unpaid`
-- `paid_at`, `paid_plan`, `stripe_session_id`, `stripe_customer_id` (préparés pour Stripe, vides)
-- `installation_status` (enum `installation_status` : `not_started`, `in_progress`, `ready_for_test`, `live`) — défaut `not_started`
-- `created_at`, `updated_at` (+ trigger existant `set_updated_at`)
-
-Accès : GRANT + RLS — l'utilisateur peut lire et créer sa propre ligne ; **aucune** politique ne permet au client de passer `payment_status` à `paid` ni `installation_status` à `ready_for_test`. Ces transitions ne seront possibles que côté serveur (service role : futur webhook Stripe, action interne admin).
-
-Ajout aussi d'une politique de lecture de ses propres `preparation_submissions` (aujourd'hui la table est fermée en lecture), pour pouvoir vérifier serveur-side que la configuration a été soumise.
-
-## 3. Couche centrale `useJourneyAccess()`
-
-Nouveau `src/lib/journey-access.tsx` :
-- serveur : `getJourneyState` (server function authentifiée) → RDV confirmés, `journey_state`, présence d'une soumission de configuration ;
-- client : provider + hook exposant
-
+```text
+<payload_b64url>.<signature_b64url>
 ```
-canViewDemonstration = r2_demo confirmé
-canViewOffers        = demo_completed (fallback court terme : r2_demo confirmé)
-canConfigure         = payment_status === 'paid'
-canViewInstallation  = configuration soumise (preparation_submissions)
-canBookSetupTest     = installation_status === 'ready_for_test'
+
+Payload JSON (avant encodage) :
+
+```json
+{
+  "v": 1,
+  "uid": "<user_id auth.uid()>",
+  "cref": "<client_ref>",
+  "bt": "r2_demo",
+  "iat": 1756160000,
+  "exp": 1756246400,
+  "jti": "<uuid aléatoire>"
+}
 ```
-Plus `isLoading`, les raisons de blocage (pour l'écran verrouillé) et le bypass `?admin=lucie` / `UNLOCK_ALL_PAGES` conservé pour la démo interne.
 
-Le localStorage reste un cache d'affichage (RDV, brouillon) mais ne peut plus débloquer Configuration, Installation ni RDV Test : ces trois permissions ne sont vraies que si le serveur a répondu.
+- `exp` : 24 h après émission (le créneau est réservé dans la foulée).
+- `bt` : borné à la liste `booking_type` connue.
+- Signature : `HMAC-SHA256(payload_b64url, BOOKING_CORRELATION_SECRET)`, encodée base64url.
+- Longueur ≈ 220 caractères, compatible avec un paramètre d'URL.
 
-Note court terme : `canViewOffers` retombe sur « RDV Démo confirmé » tant que `demo_completed_at` n'est renseigné nulle part, pour ne pas casser le parcours en cours. La structure `demo_completed_at` est en place et prendra le relais dès qu'une action « démonstration terminée » sera branchée.
+## 2. Vérification côté webhook
 
-## 4. Règles exactes par route
+1. Découper sur `.` — sinon token rejeté.
+2. Recalculer le HMAC sur le segment payload et comparer en temps constant (`timingSafeEqual`). Toute différence de longueur ou de valeur → token ignoré.
+3. Décoder le JSON, valider : `v === 1`, `uid` au format UUID, `cref` UUID, `bt` dans la liste autorisée, `exp > now`.
+4. Si tout est valide → `user_id`, `client_ref`, `booking_type` proviennent du token.
+5. Si invalide/expiré → on retombe sur la chaîne de corrélation existante, jamais sur une valeur brute du payload.
 
-| Route | Règle |
-|---|---|
-| `/`, `/diagnostic`, `/roi`, `/recommandation`, `/faq`, `/merci` | libres |
-| `/demonstration` | `canViewDemonstration` |
-| `/offres` | `canViewOffers` |
-| `/preparation` | `canConfigure` (paiement serveur ; `?plan=` reste un simple affichage) |
-| `/installation` | `canViewInstallation` |
-| `/rdv-test` | `canBookSetupTest` |
+Aucune donnée du token n'est journalisée ; seuls `tokenValid: true|false` et la raison courte le sont.
 
-`/merci` reste accessible après le choix d'une formule mais ne vaut pas preuve de paiement.
+## 3. Ordre de corrélation (webhook)
 
-## 5. Fichiers modifiés
+1. Token signé valide → `user_id` + `client_ref` + `booking_type` (prioritaire).
+2. `iclosed_event_id` existant en base.
+3. `client_ref` (+ `booking_type`).
+4. `email` (+ `booking_type`, le plus récent) — dernier recours.
 
-- nouveau : `src/lib/journey-state.functions.ts`, `src/lib/journey-access.tsx`
-- modifiés : `src/routes/demonstration.tsx`, `offres.tsx`, `preparation.tsx`, `installation.tsx`, `rdv-test.tsx`
-- modifiés : `src/components/locked-page.tsx` (message adapté à l'étape bloquante), `src/components/sidebar-progress.tsx`, `src/components/app-shell.tsx` (mêmes règles centrales)
-- `src/lib/booking-store.tsx` : `isUnlocked` marqué déprécié, réduit au seul RDV Démo, plus utilisé pour le gating des routes
-- `src/routes/__root.tsx` : montage du provider
+Écriture finale : `user_id` (du token si présent, sinon celui de la ligne corrélée), `booking_type`, `status_norm = 'confirmed'`, `meeting_at`, `client_ref`, `iclosed_event_id` si fourni.
 
-## 6. Restera à connecter à Stripe
+## 4. Anti-usurpation
 
-- Un webhook `/api/public/hooks/stripe` vérifiant la signature Stripe, qui passe `payment_status = 'paid'`, `paid_plan`, `paid_at` en service role sur `checkout.session.completed`.
-- Le rapprochement session Stripe ↔ utilisateur (via `client_reference_id` ou l'email) à injecter dans les liens de paiement.
-- Rien n'est modifié côté Stripe dans cette étape.
+- Le token est émis uniquement par une server function protégée par `requireSupabaseAuth` : `uid` vient de `context.userId`, jamais d'un argument client.
+- Le secret `BOOKING_CORRELATION_SECRET` est généré côté serveur et n'est jamais exposé au bundle client.
+- Le webhook n'accepte **aucun** champ `user_id`, `uid` ou équivalent lu directement dans le payload iClosed ; ce chemin est explicitement absent du code.
+- Comparaison HMAC en temps constant + expiration courte + `jti` pour limiter le rejeu utile.
+- Un token forgé ou modifié échoue la signature et retombe silencieusement sur la corrélation classique (aucune élévation possible).
 
-## 7. Plan de test
+## 5. Fichiers concernés
 
-1. Nouveau visiteur : accueil, diagnostic, ROI, recommandation, FAQ accessibles ; Démonstration, Offres, Configuration, Installation, RDV Test verrouillés.
-2. Réserver un RDV Démo → Démonstration et Offres se débloquent ; Configuration, Installation, RDV Test restent verrouillés.
-3. Forcer `payment_status = 'paid'` en base pour un utilisateur test → Configuration se débloque uniquement.
-4. Envoyer la configuration → Installation se débloque ; RDV Test reste verrouillé.
-5. Passer `installation_status = 'ready_for_test'` en base → RDV Test se débloque, la réservation `setup_test` fonctionne.
-6. Vider le localStorage / ouvrir en navigation privée avec la même session : les permissions serveur restent identiques ; falsifier le localStorage ne débloque rien.
-7. `?admin=lucie` : accès complet pour les démonstrations internes.
+| Fichier | Changement |
+| --- | --- |
+| `src/lib/booking-token.server.ts` | **Nouveau** — `signBookingToken()` / `verifyBookingToken()` (HMAC, base64url, validation). |
+| `src/lib/booking-token.functions.ts` | **Nouveau** — server fn `issueBookingToken` avec `requireSupabaseAuth`, retourne le token pour le `booking_type` demandé. |
+| `src/components/booking-embed.tsx` | Récupère le token à l'affichage du widget et ajoute `utm_booking_token=<token>` à l'URL iClosed (en plus des UTM actuels). Rendu du widget après obtention du token. |
+| `src/routes/api/public/hooks/iclosed.ts` | Lecture de `utm_booking_token` (payload aplati + URL de tracking), vérification, priorité de corrélation, écriture du `user_id`. |
+| Secret | `BOOKING_CORRELATION_SECRET` généré côté serveur (64 caractères). |
+
+## 6. Réconciliation des orphelins (optionnelle, sûre)
+
+Migration ponctuelle : rattacher un booking `user_id IS NULL` à un utilisateur **uniquement** lorsque son `client_ref` correspond à exactement une ligne `journey_state`/`bookings` déjà rattachée à un seul `user_id`. Aucun rattachement par email seul, aucune correspondance ambiguë traitée.
+
+Non modifiés : gating, logique H-15, Stripe, RLS existantes.
