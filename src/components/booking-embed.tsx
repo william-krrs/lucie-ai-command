@@ -214,6 +214,7 @@ export function BookingEmbed({
   const [widgetKey, setWidgetKey] = useState(0);
   const upsertBookingFn = useServerFn(upsertBooking);
   const cancelBookingFn = useServerFn(cancelBooking);
+  const issueBookingTokenFn = useServerFn(issueBookingToken);
   const createShareFn = useServerFn(createSharedDiagnostic);
   const { state } = useLucie();
   const metrics = useMetrics();
@@ -224,24 +225,52 @@ export function BookingEmbed({
    * URL brute de l'événement iClosed (servant à la fois de `data-url` pour le
    * widget inline et de lien « ouvrir dans un nouvel onglet »). iClosed récupère
    * automatiquement les paramètres UTM depuis les cookies et le référent, il n'y
-   * donc pas de pré-remplissage d'URL à construire comme avec l’ancien outil de réservation.
+   * a donc pas de pré-remplissage d'URL à construire comme avec l’ancien outil
+   * de réservation. On ajoute `utm_booking_token` : un token signé côté serveur
+   * qui permet au webhook iClosed de rattacher le RDV au bon utilisateur sans
+   * exposer d'identifiant métier dans l'URL.
    */
   const baseBookingUrl = url ?? BOOKING_URL;
   const [bookingUrl, setBookingUrl] = useState(baseBookingUrl);
 
-  // `utm_client_ref` relie le créneau iClosed au prospect : c'est la clé de
-  // corrélation prioritaire (après l'id d'événement) côté webhook.
+  // Construit l'URL iClosed avec un token de corrélation signé (utm_booking_token).
+  // Le token est renouvelé tant que la page est ouverte : à chaque variation du
+  // client_ref / bookingType on en demande un nouveau au serveur. Tant que la
+  // requête est en cours, on affiche le widget avec une URL sans token (iClosed
+  // reste fonctionnel, mais sans corrélation fiable : le webhook replantera sur
+  // client_ref/utm_client_ref).
   useEffect(() => {
-    try {
-      const next = new URL(baseBookingUrl);
-      next.searchParams.set("utm_client_ref", getClientRef());
-      next.searchParams.set("utm_source", "lucie-command-center");
-      next.searchParams.set("utm_medium", bookingType);
-      setBookingUrl(next.toString());
-    } catch {
-      setBookingUrl(baseBookingUrl);
+    let cancelled = false;
+    async function buildUrl() {
+      try {
+        const { token } = await issueBookingTokenFn({
+          data: { clientRef: getClientRef(), bookingType },
+        });
+        if (cancelled) return;
+        const next = new URL(baseBookingUrl);
+        next.searchParams.set("utm_booking_token", token);
+        next.searchParams.set("utm_source", "lucie-command-center");
+        next.searchParams.set("utm_medium", bookingType);
+        setBookingUrl(next.toString());
+      } catch {
+        if (cancelled) return;
+        // Repli : sans token, on garde utm_client_ref pour la corrélation legacy.
+        try {
+          const next = new URL(baseBookingUrl);
+          next.searchParams.set("utm_client_ref", getClientRef());
+          next.searchParams.set("utm_source", "lucie-command-center");
+          next.searchParams.set("utm_medium", bookingType);
+          setBookingUrl(next.toString());
+        } catch {
+          setBookingUrl(baseBookingUrl);
+        }
+      }
     }
-  }, [baseBookingUrl, bookingType]);
+    void buildUrl();
+    return () => {
+      cancelled = true;
+    };
+  }, [baseBookingUrl, bookingType, issueBookingTokenFn]);
 
   // Realtime : le webhook iClosed peut confirmer/annuler le RDV côté serveur.
   useEffect(() => {
