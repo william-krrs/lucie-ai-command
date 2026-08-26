@@ -49,7 +49,13 @@ function Installation() {
         title="Installation verrouillée"
         step="Installation"
         description="L'installation se débloque une fois votre configuration personnalisée envoyée et validée."
+        waitingFor="step"
+        waitingTitle="Configuration à envoyer"
+        waitingText="Complétez et envoyez le formulaire de configuration personnalisée : le suivi d'installation s'ouvrira automatiquement."
+        backTo="/preparation"
+        backLabel="Ouvrir la configuration personnalisée"
       />
+
     );
   }
   return (
