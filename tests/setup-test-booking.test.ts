@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
-import { bookingTypeFromIclosedSlug } from "@/lib/booking-types";
-import { BOOKING_URL_SETUP } from "@/lib/config";
-import { bookingTimeFieldsFromCallBooked } from "@/lib/iclosed-booking-time";
+import { bookingTypeFromIclosedSlug } from "../src/lib/booking-types";
+import { BOOKING_URL_SETUP } from "../src/lib/config";
+import { bookingTimeFieldsFromCallBooked } from "../src/lib/iclosed-booking-time";
 
 describe("setup_test", () => {
   it("url", () => expect(BOOKING_URL_SETUP).toBe("https://app.iclosed.io/e/Iucie/setup-test-lucie"));
