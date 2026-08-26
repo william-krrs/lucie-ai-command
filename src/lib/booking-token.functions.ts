@@ -22,6 +22,9 @@ export const issueBookingToken = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data) => inputSchema.parse(data))
   .handler(async ({ data, context }) => {
+    const { signBookingToken, newCorrelationSid } = await import(
+      "@/lib/booking-token.server"
+    );
     const sid = newCorrelationSid();
     const now = Math.floor(Date.now() / 1000);
     const exp = now + 24 * 60 * 60; // 24 h
