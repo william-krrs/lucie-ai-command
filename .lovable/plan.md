@@ -63,7 +63,7 @@ Aucune donnée du token n'est journalisée ; seuls `tokenValid: true|false` et u
 - Le token est émis uniquement par une server function protégée par `requireSupabaseAuth` : `uid` vient de `context.userId`, jamais d'un argument client.
 - Le secret `BOOKING_CORRELATION_SECRET` est généré côté serveur et n'est jamais exposé au bundle client.
 - Le webhook n'accepte **aucun** champ `user_id`, `uid` ou équivalent lu directement dans le payload iClosed ; ce chemin est explicitement absent du code.
-- Comparaison HMAC en temps constant + expiration courte + `jti` pour limiter le rejeu utile.
+- Comparaison HMAC en temps constant + expiration courte + `sid` unique pour limiter le rejeu utile.
 - Un token forgé ou modifié échoue la signature et retombe silencieusement sur la corrélation classique (aucune élévation possible).
 
 ## 5. Fichiers concernés
