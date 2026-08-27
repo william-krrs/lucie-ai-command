@@ -277,3 +277,203 @@ export const adminCleanupTestBookings = createServerFn({ method: "POST" })
       };
     },
   );
+
+/* ------------------------------------------------------------------ */
+/* Vue Clients (V1 minimale)                                          */
+/*                                                                     */
+/* Source principale : public.journey_state. Les utilisateurs sans     */
+/* journey_state ne sont pas listés (V1 volontairement simple).        */
+/* Sécurité : assertAdmin() AVANT tout chargement du client            */
+/* service-role ; le targetUserId n'est qu'une cible, jamais une       */
+/* preuve d'autorisation.                                              */
+/* ------------------------------------------------------------------ */
+
+export type AdminClientBooking = {
+  bookingType: string;
+  statusNorm: string;
+  meetingAt: string | null;
+  timezone: string;
+} | null;
+
+export type AdminClientRow = {
+  userId: string;
+  email: string | null;
+  name: string | null;
+  clientRef: string | null;
+  paidPlan: string | null;
+  paymentStatus: string;
+  paidAt: string | null;
+  configurationSubmitted: boolean;
+  installationStatus: AdminInstallationStatus;
+  demoCompletedAt: string | null;
+  r2Booking: AdminClientBooking;
+  setupBooking: AdminClientBooking;
+  journeyStage: string;
+  updatedAt: string | null;
+};
+
+const uuidSchema = z.object({ targetUserId: z.string().uuid() });
+
+function stageOf(row: {
+  paymentStatus: string;
+  configurationSubmitted: boolean;
+  installationStatus: string;
+  demoCompletedAt: string | null;
+  setupBooking: AdminClientBooking;
+}): string {
+  if (row.installationStatus === "live") return "En service";
+  if (row.setupBooking?.statusNorm === "confirmed") return "RDV Test confirmé";
+  if (row.installationStatus === "ready_for_test") return "Prêt pour le test";
+  if (row.installationStatus === "in_progress") return "Installation en cours";
+  if (row.configurationSubmitted) return "Configuration reçue";
+  if (row.paymentStatus === "paid") return "Payé, configuration attendue";
+  if (row.demoCompletedAt) return "Démo terminée";
+  return "Parcours démarré";
+}
+
+/** Choisit le RDV le plus pertinent : confirmé prioritaire, sinon le plus récent. */
+function pickBooking(rows: any[], type: string): AdminClientBooking {
+  const list = rows.filter((b) => b.booking_type === type);
+  const chosen = list.find((b) => b.status_norm === "confirmed") ?? list[0] ?? null;
+  if (!chosen) return null;
+  return {
+    bookingType: chosen.booking_type,
+    statusNorm: chosen.status_norm,
+    meetingAt: chosen.meeting_at ?? null,
+    timezone: chosen.timezone ?? "Europe/Paris",
+  };
+}
+
+async function buildClientRows(userIds?: string[]): Promise<AdminClientRow[]> {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+  let stateQuery = supabaseAdmin
+    .from("journey_state")
+    .select(
+      "user_id, client_ref, demo_completed_at, payment_status, paid_at, paid_plan, installation_status, updated_at",
+    )
+    .order("updated_at", { ascending: false })
+    .limit(100);
+  if (userIds) stateQuery = stateQuery.in("user_id", userIds);
+
+  const { data: states, error } = await stateQuery;
+  if (error) {
+    console.error("[admin] clients list", error);
+    throw new Error("Lecture des clients impossible.");
+  }
+  const ids = (states ?? []).map((s: any) => s.user_id);
+  if (ids.length === 0) return [];
+
+  const [bookingsRes, prepRes] = await Promise.all([
+    supabaseAdmin
+      .from("bookings")
+      .select("user_id, booking_type, status_norm, meeting_at, timezone, email, name, client_ref, created_at")
+      .in("user_id", ids)
+      .order("meeting_at", { ascending: false }),
+    supabaseAdmin
+      .from("preparation_submissions")
+      .select("user_id, contact_name, contact_email, created_at")
+      .in("user_id", ids)
+      .order("created_at", { ascending: false }),
+  ]);
+
+  const bookings = (bookingsRes.data ?? []) as any[];
+  const preps = (prepRes.data ?? []) as any[];
+
+  return (states ?? []).map((s: any) => {
+    const mine = bookings.filter((b) => b.user_id === s.user_id);
+    const prep = preps.find((p) => p.user_id === s.user_id) ?? null;
+    const anyBooking = mine[0] ?? null;
+    const base = {
+      paymentStatus: s.payment_status as string,
+      configurationSubmitted: !!prep,
+      installationStatus: s.installation_status as AdminInstallationStatus,
+      demoCompletedAt: (s.demo_completed_at as string | null) ?? null,
+      setupBooking: pickBooking(mine, "setup_test"),
+    };
+    return {
+      userId: s.user_id,
+      email: prep?.contact_email ?? anyBooking?.email ?? null,
+      name: prep?.contact_name ?? anyBooking?.name ?? null,
+      clientRef: s.client_ref ?? anyBooking?.client_ref ?? null,
+      paidPlan: s.paid_plan ?? null,
+      paymentStatus: base.paymentStatus,
+      paidAt: s.paid_at ?? null,
+      configurationSubmitted: base.configurationSubmitted,
+      installationStatus: base.installationStatus,
+      demoCompletedAt: base.demoCompletedAt,
+      r2Booking: pickBooking(mine, "r2_demo"),
+      setupBooking: base.setupBooking,
+      journeyStage: stageOf(base),
+      updatedAt: s.updated_at ?? null,
+    } satisfies AdminClientRow;
+  });
+}
+
+/** Liste des clients (lecture seule). Admin uniquement. */
+export const adminListClients = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }): Promise<AdminClientRow[]> => {
+    const ctx = context as unknown as Ctx;
+    await assertAdmin(ctx);
+    return buildClientRows();
+  });
+
+/** Fiche détaillée d'un client (lecture seule). Admin uniquement. */
+export const adminGetClient = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => uuidSchema.parse(input))
+  .handler(async ({ data, context }): Promise<AdminClientRow | null> => {
+    const ctx = context as unknown as Ctx;
+    await assertAdmin(ctx);
+    const rows = await buildClientRows([data.targetUserId]);
+    return rows[0] ?? null;
+  });
+
+const clientInstallSchema = uuidSchema.extend({
+  status: z.enum(["not_started", "in_progress", "ready_for_test", "live"]),
+});
+
+/**
+ * Seule écriture admin sur un autre compte : installation_status.
+ * Garde métier : un client non payé ne peut pas être placé en
+ * ready_for_test ni live. Aucun champ de paiement n'est jamais écrit.
+ */
+export const adminSetClientInstallationStatus = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => clientInstallSchema.parse(input))
+  .handler(async ({ data, context }): Promise<AdminClientRow | null> => {
+    const ctx = context as unknown as Ctx;
+    await assertAdmin(ctx);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: state, error } = await supabaseAdmin
+      .from("journey_state")
+      .select("id, payment_status")
+      .eq("user_id", data.targetUserId)
+      .maybeSingle();
+    if (error) {
+      console.error("[admin] client state read", error);
+      throw new Error("Lecture du client impossible.");
+    }
+    if (!state) throw new Error("Aucun parcours pour ce client.");
+
+    const requiresPaid = data.status === "ready_for_test" || data.status === "live";
+    if (requiresPaid && state.payment_status !== "paid") {
+      throw new Error(
+        "Client non payé : impossible de passer en ready_for_test ou live. Stripe reste la seule autorité du paiement.",
+      );
+    }
+
+    const { error: updateError } = await supabaseAdmin
+      .from("journey_state")
+      .update({ installation_status: data.status } as never)
+      .eq("id", state.id);
+    if (updateError) {
+      console.error("[admin] client installation update", updateError);
+      throw new Error("Écriture du statut d'installation impossible.");
+    }
+
+    const rows = await buildClientRows([data.targetUserId]);
+    return rows[0] ?? null;
+  });
