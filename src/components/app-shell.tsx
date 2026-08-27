@@ -191,9 +191,17 @@ export function AppShell({ children }: { children: ReactNode }) {
           </p>
         </div>
 
-        <div className="border-t border-border px-6 py-4 text-[11px] text-muted-foreground">
-          Spark Media Marketing
+        <div className="flex items-center justify-between gap-2 border-t border-border px-6 py-4 text-[11px] text-muted-foreground">
+          <span>Spark Media Marketing</span>
+          <Link
+            to="/admin/login"
+            rel="nofollow"
+            className="opacity-50 transition-opacity hover:opacity-100 hover:underline"
+          >
+            Administration
+          </Link>
         </div>
+
       </aside>
 
       <main className="flex-1 min-w-0 overflow-x-hidden">
