@@ -35,7 +35,6 @@ export function useAccount(): AccountInfo {
 
   useEffect(() => {
     let cancelled = false;
-    console.log("[auth-account] effect start");
     // Le listener est enregistré avant la lecture initiale pour ne pas rater
     // la session posée par `detectSessionInUrl` au retour du lien de mail.
     const { data: sub } = supabase.auth.onAuthStateChange((_event, next) => {
@@ -45,13 +44,13 @@ export function useAccount(): AccountInfo {
     void supabase.auth
       .getSession()
       .then(({ data }) => {
-        console.log("[auth-account] getSession ok", !!data.session);
         if (cancelled) return;
         setSession(data.session);
         setReady(true);
       })
-      .catch((e) => {
-        console.error("[auth-account] getSession failed", e);
+      .catch(() => {
+        // lecture de session impossible : on sort de l'état "loading" en
+        // considérant qu'aucun compte n'est présent (le mur s'affiche).
         if (!cancelled) setReady(true);
       });
     return () => {
