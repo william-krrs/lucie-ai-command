@@ -459,6 +459,7 @@ function Merci() {
           </Button>
         </div>
       </section>
+      </>
       )}
     </div>
   );
