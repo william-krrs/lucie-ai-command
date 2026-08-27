@@ -167,8 +167,10 @@ export const Route = createFileRoute("/merci")({
 
 function Merci() {
   const { plan } = Route.useSearch();
-  const planLabel = plan ? PLAN_LABELS[plan] : "votre formule Lucie";
-  const planMissing = !plan;
+  const serverPaidPlan = paymentQuery.data?.paidPlan ?? null;
+  const effectivePlan = plan ?? serverPaidPlan ?? null;
+  const planLabel = effectivePlan ? PLAN_LABELS[effectivePlan] : "votre formule Lucie";
+  const planMissing = !effectivePlan;
   const fetchPaymentState = useServerFn(getPaymentState);
 
   // Polling serveur : on interroge journey_state.payment_status jusqu'à "paid"
