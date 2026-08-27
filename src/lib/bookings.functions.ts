@@ -174,6 +174,8 @@ export const getBookingByRef = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .inputValidator(validateRef)
   .handler(async ({ data, context }): Promise<{ booking: ServerBooking | null }> => {
+    // Référence locale héritée / non-uuid : aucun rendez-vous possible en base.
+    if (!isClientRef(data.clientRef)) return { booking: null };
     const { data: row, error } = await context.supabase
       .from("bookings")
       .select(SELECT_COLUMNS)
@@ -199,6 +201,7 @@ export const listBookingsByRef = createServerFn({ method: "GET" })
     return { clientRef };
   })
   .handler(async ({ data, context }): Promise<{ bookings: ServerBooking[] }> => {
+    if (!isClientRef(data.clientRef)) return { bookings: [] };
     const { data: rows, error } = await context.supabase
       .from("bookings")
       .select(SELECT_COLUMNS)
