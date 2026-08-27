@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { STRIPE_PLANS, type PlanKey } from "@/lib/stripe-plans";
+import { SITE_DOMAIN } from "@/lib/config";
 
 /**
  * Origine publique déduite des en-têtes de la requête (proxy Lovable).
