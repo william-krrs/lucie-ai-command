@@ -73,6 +73,28 @@ export const submitPreparation = createServerFn({ method: "POST" })
       throw new Error("Impossible d'enregistrer votre configuration. Réessayez.");
     }
 
+    // Passage automatique de l'installation en cours, sous double garde serveur :
+    // - le paiement doit être réellement 'paid' (le gating UI ne suffit pas) ;
+    // - l'état doit être 'not_started' (aucune régression depuis ready_for_test/live).
+    const { data: journey } = await supabaseAdmin
+      .from("journey_state")
+      .select("id, payment_status, installation_status")
+      .eq("user_id", context.userId)
+      .maybeSingle();
+    if (
+      journey &&
+      journey.payment_status === "paid" &&
+      journey.installation_status === "not_started"
+    ) {
+      const { error: installError } = await supabaseAdmin
+        .from("journey_state")
+        .update({ installation_status: "in_progress" })
+        .eq("id", journey.id)
+        .eq("payment_status", "paid")
+        .eq("installation_status", "not_started");
+      if (installError) console.error("[submitPreparation] installation_status", installError);
+    }
+
     // Email dispatch is wired once the sender domain is configured.
     const emailStatus: "sent" | "skipped" | "failed" = "skipped";
     await supabaseAdmin

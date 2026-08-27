@@ -37,7 +37,8 @@ export const Route = createFileRoute("/rdv-test")({
 });
 
 function RdvTest() {
-  const { canBookSetupTest } = useJourneyAccess();
+  const { canBookSetupTest, setupBookingStatusNorm, setupMeetingAt, loading } =
+    useJourneyAccess();
   if (!canBookSetupTest) {
     return (
       <LockedPage
