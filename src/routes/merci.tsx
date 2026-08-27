@@ -18,6 +18,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { PageHeader } from "@/components/app-shell";
+import { AccountGate } from "@/components/account-gate";
 import { Button } from "@/components/ui/button";
 import { ExportHistory } from "@/components/export-history";
 import { CrmExport } from "@/components/crm-export";
@@ -166,6 +167,14 @@ export const Route = createFileRoute("/merci")({
 });
 
 function Merci() {
+  return (
+    <AccountGate step="Paiement">
+      <MerciContent />
+    </AccountGate>
+  );
+}
+
+function MerciContent() {
   const { plan } = Route.useSearch();
   const fetchPaymentState = useServerFn(getPaymentState);
 

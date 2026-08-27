@@ -6,6 +6,7 @@ import { X, Check } from "lucide-react";
 import { PageHeader } from "@/components/app-shell";
 import { StepNav } from "@/components/step-nav";
 import { LockedPage } from "@/components/locked-page";
+import { AccountGate } from "@/components/account-gate";
 import { useJourneyAccess } from "@/lib/journey-access";
 
 export const Route = createFileRoute("/demonstration")({
@@ -41,6 +42,14 @@ const AFTER = [
 ];
 
 function Demonstration() {
+  return (
+    <AccountGate step="Démonstration">
+      <DemonstrationContent />
+    </AccountGate>
+  );
+}
+
+function DemonstrationContent() {
   const {
     canViewDemonstration,
     demoMeetingAt,

@@ -12,6 +12,7 @@ import {
 import { PageHeader } from "@/components/app-shell";
 import { StepNav } from "@/components/step-nav";
 import { LockedPage } from "@/components/locked-page";
+import { AccountGate } from "@/components/account-gate";
 import { useJourneyAccess } from "@/lib/journey-access";
 
 export const Route = createFileRoute("/installation")({
@@ -42,6 +43,14 @@ const STEPS = [
 ];
 
 function Installation() {
+  return (
+    <AccountGate step="Installation">
+      <InstallationContent />
+    </AccountGate>
+  );
+}
+
+function InstallationContent() {
   const { canViewInstallation } = useJourneyAccess();
   if (!canViewInstallation) {
     return (

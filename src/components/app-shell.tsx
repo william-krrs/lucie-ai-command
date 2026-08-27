@@ -29,6 +29,7 @@ import { ProspectSwitcher } from "@/components/prospect-switcher";
 import { BookingSync } from "@/components/booking-sync";
 import { TopStepBar } from "@/components/top-step-bar";
 import { KeyboardShortcuts } from "@/components/keyboard-shortcuts";
+import { AccountMenu } from "@/components/account-menu";
 
 const NAV = [
   { to: "/", label: "Accueil", icon: Home },
@@ -178,6 +179,8 @@ export function AppShell({ children }: { children: ReactNode }) {
           <SidebarProgress />
         </div>
 
+        <AccountMenu />
+
         <div className="m-4 rounded-2xl border border-border bg-card p-4 shadow-[var(--shadow-card)]">
           <div className="flex items-center gap-2 text-xs font-medium text-foreground">
             <span className="relative flex h-2 w-2">
@@ -213,6 +216,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             <span className="truncate text-sm font-semibold tracking-tight">Lucie</span>
           </Link>
           <div className="flex items-center gap-2">
+            <AccountMenu compact />
             <ProspectSwitcher />
             <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
             <SheetTrigger

@@ -21,6 +21,7 @@ import { StepNav } from "@/components/step-nav";
 import { useRecommendation } from "@/lib/lucie-store";
 import { PLAN_LABELS, PLAN_TAGLINES, TIER_LABELS, PRIORITY_CTA } from "@/lib/recommendation";
 import { LockedPage } from "@/components/locked-page";
+import { AccountGate } from "@/components/account-gate";
 import { useJourneyAccess } from "@/lib/journey-access";
 import { BOOKING_URL_SETUP } from "@/lib/config";
 import { useUniqueModule, MODULE_IDS } from "@/lib/module-registry";
@@ -130,6 +131,17 @@ const COMPARISON: { label: string; values: Record<PlanKey, string | boolean> }[]
 ];
 
 function Offres() {
+  return (
+    <AccountGate
+      step="Offres & paiement"
+      description="Le paiement et la suite du parcours sont rattachés à votre compte. Créez-le avant de choisir votre formule : votre diagnostic est conservé."
+    >
+      <OffresContent />
+    </AccountGate>
+  );
+}
+
+function OffresContent() {
   useUniqueModule(MODULE_IDS.paymentPlans);
   const rec = useRecommendation();
   const { canViewOffers } = useJourneyAccess();

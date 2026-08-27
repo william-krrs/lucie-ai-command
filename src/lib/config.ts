@@ -10,6 +10,17 @@
  */
 export const AUDIT_MODE = false;
 
+/**
+ * V1 — « 1 compte authentifié = 1 user_id = 1 parcours ».
+ * true  : les étapes personnelles (démonstration, offres, paiement,
+ *         configuration, installation, RDV test, réservation R2) exigent un
+ *         compte email authentifié. Une session anonyme ne suffit jamais.
+ * false : comportement historique (session anonyme automatique).
+ * Le diagnostic, le ROI, la recommandation, le partage et les simulations
+ * commerciales restent publics dans les deux cas.
+ */
+export const REQUIRE_ACCOUNT = true;
+
 /** Ouvre toutes les étapes du parcours à tous les visiteurs (aucun verrouillage). */
 export const UNLOCK_ALL_PAGES = false;
 

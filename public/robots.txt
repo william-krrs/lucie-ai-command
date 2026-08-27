@@ -3,5 +3,7 @@ Allow: /
 Disallow: /admin
 Disallow: /admin/login
 Disallow: /admin/reset-password
+Disallow: /connexion
+Disallow: /mot-de-passe
 
 Sitemap: https://lucie-ai-command.lovable.app/sitemap.xml
