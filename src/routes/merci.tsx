@@ -1,5 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { z } from "zod";
+import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import {
   CheckCircle2,
   Calendar,
@@ -13,6 +15,7 @@ import {
   CreditCard,
   ChevronRight,
   ArrowRight,
+  Loader2,
 } from "lucide-react";
 import { PageHeader } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
@@ -20,6 +23,7 @@ import { ExportHistory } from "@/components/export-history";
 import { CrmExport } from "@/components/crm-export";
 import { cn } from "@/lib/utils";
 import { CONTACT_EMAIL } from "@/lib/config";
+import { getPaymentState } from "@/lib/stripe-checkout.functions";
 
 const planSearchSchema = z.object({
   plan: z.enum(["essential", "pro", "premium"]).optional(),
