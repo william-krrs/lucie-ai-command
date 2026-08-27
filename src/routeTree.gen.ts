@@ -24,6 +24,7 @@ import { Route as DemoRouteImport } from './routes/demo'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DTokenRouteImport } from './routes/d.$token'
+import { Route as AdminResetPasswordRouteImport } from './routes/admin_.reset-password'
 import { Route as AdminLoginRouteImport } from './routes/admin_.login'
 import { Route as ApiPublicHooksStripeRouteImport } from './routes/api/public/hooks/stripe'
 import { Route as ApiPublicHooksSendRemindersRouteImport } from './routes/api/public/hooks/send-reminders'
@@ -104,6 +105,11 @@ const DTokenRoute = DTokenRouteImport.update({
   path: '/d/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminResetPasswordRoute = AdminResetPasswordRouteImport.update({
+  id: '/admin_/reset-password',
+  path: '/admin/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminLoginRoute = AdminLoginRouteImport.update({
   id: '/admin_/login',
   path: '/admin/login',
@@ -142,6 +148,7 @@ export interface FileRoutesByFullPath {
   '/roi': typeof RoiRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/admin/login': typeof AdminLoginRoute
+  '/admin/reset-password': typeof AdminResetPasswordRoute
   '/d/$token': typeof DTokenRoute
   '/api/public/hooks/iclosed': typeof ApiPublicHooksIclosedRoute
   '/api/public/hooks/send-reminders': typeof ApiPublicHooksSendRemindersRoute
@@ -163,6 +170,7 @@ export interface FileRoutesByTo {
   '/roi': typeof RoiRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/admin/login': typeof AdminLoginRoute
+  '/admin/reset-password': typeof AdminResetPasswordRoute
   '/d/$token': typeof DTokenRoute
   '/api/public/hooks/iclosed': typeof ApiPublicHooksIclosedRoute
   '/api/public/hooks/send-reminders': typeof ApiPublicHooksSendRemindersRoute
@@ -185,6 +193,7 @@ export interface FileRoutesById {
   '/roi': typeof RoiRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/admin_/login': typeof AdminLoginRoute
+  '/admin_/reset-password': typeof AdminResetPasswordRoute
   '/d/$token': typeof DTokenRoute
   '/api/public/hooks/iclosed': typeof ApiPublicHooksIclosedRoute
   '/api/public/hooks/send-reminders': typeof ApiPublicHooksSendRemindersRoute
@@ -208,6 +217,7 @@ export interface FileRouteTypes {
     | '/roi'
     | '/sitemap.xml'
     | '/admin/login'
+    | '/admin/reset-password'
     | '/d/$token'
     | '/api/public/hooks/iclosed'
     | '/api/public/hooks/send-reminders'
@@ -229,6 +239,7 @@ export interface FileRouteTypes {
     | '/roi'
     | '/sitemap.xml'
     | '/admin/login'
+    | '/admin/reset-password'
     | '/d/$token'
     | '/api/public/hooks/iclosed'
     | '/api/public/hooks/send-reminders'
@@ -250,6 +261,7 @@ export interface FileRouteTypes {
     | '/roi'
     | '/sitemap.xml'
     | '/admin_/login'
+    | '/admin_/reset-password'
     | '/d/$token'
     | '/api/public/hooks/iclosed'
     | '/api/public/hooks/send-reminders'
@@ -272,6 +284,7 @@ export interface RootRouteChildren {
   RoiRoute: typeof RoiRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   AdminLoginRoute: typeof AdminLoginRoute
+  AdminResetPasswordRoute: typeof AdminResetPasswordRoute
   DTokenRoute: typeof DTokenRoute
   ApiPublicHooksIclosedRoute: typeof ApiPublicHooksIclosedRoute
   ApiPublicHooksSendRemindersRoute: typeof ApiPublicHooksSendRemindersRoute
@@ -385,6 +398,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin_/reset-password': {
+      id: '/admin_/reset-password'
+      path: '/admin/reset-password'
+      fullPath: '/admin/reset-password'
+      preLoaderRoute: typeof AdminResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin_/login': {
       id: '/admin_/login'
       path: '/admin/login'
@@ -432,6 +452,7 @@ const rootRouteChildren: RootRouteChildren = {
   RoiRoute: RoiRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   AdminLoginRoute: AdminLoginRoute,
+  AdminResetPasswordRoute: AdminResetPasswordRoute,
   DTokenRoute: DTokenRoute,
   ApiPublicHooksIclosedRoute: ApiPublicHooksIclosedRoute,
   ApiPublicHooksSendRemindersRoute: ApiPublicHooksSendRemindersRoute,
