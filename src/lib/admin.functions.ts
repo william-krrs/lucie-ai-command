@@ -233,8 +233,8 @@ const installationSchema = z.object({
 
 /** Définit installation_status (aucun impact paiement). */
 export const adminSetInstallationStatus = createServerFn({ method: "POST" })
-  .inputValidator((input: unknown) => installationSchema.parse(input))
   .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => installationSchema.parse(input))
   .handler(async ({ data, context }): Promise<AdminOverview> => {
     const ctx = context as unknown as Ctx;
     await assertAdmin(ctx);
