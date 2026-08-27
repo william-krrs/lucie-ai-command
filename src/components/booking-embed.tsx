@@ -152,7 +152,7 @@ export type BookingEmbedProps = {
   bookedTitle?: string;
   bookedDescription?: string;
   /** État R2 serveur faisant autorité sur le cache local. */
-  authoritativeR2?: {
+  authoritativeBooking?: {
     statusNorm: Booking["statusNorm"] | null;
     meetingAt: string | null;
     loading: boolean;
@@ -167,16 +167,16 @@ export function BookingEmbed({
   description,
   bookedTitle,
   bookedDescription,
-  authoritativeR2,
+  authoritativeBooking,
 }: BookingEmbedProps = {}) {
   const { getBookingFor, setBookingFor, clearBookingFor } = useBooking();
   const cachedBooking = getBookingFor(bookingType);
   const booking = (() => {
-    if (!authoritativeR2) return cachedBooking;
-    if (authoritativeR2.loading || authoritativeR2.statusNorm !== "confirmed" || !authoritativeR2.meetingAt) {
+    if (!authoritativeBooking) return cachedBooking;
+    if (authoritativeBooking.loading || authoritativeBooking.statusNorm !== "confirmed" || !authoritativeBooking.meetingAt) {
       return null;
     }
-    const date = new Date(authoritativeR2.meetingAt);
+    const date = new Date(authoritativeBooking.meetingAt);
     if (Number.isNaN(date.getTime())) return null;
     return {
       ...(cachedBooking ?? {}),
@@ -195,8 +195,8 @@ export function BookingEmbed({
       status: "pending" as const,
       statusNorm: "confirmed" as const,
       bookingType,
-      createdAt: cachedBooking?.createdAt ?? authoritativeR2.meetingAt,
-      updatedAt: cachedBooking?.updatedAt ?? authoritativeR2.meetingAt,
+      createdAt: cachedBooking?.createdAt ?? authoritativeBooking.meetingAt,
+      updatedAt: cachedBooking?.updatedAt ?? authoritativeBooking.meetingAt,
     } satisfies Booking;
   })();
   const setBooking = (b: Parameters<typeof setBookingFor>[1]) => setBookingFor(bookingType, b);

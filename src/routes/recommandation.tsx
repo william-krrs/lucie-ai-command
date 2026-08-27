@@ -939,7 +939,7 @@ function RecommandationPage() {
       <div id="rdv" className="scroll-mt-24">
         <BookingEmbed
           bookingType="r2_demo"
-          authoritativeR2={{
+          authoritativeBooking={{
             statusNorm: journey.demoBookingStatusNorm,
             meetingAt: journey.demoMeetingAt,
             loading: journey.loading,
