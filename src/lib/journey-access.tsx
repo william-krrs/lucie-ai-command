@@ -4,7 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { readAdminMode } from "@/lib/admin-mode";
 import { useBooking } from "@/lib/booking-store";
-import { UNLOCK_ALL_PAGES } from "@/lib/config";
+import { REQUIRE_ACCOUNT, UNLOCK_ALL_PAGES } from "@/lib/config";
 import {
   completeDemo as completeDemoFn,
   getJourneyState,
@@ -68,11 +68,18 @@ export function JourneyAccessProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     setBypass(UNLOCK_ALL_PAGES || readAdminMode());
     let cancelled = false;
+    // Une session anonyme n'est jamais un compte client : quand
+    // REQUIRE_ACCOUNT est actif, seul un compte email porte un parcours.
+    const isJourneyIdentity = (session: { user?: { is_anonymous?: boolean; email?: string | null } } | null) => {
+      if (!session?.user) return false;
+      if (!REQUIRE_ACCOUNT) return true;
+      return session.user.is_anonymous !== true && !!session.user.email;
+    };
     supabase.auth.getSession().then(({ data }) => {
-      if (!cancelled) setAuthed(!!data.session);
+      if (!cancelled) setAuthed(isJourneyIdentity(data.session));
     });
     const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
-      setAuthed(!!session);
+      setAuthed(isJourneyIdentity(session));
     });
     return () => {
       cancelled = true;

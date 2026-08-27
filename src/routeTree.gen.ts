@@ -15,12 +15,14 @@ import { Route as RecommandationRouteImport } from './routes/recommandation'
 import { Route as RdvTestRouteImport } from './routes/rdv-test'
 import { Route as PreparationRouteImport } from './routes/preparation'
 import { Route as OffresRouteImport } from './routes/offres'
+import { Route as MotDePasseRouteImport } from './routes/mot-de-passe'
 import { Route as MerciRouteImport } from './routes/merci'
 import { Route as InstallationRouteImport } from './routes/installation'
 import { Route as FaqRouteImport } from './routes/faq'
 import { Route as DiagnosticRouteImport } from './routes/diagnostic'
 import { Route as DemonstrationRouteImport } from './routes/demonstration'
 import { Route as DemoRouteImport } from './routes/demo'
+import { Route as ConnexionRouteImport } from './routes/connexion'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DTokenRouteImport } from './routes/d.$token'
@@ -60,6 +62,11 @@ const OffresRoute = OffresRouteImport.update({
   path: '/offres',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MotDePasseRoute = MotDePasseRouteImport.update({
+  id: '/mot-de-passe',
+  path: '/mot-de-passe',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MerciRoute = MerciRouteImport.update({
   id: '/merci',
   path: '/merci',
@@ -88,6 +95,11 @@ const DemonstrationRoute = DemonstrationRouteImport.update({
 const DemoRoute = DemoRouteImport.update({
   id: '/demo',
   path: '/demo',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConnexionRoute = ConnexionRouteImport.update({
+  id: '/connexion',
+  path: '/connexion',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminRoute = AdminRouteImport.update({
@@ -135,12 +147,14 @@ const ApiPublicHooksIclosedRoute = ApiPublicHooksIclosedRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/connexion': typeof ConnexionRoute
   '/demo': typeof DemoRoute
   '/demonstration': typeof DemonstrationRoute
   '/diagnostic': typeof DiagnosticRoute
   '/faq': typeof FaqRoute
   '/installation': typeof InstallationRoute
   '/merci': typeof MerciRoute
+  '/mot-de-passe': typeof MotDePasseRoute
   '/offres': typeof OffresRoute
   '/preparation': typeof PreparationRoute
   '/rdv-test': typeof RdvTestRoute
@@ -157,12 +171,14 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/connexion': typeof ConnexionRoute
   '/demo': typeof DemoRoute
   '/demonstration': typeof DemonstrationRoute
   '/diagnostic': typeof DiagnosticRoute
   '/faq': typeof FaqRoute
   '/installation': typeof InstallationRoute
   '/merci': typeof MerciRoute
+  '/mot-de-passe': typeof MotDePasseRoute
   '/offres': typeof OffresRoute
   '/preparation': typeof PreparationRoute
   '/rdv-test': typeof RdvTestRoute
@@ -180,12 +196,14 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/connexion': typeof ConnexionRoute
   '/demo': typeof DemoRoute
   '/demonstration': typeof DemonstrationRoute
   '/diagnostic': typeof DiagnosticRoute
   '/faq': typeof FaqRoute
   '/installation': typeof InstallationRoute
   '/merci': typeof MerciRoute
+  '/mot-de-passe': typeof MotDePasseRoute
   '/offres': typeof OffresRoute
   '/preparation': typeof PreparationRoute
   '/rdv-test': typeof RdvTestRoute
@@ -204,12 +222,14 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/admin'
+    | '/connexion'
     | '/demo'
     | '/demonstration'
     | '/diagnostic'
     | '/faq'
     | '/installation'
     | '/merci'
+    | '/mot-de-passe'
     | '/offres'
     | '/preparation'
     | '/rdv-test'
@@ -226,12 +246,14 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/admin'
+    | '/connexion'
     | '/demo'
     | '/demonstration'
     | '/diagnostic'
     | '/faq'
     | '/installation'
     | '/merci'
+    | '/mot-de-passe'
     | '/offres'
     | '/preparation'
     | '/rdv-test'
@@ -248,12 +270,14 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/admin'
+    | '/connexion'
     | '/demo'
     | '/demonstration'
     | '/diagnostic'
     | '/faq'
     | '/installation'
     | '/merci'
+    | '/mot-de-passe'
     | '/offres'
     | '/preparation'
     | '/rdv-test'
@@ -271,12 +295,14 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
+  ConnexionRoute: typeof ConnexionRoute
   DemoRoute: typeof DemoRoute
   DemonstrationRoute: typeof DemonstrationRoute
   DiagnosticRoute: typeof DiagnosticRoute
   FaqRoute: typeof FaqRoute
   InstallationRoute: typeof InstallationRoute
   MerciRoute: typeof MerciRoute
+  MotDePasseRoute: typeof MotDePasseRoute
   OffresRoute: typeof OffresRoute
   PreparationRoute: typeof PreparationRoute
   RdvTestRoute: typeof RdvTestRoute
@@ -335,6 +361,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OffresRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/mot-de-passe': {
+      id: '/mot-de-passe'
+      path: '/mot-de-passe'
+      fullPath: '/mot-de-passe'
+      preLoaderRoute: typeof MotDePasseRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/merci': {
       id: '/merci'
       path: '/merci'
@@ -375,6 +408,13 @@ declare module '@tanstack/react-router' {
       path: '/demo'
       fullPath: '/demo'
       preLoaderRoute: typeof DemoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/connexion': {
+      id: '/connexion'
+      path: '/connexion'
+      fullPath: '/connexion'
+      preLoaderRoute: typeof ConnexionRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin': {
@@ -439,12 +479,14 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
+  ConnexionRoute: ConnexionRoute,
   DemoRoute: DemoRoute,
   DemonstrationRoute: DemonstrationRoute,
   DiagnosticRoute: DiagnosticRoute,
   FaqRoute: FaqRoute,
   InstallationRoute: InstallationRoute,
   MerciRoute: MerciRoute,
+  MotDePasseRoute: MotDePasseRoute,
   OffresRoute: OffresRoute,
   PreparationRoute: PreparationRoute,
   RdvTestRoute: RdvTestRoute,

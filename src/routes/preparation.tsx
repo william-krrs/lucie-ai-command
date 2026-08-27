@@ -3,6 +3,7 @@ import { z } from "zod";
 import { PageHeader } from "@/components/app-shell";
 import { PreparationForm } from "@/components/preparation-form";
 import { LockedPage } from "@/components/locked-page";
+import { AccountGate } from "@/components/account-gate";
 import { useJourneyAccess } from "@/lib/journey-access";
 
 const searchSchema = z.object({
@@ -51,6 +52,14 @@ export const Route = createFileRoute("/preparation")({
 });
 
 function Preparation() {
+  return (
+    <AccountGate step="Configuration personnalisée">
+      <PreparationContent />
+    </AccountGate>
+  );
+}
+
+function PreparationContent() {
   const { plan } = Route.useSearch();
   const { canConfigure } = useJourneyAccess();
   const planLabel = plan ? PLAN_LABELS[plan] : "Non précisée";

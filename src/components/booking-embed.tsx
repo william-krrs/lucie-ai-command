@@ -14,7 +14,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { BOOKING_URL } from "@/lib/config";
+import { BOOKING_URL, REQUIRE_ACCOUNT } from "@/lib/config";
 import { supabase } from "@/integrations/supabase/client";
 import { DEFAULT_BOOKING_TYPE, type BookingType } from "@/lib/booking-types";
 import { useAdminMode } from "@/lib/admin-mode";
@@ -254,7 +254,14 @@ export function BookingEmbed({
         // plutôt que de déclencher une 401.
         const { data: sessionData } = await supabase.auth.getSession();
         if (cancelled) return;
-        if (!sessionData.session) throw new Error("no-session");
+        const sessionUser = sessionData.session?.user as
+          | { is_anonymous?: boolean; email?: string | null }
+          | undefined;
+        if (!sessionUser) throw new Error("no-session");
+        // Une session anonyme héritée ne doit jamais porter un RDV client.
+        if (REQUIRE_ACCOUNT && (sessionUser.is_anonymous === true || !sessionUser.email)) {
+          throw new Error("no-account");
+        }
         hadSession = true;
         const { token } = await issueBookingTokenFn({
           data: { clientRef, bookingType },

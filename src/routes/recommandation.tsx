@@ -30,6 +30,7 @@ import { RecommendationCard } from "@/components/recommendation-card";
 import { RoiBreakdown } from "@/components/roi-breakdown";
 import { QrCodeCard } from "@/components/qr-code";
 import { BookingEmbed } from "@/components/booking-embed";
+import { AccountGate } from "@/components/account-gate";
 import { formatEUR, useLucie, useMetrics, useRecommendation } from "@/lib/lucie-store";
 import { PLAN_LABELS, PLAN_TAGLINES, PRIORITY_CTA } from "@/lib/recommendation";
 import { createSharedDiagnostic } from "@/lib/share.functions";
@@ -937,6 +938,11 @@ function RecommandationPage() {
       </div>
 
       <div id="rdv" className="scroll-mt-24">
+        <AccountGate
+          step="Réservation de la démonstration"
+          title="Créez votre compte pour réserver"
+          description="Le rendez-vous de démonstration est rattaché à votre compte client. Créez-le ou connectez-vous : votre diagnostic et votre recommandation restent exactement en l'état."
+        >
         <BookingEmbed
           bookingType="r2_demo"
           authoritativeBooking={{
@@ -945,6 +951,7 @@ function RecommandationPage() {
             loading: journey.loading,
           }}
         />
+        </AccountGate>
       </div>
 
       <RoiBreakdown />

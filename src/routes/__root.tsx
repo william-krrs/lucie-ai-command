@@ -17,6 +17,7 @@ import { BookingProvider } from "@/lib/booking-store";
 import { JourneyAccessProvider } from "@/lib/journey-access";
 import { AppShell } from "@/components/app-shell";
 import { AnonAuthBootstrap } from "@/components/anon-auth-bootstrap";
+import { REQUIRE_ACCOUNT } from "@/lib/config";
 
 if (typeof window !== "undefined") {
   const reloadOnChunkError = (message: string) => {
@@ -179,7 +180,10 @@ function RootComponent() {
       <LucieProvider>
         <BookingProvider>
           <JourneyAccessProvider>
-          <AnonAuthBootstrap />
+          {/* Transition : plus aucune session anonyme n'est créée quand
+              REQUIRE_ACCOUNT est actif. Les sessions anonymes existantes ne sont
+              pas invalidées, mais ne valent jamais compte client. */}
+          {!REQUIRE_ACCOUNT && <AnonAuthBootstrap />}
           {isStandalone ? (
             <Outlet />
           ) : (

@@ -3,6 +3,7 @@ import { PageHeader } from "@/components/app-shell";
 import { StepNav } from "@/components/step-nav";
 import { BookingEmbed } from "@/components/booking-embed";
 import { LockedPage } from "@/components/locked-page";
+import { AccountGate } from "@/components/account-gate";
 import { useJourneyAccess } from "@/lib/journey-access";
 import { BOOKING_URL_SETUP } from "@/lib/config";
 
@@ -37,6 +38,14 @@ export const Route = createFileRoute("/rdv-test")({
 });
 
 function RdvTest() {
+  return (
+    <AccountGate step="RDV Test & paramétrage">
+      <RdvTestContent />
+    </AccountGate>
+  );
+}
+
+function RdvTestContent() {
   const { canBookSetupTest, setupBookingStatusNorm, setupMeetingAt, loading } =
     useJourneyAccess();
   if (!canBookSetupTest) {
