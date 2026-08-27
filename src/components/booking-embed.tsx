@@ -245,6 +245,10 @@ export function BookingEmbed({
       let hadSession = false;
       try {
         const clientRef = getClientRef();
+        // Référence héritée non-UUID : on ne sollicite pas le serveur (ZodError).
+        if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(clientRef)) {
+          throw new Error("invalid-client-ref");
+        }
         // Le token est émis par une fonction serveur authentifiée : sans session
         // (bootstrap anonyme encore en cours), on part directement sur le repli
         // plutôt que de déclencher une 401.
