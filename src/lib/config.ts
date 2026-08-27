@@ -25,11 +25,20 @@ const env = (import.meta as any).env ?? {};
 
 export const SITE_DOMAIN: string = env.VITE_SITE_DOMAIN ?? "assistantvocalpro.fr";
 export const SITE_URL: string = env.VITE_SITE_URL ?? `https://${SITE_DOMAIN}`;
-export const CONTACT_EMAIL: string = env.VITE_CONTACT_EMAIL ?? `contact@${SITE_DOMAIN}`;
+
+/**
+ * Identité e-mail : le domaine d'envoi vérifié (délégation NS Lovable) est
+ * `notify.lucieassistant.fr`. Il est volontairement distinct du domaine du
+ * site public (assistantvocalpro.fr).
+ */
+const EMAIL_ROOT_DOMAIN: string = env.VITE_EMAIL_ROOT_DOMAIN ?? "lucieassistant.fr";
+
+export const CONTACT_EMAIL: string = env.VITE_CONTACT_EMAIL ?? `contact@${EMAIL_ROOT_DOMAIN}`;
 export const EMAIL_SENDER_DOMAIN: string =
-  env.VITE_EMAIL_SENDER_DOMAIN ?? `notify.${SITE_DOMAIN}`;
+  env.VITE_EMAIL_SENDER_DOMAIN ?? `notify.${EMAIL_ROOT_DOMAIN}`;
 export const EMAIL_FROM: string = env.VITE_EMAIL_FROM ?? `Lucie <${CONTACT_EMAIL}>`;
 export const BRAND_NAME: string = env.VITE_BRAND_NAME ?? "Lucie Assistant";
+
 
 /**
  * URL du module de prise de rendez-vous iClosed incrusté sur /recommandation
