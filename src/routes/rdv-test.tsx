@@ -37,7 +37,8 @@ export const Route = createFileRoute("/rdv-test")({
 });
 
 function RdvTest() {
-  const { canBookSetupTest } = useJourneyAccess();
+  const { canBookSetupTest, setupBookingStatusNorm, setupMeetingAt, loading } =
+    useJourneyAccess();
   if (!canBookSetupTest) {
     return (
       <LockedPage
@@ -53,12 +54,21 @@ function RdvTest() {
 
     );
   }
+  const confirmed = setupBookingStatusNorm === "confirmed" && !!setupMeetingAt;
   return (
     <div className="space-y-10">
       <PageHeader
         eyebrow="Étape 10 · Test & paramétrage"
-        title="Réservez votre RDV de mise en service"
-        description="Une session dédiée avec l'équipe Lucie pour tester votre assistante en conditions réelles, valider les scénarios et finaliser le paramétrage."
+        title={
+          confirmed
+            ? "RDV de mise en service confirmé ✅"
+            : "Réservez votre RDV de mise en service"
+        }
+        description={
+          confirmed
+            ? "Votre créneau est enregistré côté serveur. Vous pouvez le modifier ou le replanifier ci-dessous si besoin."
+            : "Une session dédiée avec l'équipe Lucie pour tester votre assistante en conditions réelles, valider les scénarios et finaliser le paramétrage."
+        }
       />
       <BookingEmbed
         bookingType="setup_test"
@@ -66,8 +76,13 @@ function RdvTest() {
         eyebrow="RDV Test & paramétrage"
         title="Choisissez un créneau pour la mise en service"
         description="Ce rendez-vous a lieu après l'installation. Nous testons ensemble le comportement de Lucie, ajustons les réponses et validons les scénarios critiques."
-        bookedTitle="RDV Test & paramétrage confirmé"
+        bookedTitle="RDV de mise en service confirmé ✅"
         bookedDescription="Nous nous retrouverons ce jour-là pour valider ensemble la mise en service de votre assistante."
+        authoritativeBooking={{
+          statusNorm: setupBookingStatusNorm,
+          meetingAt: setupMeetingAt,
+          loading,
+        }}
       />
       <StepNav current="/rdv-test" />
     </div>

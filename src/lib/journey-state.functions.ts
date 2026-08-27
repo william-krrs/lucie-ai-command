@@ -19,6 +19,10 @@ export type JourneyStateDTO = {
   demoUnlockAt: string | null;
   /** true si une configuration (preparation_submissions) a été soumise. */
   configurationSubmitted: boolean;
+  /** Statut normalisé du RDV Test & paramétrage (setup_test) côté serveur. */
+  setupBookingStatusNorm: "pending" | "confirmed" | "cancelled" | "rescheduled" | "completed" | "no_show" | null;
+  /** meeting_at (ISO) du RDV setup_test confirmé, sinon null. */
+  setupMeetingAt: string | null;
 };
 
 /** Fenêtre d'ouverture avant le rendez-vous (ms). */
@@ -33,6 +37,8 @@ const EMPTY: JourneyStateDTO = {
   demoMeetingAt: null,
   demoUnlockAt: null,
   configurationSubmitted: false,
+  setupBookingStatusNorm: null,
+  setupMeetingAt: null,
 };
 
 
@@ -45,7 +51,7 @@ export const getJourneyState = createServerFn({ method: "GET" })
   .handler(async ({ context }): Promise<JourneyStateDTO> => {
     const { supabase, userId } = context;
 
-    const [stateRes, confirmedBookingRes, latestBookingRes, prepRes] = await Promise.all([
+    const [stateRes, confirmedBookingRes, latestBookingRes, prepRes, setupBookingRes] = await Promise.all([
       supabase
         .from("journey_state")
         .select("demo_completed_at, payment_status, installation_status")
@@ -67,6 +73,13 @@ export const getJourneyState = createServerFn({ method: "GET" })
         .order("updated_at", { ascending: false })
         .limit(1),
       supabase.from("preparation_submissions").select("id").eq("user_id", userId).limit(1),
+      supabase
+        .from("bookings")
+        .select("status_norm, meeting_at")
+        .eq("user_id", userId)
+        .eq("booking_type", "setup_test")
+        .order("meeting_at", { ascending: false })
+        .limit(5),
     ]);
 
     if (stateRes.error) console.error("[getJourneyState] state", stateRes.error);
@@ -84,6 +97,9 @@ export const getJourneyState = createServerFn({ method: "GET" })
     const meetingAt = meetingAtRaw ? new Date(meetingAtRaw) : null;
     const unlockAt = meetingAt ? new Date(meetingAt.getTime() - DEMO_UNLOCK_LEAD_MS) : null;
 
+    const setupRows = (setupBookingRes.data ?? []) as { status_norm: string; meeting_at: string | null }[];
+    const setupConfirmed = setupRows.find((r) => r.status_norm === "confirmed") ?? null;
+
     return {
       ...EMPTY,
       demoCompletedAt: row?.demo_completed_at ?? null,
@@ -96,6 +112,11 @@ export const getJourneyState = createServerFn({ method: "GET" })
       demoMeetingAt: meetingAt ? meetingAt.toISOString() : null,
       demoUnlockAt: unlockAt ? unlockAt.toISOString() : null,
       configurationSubmitted: (prepRes.data?.length ?? 0) > 0,
+      // Le RDV confirmé prime sur un éventuel créneau annulé plus récent.
+      setupBookingStatusNorm: setupConfirmed
+        ? "confirmed"
+        : (setupRows[0]?.status_norm as JourneyStateDTO["setupBookingStatusNorm"]) ?? null,
+      setupMeetingAt: setupConfirmed?.meeting_at ?? null,
     };
 
   });

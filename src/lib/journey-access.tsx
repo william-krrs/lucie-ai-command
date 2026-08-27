@@ -31,6 +31,10 @@ export type JourneyAccess = {
   canViewInstallation: boolean;
   /** journey_state.installation_status === 'ready_for_test'. */
   canBookSetupTest: boolean;
+  /** Statut serveur du RDV Test & paramétrage. */
+  setupBookingStatusNorm: JourneyStateDTO["setupBookingStatusNorm"];
+  /** meeting_at (ISO) du RDV Test confirmé côté serveur. */
+  setupMeetingAt: string | null;
   /** Aperçu interne (?admin=lucie) ou UNLOCK_ALL_PAGES. */
   bypass: boolean;
   refresh: () => Promise<void>;
@@ -46,6 +50,8 @@ const FALLBACK: JourneyStateDTO = {
   demoMeetingAt: null,
   demoUnlockAt: null,
   configurationSubmitted: false,
+  setupBookingStatusNorm: null,
+  setupMeetingAt: null,
 };
 
 const JourneyCtx = createContext<JourneyAccess | null>(null);
@@ -148,6 +154,8 @@ export function JourneyAccessProvider({ children }: { children: ReactNode }) {
       canConfigure: bypass || effective.paymentStatus === "paid",
       canViewInstallation: bypass || effective.configurationSubmitted,
       canBookSetupTest: bypass || effective.installationStatus === "ready_for_test",
+      setupBookingStatusNorm: effective.setupBookingStatusNorm,
+      setupMeetingAt: effective.setupMeetingAt,
       bypass,
       refresh,
       completeDemo,
