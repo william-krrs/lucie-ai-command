@@ -1,5 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { z } from "zod";
+import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import {
   CheckCircle2,
   Calendar,
@@ -13,6 +15,7 @@ import {
   CreditCard,
   ChevronRight,
   ArrowRight,
+  Loader2,
 } from "lucide-react";
 import { PageHeader } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
@@ -20,6 +23,7 @@ import { ExportHistory } from "@/components/export-history";
 import { CrmExport } from "@/components/crm-export";
 import { cn } from "@/lib/utils";
 import { CONTACT_EMAIL } from "@/lib/config";
+import { getPaymentState } from "@/lib/stripe-checkout.functions";
 
 const planSearchSchema = z.object({
   plan: z.enum(["essential", "pro", "premium"]).optional(),
@@ -163,22 +167,88 @@ export const Route = createFileRoute("/merci")({
 
 function Merci() {
   const { plan } = Route.useSearch();
-  const planLabel = plan ? PLAN_LABELS[plan] : "votre formule Lucie";
-  const planMissing = !plan;
+  const fetchPaymentState = useServerFn(getPaymentState);
+
+  // Polling serveur : on interroge journey_state.payment_status jusqu'à "paid"
+  // (le webhook Stripe met à jour l'état de façon asynchrone). On arrête de
+  // poller dès qu'un statut terminal (paid/refunded) est reçu.
+  const paymentQuery = useQuery({
+    queryKey: ["payment-state"],
+    queryFn: () => fetchPaymentState(),
+    refetchInterval: (query) => {
+      const status = query.state.data?.paymentStatus;
+      if (status === "paid" || status === "refunded") return false;
+      return 2500;
+    },
+    refetchIntervalInBackground: false,
+  });
+
+  const paymentStatus = paymentQuery.data?.paymentStatus ?? "unpaid";
+  const isPaid = paymentStatus === "paid";
+  const isRefunded = paymentStatus === "refunded";
+  const serverPaidPlan = paymentQuery.data?.paidPlan ?? null;
+  const effectivePlan = plan ?? serverPaidPlan ?? null;
+  const planLabel = effectivePlan ? PLAN_LABELS[effectivePlan] : "votre formule Lucie";
+  const planMissing = !effectivePlan;
 
   return (
     <div className="space-y-10">
       <PageHeader
-        eyebrow="Étape 07 · Paiement confirmé"
-        title="Merci — bienvenue chez Lucie"
-        description="Votre paiement a bien été reçu. Notre équipe prend le relais pour lancer votre installation."
+        eyebrow="Étape 07 · Paiement"
+        title={isPaid ? "Merci — bienvenue chez Lucie" : "Confirmation de paiement"}
+        description={
+          isPaid
+            ? "Votre paiement a bien été reçu. Notre équipe prend le relais pour lancer votre installation."
+            : "Nous attendons la confirmation de paiement de la part de Stripe. Cela peut prendre quelques secondes."
+        }
       />
 
       <section className="rounded-3xl border border-border bg-card p-6 shadow-[var(--shadow-card)] sm:p-8">
         <JourneyProgress activeIndex={1} />
       </section>
 
-      {planMissing && (
+      {!isPaid && !isRefunded && (
+        <section
+          role="status"
+          aria-live="polite"
+          className="rounded-2xl border border-primary/30 bg-primary/5 p-5 sm:p-6"
+        >
+          <div className="flex items-start gap-3">
+            <Loader2 className="mt-0.5 h-5 w-5 shrink-0 animate-spin text-primary" aria-hidden="true" />
+            <div className="space-y-1 text-sm">
+              <p className="font-semibold text-foreground">
+                Confirmation en cours…
+              </p>
+              <p className="text-muted-foreground">
+                Votre paiement est en cours de validation côté Stripe. Cette
+                page se met à jour automatiquement, vous n'avez rien à faire.
+              </p>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {isRefunded && (
+        <section
+          role="status"
+          className="rounded-2xl border border-warning/40 bg-warning/10 p-5 sm:p-6"
+        >
+          <div className="flex items-start gap-3">
+            <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-warning" aria-hidden="true" />
+            <div className="space-y-1 text-sm">
+              <p className="font-semibold text-foreground">Paiement remboursé</p>
+              <p className="text-muted-foreground">
+                Si cela est inattendu, écrivez-nous à{" "}
+                <a href={`mailto:${CONTACT_EMAIL}?subject=Paiement%20remboursé`} className="font-medium text-primary underline underline-offset-2">
+                  {CONTACT_EMAIL}
+                </a>.
+              </p>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {isPaid && planMissing && (
         <section
           role="status"
           className="rounded-2xl border border-warning/40 bg-warning/10 p-5 sm:p-6"
@@ -227,6 +297,8 @@ function Merci() {
         </section>
       )}
 
+      {isPaid && (
+      <>
       <section className="rounded-3xl border border-primary/20 bg-primary/[0.04] p-8 shadow-[var(--shadow-elevated)] sm:p-10">
         <div className="flex flex-col items-center text-center">
           <div className="grid h-14 w-14 place-items-center rounded-full bg-primary text-primary-foreground">
@@ -389,6 +461,8 @@ function Merci() {
           </Button>
         </div>
       </section>
+      </>
+      )}
     </div>
   );
 }

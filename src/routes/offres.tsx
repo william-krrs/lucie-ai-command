@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import {
   Check,
   Star,
@@ -11,6 +12,7 @@ import {
   ArrowRight,
   Calendar,
   ExternalLink,
+  Loader2,
 } from "lucide-react";
 import { PageHeader } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
@@ -22,6 +24,7 @@ import { LockedPage } from "@/components/locked-page";
 import { useJourneyAccess } from "@/lib/journey-access";
 import { BOOKING_URL_SETUP } from "@/lib/config";
 import { useUniqueModule, MODULE_IDS } from "@/lib/module-registry";
+import { createCheckoutSession } from "@/lib/stripe-checkout.functions";
 
 export const Route = createFileRoute("/offres")({
   head: () => ({
@@ -41,12 +44,6 @@ export const Route = createFileRoute("/offres")({
 });
 
 type PlanKey = "essential" | "pro" | "premium";
-
-const STRIPE_LINKS: Record<PlanKey, string> = {
-  essential: "https://buy.stripe.com/6oUdR940v8xB9C8cyq7kc0b",
-  pro: "https://buy.stripe.com/3cI8wP68DeVZg0waqi7kc0a",
-  premium: "https://buy.stripe.com/5kQ5kD0OjcNRbKggOG7kc0d",
-};
 
 const PLANS: {
   key: PlanKey;
@@ -138,11 +135,25 @@ function Offres() {
   const { canViewOffers } = useJourneyAccess();
   const recommendedPlan: PlanKey = rec.plan ?? "pro";
   const [selected, setSelected] = useState<PlanKey>(recommendedPlan);
+  const [checkoutPlan, setCheckoutPlan] = useState<PlanKey | null>(null);
+  const createCheckout = useServerFn(createCheckoutSession);
 
   // Keep the highlighted card in sync when the diagnostic changes.
   useEffect(() => {
     setSelected(recommendedPlan);
   }, [recommendedPlan]);
+
+  const handleCheckout = async (plan: PlanKey) => {
+    setSelected(plan);
+    setCheckoutPlan(plan);
+    try {
+      const { url } = await createCheckout({ data: { plan } });
+      window.location.href = url;
+    } catch (err) {
+      console.error("[offres] checkout", err);
+      setCheckoutPlan(null);
+    }
+  };
 
   if (!canViewOffers) {
     return (
@@ -296,22 +307,24 @@ function Offres() {
               </ul>
 
               <Button
-                asChild
                 className={cn(
                   "mt-7 h-11 rounded-xl transition-all",
                   featured
                     ? "bg-primary text-primary-foreground shadow-[var(--shadow-elevated)] hover:bg-primary/90"
                     : "bg-foreground text-background hover:bg-foreground/90",
                 )}
+                onClick={() => handleCheckout(p.key)}
+                disabled={!!checkoutPlan}
+                aria-label={`Payer ${p.name} en ligne`}
               >
-                <a
-                  href={STRIPE_LINKS[p.key]}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  {p.cta}
-                </a>
+                {checkoutPlan === p.key ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
+                    Redirection vers Stripe…
+                  </>
+                ) : (
+                  p.cta
+                )}
               </Button>
             </div>
           );
