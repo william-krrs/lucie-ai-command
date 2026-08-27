@@ -13,8 +13,14 @@ export const ACTIVE_PROSPECT_KEY = "lucie:prospects:active";
 
 // Clés source qui composent l'instantané d'un prospect.
 const DIAG_KEY = "lucie:diagnostic:v1";
-const BOOKING_KEY = "lucie:booking:v2";
+/** Clé courante du store de RDV (doit rester alignée sur `booking-store.tsx`). */
+const BOOKING_KEY = "lucie:booking:v3";
+/** Ancienne clé, lue uniquement en secours pour les snapshots déjà enregistrés. */
+const LEGACY_BOOKING_KEY = "lucie:booking:v2";
 const PREP_KEY = "lucie:preparation";
+// NB : `lucie:booking:clientRef` est volontairement HORS snapshot — c'est un
+// identifiant de poste, jamais d'un prospect. Aucune donnée serveur n'est
+// touchée par ce module : localStorage uniquement.
 
 export type Prospect = {
   id: string;
@@ -81,7 +87,7 @@ export function setActiveProspectId(id: string | null) {
 function snapshotFromLocalStorage() {
   return {
     diagnostic: safeGet(DIAG_KEY),
-    booking: safeGet(BOOKING_KEY),
+    booking: safeGet(BOOKING_KEY) ?? safeGet(LEGACY_BOOKING_KEY),
     preparation: safeGet(PREP_KEY),
   };
 }
@@ -151,6 +157,7 @@ export function loadProspect(id: string) {
   }
   safeSet(DIAG_KEY, p.snapshot.diagnostic ?? null);
   safeSet(BOOKING_KEY, p.snapshot.booking ?? null);
+  safeSet(LEGACY_BOOKING_KEY, null);
   safeSet(PREP_KEY, p.snapshot.preparation ?? null);
   setActiveProspectId(id);
   if (typeof window !== "undefined") window.location.reload();
@@ -160,6 +167,7 @@ export function loadProspect(id: string) {
 export function startNewProspect() {
   safeSet(DIAG_KEY, null);
   safeSet(BOOKING_KEY, null);
+  safeSet(LEGACY_BOOKING_KEY, null);
   safeSet(PREP_KEY, null);
   setActiveProspectId(null);
   if (typeof window !== "undefined") window.location.reload();

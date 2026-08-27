@@ -9,6 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
 import {
   ACTIVE_PROSPECT_KEY,
   PROSPECTS_KEY,
@@ -28,6 +29,23 @@ export function ProspectSwitcher({ className }: { className?: string }) {
   const [open, setOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [draftName, setDraftName] = useState("");
+  // Identité du compte authentifié, affichée séparément : elle n'est jamais
+  // associée à une simulation locale.
+  const [accountEmail, setAccountEmail] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    supabase.auth.getSession().then(({ data }) => {
+      if (!cancelled) setAccountEmail(data.session?.user?.email ?? null);
+    });
+    const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
+      setAccountEmail(session?.user?.email ?? null);
+    });
+    return () => {
+      cancelled = true;
+      sub.subscription.unsubscribe();
+    };
+  }, []);
 
   useEffect(() => {
     setProspects(listProspects());
@@ -48,7 +66,7 @@ export function ProspectSwitcher({ className }: { className?: string }) {
     const p = saveCurrentAsProspect();
     setProspects(listProspects());
     setActiveId(p.id);
-    toast.success(`Prospect « ${p.label} » enregistré.`);
+    toast.success(`Simulation « ${p.label} » enregistrée.`);
   }
 
   return (
@@ -60,17 +78,17 @@ export function ProspectSwitcher({ className }: { className?: string }) {
             "group inline-flex min-w-0 items-center gap-2 rounded-xl border border-border bg-card px-3 py-2 text-left text-sm shadow-[var(--shadow-card)] transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
             className,
           )}
-          aria-label="Sélectionner un prospect"
+          aria-label="Sélectionner une simulation commerciale"
         >
           <span className="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary">
             <UserCircle2 className="h-4 w-4" aria-hidden="true" />
           </span>
           <span className="min-w-0">
             <span className="block text-[10px] uppercase tracking-widest text-muted-foreground">
-              Prospect actif
+              Simulation active
             </span>
             <span className="block max-w-[10rem] truncate text-sm font-medium text-foreground">
-              {active?.label ?? "Aucun — nouveau dossier"}
+              {active?.label ?? "Aucune — nouvelle simulation"}
             </span>
           </span>
           <ChevronDown className="ml-1 h-4 w-4 shrink-0 text-muted-foreground transition-transform group-data-[state=open]:rotate-180" aria-hidden="true" />
@@ -79,11 +97,18 @@ export function ProspectSwitcher({ className }: { className?: string }) {
       <PopoverContent align="end" className="w-[22rem] p-0">
         <div className="border-b border-border p-3">
           <div className="flex items-center gap-2 text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
-            <Users className="h-3.5 w-3.5" aria-hidden="true" /> Mes prospects
+            <Users className="h-3.5 w-3.5" aria-hidden="true" /> Simulations commerciales
           </div>
           <p className="mt-1 text-xs text-muted-foreground">
-            Chaque prospect garde son diagnostic, son RDV et sa configuration.
+            Local à ce poste, non synchronisé. Ces dossiers servent à préparer un
+            rendez-vous : le parcours client réel démarre à la création du compte.
           </p>
+          {accountEmail && (
+            <p className="mt-2 rounded-lg bg-muted/60 px-2 py-1.5 text-[11px] text-muted-foreground">
+              Compte connecté :{" "}
+              <span className="font-medium text-foreground">{accountEmail}</span>
+            </p>
+          )}
           <div className="mt-3 grid grid-cols-2 gap-2">
             <Button size="sm" className="h-9 rounded-lg" onClick={handleSave}>
               <Save className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
@@ -99,14 +124,14 @@ export function ProspectSwitcher({ className }: { className?: string }) {
               }}
             >
               <Plus className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
-              Nouveau
+              Nouvelle simulation
             </Button>
           </div>
         </div>
         <ul className="max-h-[50vh] overflow-auto p-2" role="list">
           {prospects.length === 0 ? (
             <li className="rounded-lg px-3 py-6 text-center text-xs text-muted-foreground">
-              Aucun prospect enregistré pour le moment.
+              Aucune simulation enregistrée pour le moment.
               <br />
               Remplissez le diagnostic puis cliquez sur « Enregistrer l'actuel ».
             </li>
@@ -133,7 +158,7 @@ export function ProspectSwitcher({ className }: { className?: string }) {
                         loadProspect(p.id);
                       }}
                       className="flex min-w-0 flex-1 items-center gap-2 text-left"
-                      aria-label={`Charger le prospect ${p.label}`}
+                      aria-label={`Charger la simulation ${p.label}`}
                     >
                       <span
                         className={cn(
@@ -167,6 +192,9 @@ export function ProspectSwitcher({ className }: { className?: string }) {
                             {p.label}
                           </span>
                         )}
+                        <span className="mt-0.5 inline-flex items-center rounded-full border border-border px-1.5 py-px text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
+                          Prospect
+                        </span>
                         <span className="block truncate text-[11px] text-muted-foreground">
                           {[p.activity, p.city].filter(Boolean).join(" · ") || "Diagnostic vide"}
                         </span>
@@ -193,7 +221,7 @@ export function ProspectSwitcher({ className }: { className?: string }) {
                       type="button"
                       onClick={(e) => {
                         e.stopPropagation();
-                        if (!confirm(`Supprimer le prospect « ${p.label} » ?`)) return;
+                        if (!confirm(`Supprimer la simulation « ${p.label} » ?`)) return;
                         deleteProspect(p.id);
                         setProspects(listProspects());
                         if (activeId === p.id) setActiveId(null);
