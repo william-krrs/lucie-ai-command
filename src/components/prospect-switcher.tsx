@@ -60,17 +60,17 @@ export function ProspectSwitcher({ className }: { className?: string }) {
             "group inline-flex min-w-0 items-center gap-2 rounded-xl border border-border bg-card px-3 py-2 text-left text-sm shadow-[var(--shadow-card)] transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
             className,
           )}
-          aria-label="Sélectionner un prospect"
+          aria-label="Sélectionner une simulation commerciale"
         >
           <span className="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary">
             <UserCircle2 className="h-4 w-4" aria-hidden="true" />
           </span>
           <span className="min-w-0">
             <span className="block text-[10px] uppercase tracking-widest text-muted-foreground">
-              Prospect actif
+              Simulation active
             </span>
             <span className="block max-w-[10rem] truncate text-sm font-medium text-foreground">
-              {active?.label ?? "Aucun — nouveau dossier"}
+              {active?.label ?? "Aucune — nouvelle simulation"}
             </span>
           </span>
           <ChevronDown className="ml-1 h-4 w-4 shrink-0 text-muted-foreground transition-transform group-data-[state=open]:rotate-180" aria-hidden="true" />
