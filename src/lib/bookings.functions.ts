@@ -79,12 +79,6 @@ export const upsertBooking = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
-/** `bookings.client_ref` est une colonne uuid : toute autre valeur ferait échouer Postgres. */
-const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-export function isClientRef(value: unknown): value is string {
-  return typeof value === "string" && UUID_RE.test(value);
-}
-
 function validateRef(input: unknown): { clientRef: string; bookingType: BookingType } {
   if (!input || typeof input !== "object") throw new Error("invalid input");
   const i = input as Record<string, unknown>;
@@ -174,8 +168,10 @@ export const getBookingByRef = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .inputValidator(validateRef)
   .handler(async ({ data, context }): Promise<{ booking: ServerBooking | null }> => {
-    // Référence locale héritée / non-uuid : aucun rendez-vous possible en base.
-    if (!isClientRef(data.clientRef)) return { booking: null };
+    // `client_ref` est une colonne uuid : une référence locale héritée
+    // (non-uuid) ne peut correspondre à aucune ligne — on évite l'erreur 500.
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(data.clientRef))
+      return { booking: null };
     const { data: row, error } = await context.supabase
       .from("bookings")
       .select(SELECT_COLUMNS)
@@ -201,7 +197,8 @@ export const listBookingsByRef = createServerFn({ method: "GET" })
     return { clientRef };
   })
   .handler(async ({ data, context }): Promise<{ bookings: ServerBooking[] }> => {
-    if (!isClientRef(data.clientRef)) return { bookings: [] };
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(data.clientRef))
+      return { bookings: [] };
     const { data: rows, error } = await context.supabase
       .from("bookings")
       .select(SELECT_COLUMNS)
