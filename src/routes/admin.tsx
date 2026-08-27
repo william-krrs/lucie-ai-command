@@ -170,6 +170,18 @@ function AdminPage() {
         <Button variant="outline" onClick={() => void refreshAll()}>
           Recharger l'état
         </Button>
+        <Button
+          variant="ghost"
+          onClick={async () => {
+            await queryClient.cancelQueries();
+            queryClient.clear();
+            await supabase.auth.signOut();
+            await navigate({ to: "/admin/login", replace: true });
+          }}
+        >
+          Déconnexion
+        </Button>
+
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
