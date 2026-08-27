@@ -135,11 +135,25 @@ function Offres() {
   const { canViewOffers } = useJourneyAccess();
   const recommendedPlan: PlanKey = rec.plan ?? "pro";
   const [selected, setSelected] = useState<PlanKey>(recommendedPlan);
+  const [checkoutPlan, setCheckoutPlan] = useState<PlanKey | null>(null);
+  const createCheckout = useServerFn(createCheckoutSession);
 
   // Keep the highlighted card in sync when the diagnostic changes.
   useEffect(() => {
     setSelected(recommendedPlan);
   }, [recommendedPlan]);
+
+  const handleCheckout = async (plan: PlanKey) => {
+    setSelected(plan);
+    setCheckoutPlan(plan);
+    try {
+      const { url } = await createCheckout({ data: { plan } });
+      window.location.href = url;
+    } catch (err) {
+      console.error("[offres] checkout", err);
+      setCheckoutPlan(null);
+    }
+  };
 
   if (!canViewOffers) {
     return (
