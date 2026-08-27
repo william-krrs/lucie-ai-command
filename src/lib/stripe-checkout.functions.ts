@@ -1,24 +1,26 @@
 import { createServerFn } from "@tanstack/react-start";
-import { getRequestHeader } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { STRIPE_PLANS, type PlanKey } from "@/lib/stripe-plans";
 
 /**
  * Origine publique déduite des en-têtes de la requête (proxy Lovable).
- * Utilisée pour construire success_url / cancel_url des Checkout Sessions
- * afin de fonctionner à la fois en preview et en production.
+ * Import dynamique de getRequest depuis @tanstack/start-server-core à
+ * l'intérieur du handler pour ne pas embarquer d'utilitaires serveur dans
+ * le bundle client (les imports de module-scope des .functions.ts y vont).
  */
-function publicOrigin(): string {
+async function publicOrigin(): Promise<string> {
+  const { getRequest } = await import("@tanstack/start-server-core");
+  const req = getRequest();
   const proto =
-    getRequestHeader("x-forwarded-proto") ||
-    getRequestHeader("referer")?.split("://")?.[0] ||
+    req.headers.get("x-forwarded-proto")?.split(",")[0] ||
+    req.headers.get("referer")?.split("://")[0] ||
     "https";
   const host =
-    getRequestHeader("x-forwarded-host") ||
-    getRequestHeader("host") ||
+    req.headers.get("x-forwarded-host")?.split(",")[0] ||
+    req.headers.get("host") ||
     "diagnostic.lucieassistant.fr";
-  return `${proto.includes(",") ? proto.split(",")[0] : proto}://${host.includes(",") ? host.split(",")[0] : host}`;
+  return `${proto}://${host}`;
 }
 
 /**
