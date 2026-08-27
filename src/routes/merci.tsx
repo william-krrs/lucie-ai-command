@@ -167,10 +167,6 @@ export const Route = createFileRoute("/merci")({
 
 function Merci() {
   const { plan } = Route.useSearch();
-  const serverPaidPlan = paymentQuery.data?.paidPlan ?? null;
-  const effectivePlan = plan ?? serverPaidPlan ?? null;
-  const planLabel = effectivePlan ? PLAN_LABELS[effectivePlan] : "votre formule Lucie";
-  const planMissing = !effectivePlan;
   const fetchPaymentState = useServerFn(getPaymentState);
 
   // Polling serveur : on interroge journey_state.payment_status jusqu'à "paid"
@@ -190,6 +186,10 @@ function Merci() {
   const paymentStatus = paymentQuery.data?.paymentStatus ?? "unpaid";
   const isPaid = paymentStatus === "paid";
   const isRefunded = paymentStatus === "refunded";
+  const serverPaidPlan = paymentQuery.data?.paidPlan ?? null;
+  const effectivePlan = plan ?? serverPaidPlan ?? null;
+  const planLabel = effectivePlan ? PLAN_LABELS[effectivePlan] : "votre formule Lucie";
+  const planMissing = !effectivePlan;
 
   return (
     <div className="space-y-10">
