@@ -296,6 +296,7 @@ function Merci() {
       )}
 
       {isPaid && (
+      <>
       <section className="rounded-3xl border border-primary/20 bg-primary/[0.04] p-8 shadow-[var(--shadow-elevated)] sm:p-10">
         <div className="flex flex-col items-center text-center">
           <div className="grid h-14 w-14 place-items-center rounded-full bg-primary text-primary-foreground">
