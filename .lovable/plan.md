@@ -1,47 +1,84 @@
-# V1 — Règle « 1 compte authentifié = 1 parcours client »
+# V1 — Comptes clients email + mot de passe (confirmation obligatoire)
 
-Aucune migration de données, aucun changement Stripe / iClosed / journey_state / RLS.
+Aucune migration SQL. Aucun changement Stripe, iClosed, `journey_state`, RLS, ni sur les simulations commerciales locales.
 
-## 1. Correction du bug de snapshot prospect
+## 1. Où exactement on impose le compte
 
-Dans le module de gestion des prospects locaux, l'instantané lit et écrit encore l'ancienne clé de RDV (`v2`) alors que le parcours utilise la clé `v3`. Conséquence : l'état RDV n'est ni sauvegardé ni restauré quand on change de prospect.
+Règle : **la lecture reste libre, l'écriture serveur exige un compte.**
 
-Correction :
-- pointer le snapshot sur la clé courante `lucie:booking:v3` ;
-- lire aussi l'ancienne clé `v2` en secours pour les prospects déjà enregistrés (lecture seule, pas de réécriture de masse) ;
-- garder `lucie:booking:clientRef` **hors** du snapshot (il reste attaché au poste, pas au prospect).
+Restent 100 % publics, sans compte, sans changement :
+- `/` accueil, `/diagnostic`, `/roi`, `/recommandation`, `/faq`, `/demo`, `/d/$token` (partage) ;
+- le PDF et l'export CSV du diagnostic local ;
+- les Simulations commerciales (localStorage uniquement).
 
-## 2. Étanchéité : un prospect local ne doit jamais toucher les données serveur
+Le mur de connexion se déclenche sur exactement trois clics :
+1. **« Réserver ma démonstration »** sur `/recommandation` (et tout bouton menant à `/demonstration`) — c'est le premier acte qui crée un `booking` rattaché à un `user_id` ;
+2. **« Choisir cette formule / Payer »** sur `/offres` — Stripe Checkout a besoin du `user_id` ;
+3. **accès direct** à `/demonstration`, `/offres`, `/merci`, `/preparation`, `/installation`, `/rdv-test` sans session : redirection douce vers `/connexion?next=…`.
 
-Vérifications à faire (et garde-fous si besoin) :
-- le module prospects n'appelle aucune fonction serveur : uniquement du localStorage ;
-- charger / créer / supprimer un prospect n'écrit jamais dans `journey_state`, `bookings`, `preparation_submissions` ;
-- l'écriture serveur reste exclusivement déclenchée par une session authentifiée (paiement, configuration, RDV) ;
-- ajout d'un test automatisé qui échoue si le module prospects importe un module `*.functions` ou le client base de données.
+Aujourd'hui ces trois points fonctionnent grâce à une session anonyme créée automatiquement. On ne la coupe pas brutalement (voir §6).
 
-## 3. /admin > Clients
+## 2. Conserver le diagnostic rempli avant connexion
 
-Inchangé : la liste reste construite sur les comptes réels via `journey_state`. Un prospect commercial local n'y apparaît pas — c'est le comportement voulu.
+Le diagnostic vit déjà dans `localStorage` (`lucie:diagnostic:v1`), indépendamment de toute session. La connexion ne le touche pas :
+- on ne vide **jamais** `localStorage` lors d'un `signIn` / `signUp` / `signOut` ;
+- `supabase.auth.signOut()` n'efface que la clé de session Supabase, pas nos clés `lucie:*` ;
+- après connexion, l'utilisateur retrouve son diagnostic, son ROI et sa recommandation tels quels.
 
-## 4. Distinction UX Prospect commercial / Client Lucie
+Rien à copier vers le serveur : le diagnostic reste local en V1, exactement comme aujourd'hui.
 
-- Renommer le sélecteur en **« Simulations commerciales »**, avec libellé secondaire « local à ce poste, non synchronisé ».
-- Badge sur chaque entrée : *Prospect* (gris, contour) vs *Client Lucie* (violet, plein) quand une session authentifiée est active.
-- Bandeau discret en tête du panneau : « Ces dossiers servent à préparer un rendez-vous. Le parcours client réel démarre à la création du compte. »
-- Bouton « Nouveau » renommé **« Nouvelle simulation »** pour supprimer l'ambiguïté « nouveau client ».
-- Quand un compte est connecté, afficher dans l'en-tête l'adresse du compte : c'est ce compte qui porte le parcours réel.
+## 3. Ce qui se passe après la confirmation d'email
 
-## 5. Parcours V1 recommandé pour convertir un prospect en client (à construire plus tard)
+Inscription → Supabase envoie l'email de confirmation (domaine d'envoi déjà vérifié) → **aucune session n'est ouverte à ce stade**, l'écran affiche « Vérifiez votre boîte mail ».
 
-1. Le commercial termine le diagnostic / la recommandation en local.
-2. Il envoie au prospect un lien de partage du diagnostic (déjà existant) contenant un identifiant de partage.
-3. Le prospect crée son compte (email + mot de passe ou lien magique) depuis ce lien.
-4. À la première connexion, une étape de rattachement propose : « Reprendre le diagnostic préparé pour vous ? » → copie du contenu du diagnostic partagé vers le parcours du nouveau `user_id`, et création de sa ligne `journey_state`.
-5. À partir de là, tout (Stripe, RDV iClosed, configuration, installation) est rattaché à ce `user_id`, et le client apparaît dans /admin > Clients.
-6. Côté commercial, la simulation locale peut être marquée « convertie » avec l'email du compte, à titre informatif seulement.
+Le lien de confirmation renvoie vers `emailRedirectTo = ${origin}/connexion?next=<destination mémorisée>`. Au retour :
+- Supabase pose la session (événement `SIGNED_IN`) ;
+- la page `/connexion` détecte la session et navigue automatiquement vers `next` ;
+- si `next` est absent ou invalide → `/demonstration`.
 
-Prérequis pour cette étape ultérieure : rien côté schéma, sauf un champ facultatif reliant un diagnostic partagé au compte qui l'a réclamé.
+Le lien peut être ouvert dans un autre navigateur (mobile) : dans ce cas la session s'ouvre là-bas, et l'onglet d'origine se met à jour via `onAuthStateChange` s'il est encore ouvert ; sinon l'utilisateur se connecte normalement.
 
-## Détails techniques
+## 4. Reprise automatique de la destination
 
-Fichiers concernés par la correction immédiate : le module de store prospects (clé de snapshot) et le composant de sélection de prospect (libellés/badges), plus un nouveau test d'isolation. Aucune migration SQL.
+- Toute redirection vers le mur ajoute `?next=<chemin>`, **chemin relatif same-origin uniquement** (rejet de toute URL absolue).
+- `next` est aussi recopié dans `sessionStorage` pour survivre à l'aller-retour email.
+- Après `SIGNED_IN`, navigation `replace` vers `next`.
+- Si l'utilisateur est déjà connecté et ouvre `/connexion`, il est renvoyé directement sur `next`.
+
+## 5. Ne rien perdre au moment de la connexion
+
+Trois risques identifiés et neutralisés :
+- **Diagnostic local** : intact, clés distinctes (§2).
+- **Simulations commerciales** : intactes, aucune écriture serveur, `clientRef` reste attaché au poste.
+- **Cache RDV local (`lucie:booking:v3`)** : c'est un cache UX ; à la connexion on invalide simplement `journey-state` pour que le serveur redevienne source de vérité, et on purge le cache RDV **uniquement** au moment d'une déconnexion explicite (sinon un client A verrait le RDV du client B sur le même poste).
+- Déconnexion : `cancelQueries` → `clear` du cache React Query → `signOut` → navigation `replace`.
+
+## 6. Transition propre depuis l'anonyme (pas de coupure brutale)
+
+Étape unique et réversible :
+- `AnonAuthBootstrap` n'est plus monté globalement ; il n'est **pas supprimé** du dépôt.
+- Un drapeau dans `src/lib/config.ts` (`REQUIRE_ACCOUNT`) pilote le comportement : `false` = comportement actuel (anonyme), `true` = mur de connexion. On livre à `true` après vérification.
+- Les sessions anonymes déjà existantes continuent de fonctionner : on ne les invalide pas, on ne désactive pas encore les inscriptions anonymes côté auth. On le fera dans un second temps, une fois confirmé qu'aucun parcours en cours n'en dépend.
+- Vérifications avant bascule : diagnostic public, ROI, recommandation, partage `/d/$token`, PDF, simulations commerciales — tous doivent fonctionner sans aucune session.
+
+## 7. Plan minimal des fichiers
+
+Nouveaux :
+- `src/routes/connexion.tsx` — onglets Créer un compte / Se connecter + mot de passe oublié, gestion de `next`, état « confirmez votre email ».
+- `src/routes/mot-de-passe.tsx` — définition du nouveau mot de passe (lien de récupération client).
+- `src/lib/auth-redirect.ts` — validation/mémorisation de `next` (same-origin strict).
+- `src/lib/use-session.ts` — hook léger : session courante + `isAnonymous` + déconnexion propre.
+
+Modifiés :
+- `src/routes/__root.tsx` — retirer le montage inconditionnel de `AnonAuthBootstrap` (conditionné au drapeau).
+- `src/components/app-shell.tsx` — email du compte + bouton Déconnexion dans l'en-tête, distinct du bloc Simulations.
+- `src/lib/config.ts` — `REQUIRE_ACCOUNT`.
+- `src/components/locked-page.tsx` — nouvel état « compte requis » avec CTA vers `/connexion?next=…`.
+- `src/routes/demonstration.tsx`, `offres.tsx`, `preparation.tsx`, `installation.tsx`, `rdv-test.tsx`, `merci.tsx` — court-circuit « compte requis » avant le gating métier existant (le gating lui-même est inchangé).
+- `src/routes/recommandation.tsx` — le CTA « Réserver ma démonstration » passe par `/connexion?next=/demonstration` si pas de session.
+- `public/robots.txt` — `Disallow` sur `/connexion` et `/mot-de-passe`.
+- `src/routes/admin.tsx` / `src/lib/admin.functions.ts` — marquer les comptes anonymes résiduels et afficher l'email réel du compte. Actions et garde-fous inchangés.
+
+Configuration : confirmation d'email obligatoire (réglage par défaut, aucune activation d'auto-confirm).
+
+Non fait dans cette étape : conversion automatique simulation → client, désactivation définitive des inscriptions anonymes, rattachement d'un diagnostic partagé à un nouveau compte.
