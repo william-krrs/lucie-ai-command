@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import {
   Check,
   Star,
@@ -11,6 +12,7 @@ import {
   ArrowRight,
   Calendar,
   ExternalLink,
+  Loader2,
 } from "lucide-react";
 import { PageHeader } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
@@ -22,6 +24,7 @@ import { LockedPage } from "@/components/locked-page";
 import { useJourneyAccess } from "@/lib/journey-access";
 import { BOOKING_URL_SETUP } from "@/lib/config";
 import { useUniqueModule, MODULE_IDS } from "@/lib/module-registry";
+import { createCheckoutSession } from "@/lib/stripe-checkout.functions";
 
 export const Route = createFileRoute("/offres")({
   head: () => ({
