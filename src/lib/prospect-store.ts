@@ -87,7 +87,7 @@ export function setActiveProspectId(id: string | null) {
 function snapshotFromLocalStorage() {
   return {
     diagnostic: safeGet(DIAG_KEY),
-    booking: safeGet(BOOKING_KEY),
+    booking: safeGet(BOOKING_KEY) ?? safeGet(LEGACY_BOOKING_KEY),
     preparation: safeGet(PREP_KEY),
   };
 }
