@@ -169,20 +169,84 @@ function Merci() {
   const { plan } = Route.useSearch();
   const planLabel = plan ? PLAN_LABELS[plan] : "votre formule Lucie";
   const planMissing = !plan;
+  const fetchPaymentState = useServerFn(getPaymentState);
+
+  // Polling serveur : on interroge journey_state.payment_status jusqu'à "paid"
+  // (le webhook Stripe met à jour l'état de façon asynchrone). On arrête de
+  // poller dès qu'un statut terminal (paid/refunded) est reçu.
+  const paymentQuery = useQuery({
+    queryKey: ["payment-state"],
+    queryFn: () => fetchPaymentState(),
+    refetchInterval: (query) => {
+      const status = query.state.data?.paymentStatus;
+      if (status === "paid" || status === "refunded") return false;
+      return 2500;
+    },
+    refetchIntervalInBackground: false,
+  });
+
+  const paymentStatus = paymentQuery.data?.paymentStatus ?? "unpaid";
+  const isPaid = paymentStatus === "paid";
+  const isRefunded = paymentStatus === "refunded";
 
   return (
     <div className="space-y-10">
       <PageHeader
-        eyebrow="Étape 07 · Paiement confirmé"
-        title="Merci — bienvenue chez Lucie"
-        description="Votre paiement a bien été reçu. Notre équipe prend le relais pour lancer votre installation."
+        eyebrow="Étape 07 · Paiement"
+        title={isPaid ? "Merci — bienvenue chez Lucie" : "Confirmation de paiement"}
+        description={
+          isPaid
+            ? "Votre paiement a bien été reçu. Notre équipe prend le relais pour lancer votre installation."
+            : "Nous attendons la confirmation de paiement de la part de Stripe. Cela peut prendre quelques secondes."
+        }
       />
 
       <section className="rounded-3xl border border-border bg-card p-6 shadow-[var(--shadow-card)] sm:p-8">
         <JourneyProgress activeIndex={1} />
       </section>
 
-      {planMissing && (
+      {!isPaid && !isRefunded && (
+        <section
+          role="status"
+          aria-live="polite"
+          className="rounded-2xl border border-primary/30 bg-primary/5 p-5 sm:p-6"
+        >
+          <div className="flex items-start gap-3">
+            <Loader2 className="mt-0.5 h-5 w-5 shrink-0 animate-spin text-primary" aria-hidden="true" />
+            <div className="space-y-1 text-sm">
+              <p className="font-semibold text-foreground">
+                Confirmation en cours…
+              </p>
+              <p className="text-muted-foreground">
+                Votre paiement est en cours de validation côté Stripe. Cette
+                page se met à jour automatiquement, vous n'avez rien à faire.
+              </p>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {isRefunded && (
+        <section
+          role="status"
+          className="rounded-2xl border border-warning/40 bg-warning/10 p-5 sm:p-6"
+        >
+          <div className="flex items-start gap-3">
+            <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-warning" aria-hidden="true" />
+            <div className="space-y-1 text-sm">
+              <p className="font-semibold text-foreground">Paiement remboursé</p>
+              <p className="text-muted-foreground">
+                Si cela est inattendu, écrivez-nous à{" "}
+                <a href={`mailto:${CONTACT_EMAIL}?subject=Paiement%20remboursé`} className="font-medium text-primary underline underline-offset-2">
+                  {CONTACT_EMAIL}
+                </a>.
+              </p>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {isPaid && planMissing && (
         <section
           role="status"
           className="rounded-2xl border border-warning/40 bg-warning/10 p-5 sm:p-6"
