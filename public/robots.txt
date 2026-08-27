@@ -1,4 +1,7 @@
 User-agent: *
 Allow: /
+Disallow: /admin
+Disallow: /admin/login
+Disallow: /admin/reset-password
 
 Sitemap: https://lucie-ai-command.lovable.app/sitemap.xml
