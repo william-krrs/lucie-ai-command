@@ -64,6 +64,8 @@ function Row({ label, value }: { label: string; value: React.ReactNode }) {
 
 function AdminPage() {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
+
   const [authed, setAuthed] = useState(false);
   const [clientRef, setClientRef] = useState("");
   const [busy, setBusy] = useState<string | null>(null);
