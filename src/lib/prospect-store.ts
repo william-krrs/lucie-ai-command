@@ -13,8 +13,14 @@ export const ACTIVE_PROSPECT_KEY = "lucie:prospects:active";
 
 // Clés source qui composent l'instantané d'un prospect.
 const DIAG_KEY = "lucie:diagnostic:v1";
-const BOOKING_KEY = "lucie:booking:v2";
+/** Clé courante du store de RDV (doit rester alignée sur `booking-store.tsx`). */
+const BOOKING_KEY = "lucie:booking:v3";
+/** Ancienne clé, lue uniquement en secours pour les snapshots déjà enregistrés. */
+const LEGACY_BOOKING_KEY = "lucie:booking:v2";
 const PREP_KEY = "lucie:preparation";
+// NB : `lucie:booking:clientRef` est volontairement HORS snapshot — c'est un
+// identifiant de poste, jamais d'un prospect. Aucune donnée serveur n'est
+// touchée par ce module : localStorage uniquement.
 
 export type Prospect = {
   id: string;
