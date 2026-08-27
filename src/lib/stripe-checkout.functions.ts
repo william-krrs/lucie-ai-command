@@ -20,7 +20,7 @@ async function publicOrigin(): Promise<string> {
   const host =
     req.headers.get("x-forwarded-host")?.split(",")[0] ||
     req.headers.get("host") ||
-    "diagnostic.lucieassistant.fr";
+    SITE_DOMAIN;
   return `${proto}://${host}`;
 }
 
