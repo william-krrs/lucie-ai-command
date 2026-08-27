@@ -45,7 +45,7 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
     const key = process.env["STRIPE_SECRET_KEY"];
     if (!key) throw new Error("Paiement indisponible : configuration Stripe manquante.");
 
-    const origin = publicOrigin();
+    const origin = await publicOrigin();
     const params = new URLSearchParams();
     params.set("mode", "subscription");
     params.set("line_items[0][quantity]", "1");
