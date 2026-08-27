@@ -157,6 +157,7 @@ export function loadProspect(id: string) {
   }
   safeSet(DIAG_KEY, p.snapshot.diagnostic ?? null);
   safeSet(BOOKING_KEY, p.snapshot.booking ?? null);
+  safeSet(LEGACY_BOOKING_KEY, null);
   safeSet(PREP_KEY, p.snapshot.preparation ?? null);
   setActiveProspectId(id);
   if (typeof window !== "undefined") window.location.reload();
