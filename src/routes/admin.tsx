@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
@@ -64,6 +64,8 @@ function Row({ label, value }: { label: string; value: React.ReactNode }) {
 
 function AdminPage() {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
+
   const [authed, setAuthed] = useState(false);
   const [clientRef, setClientRef] = useState("");
   const [busy, setBusy] = useState<string | null>(null);
@@ -141,13 +143,17 @@ function AdminPage() {
           title="Accès refusé"
           description="Ce compte ne possède pas le rôle administrateur. L'autorisation est vérifiée côté serveur."
         />
-        <div className="rounded-lg border border-border/60 bg-card/40 p-4 text-sm">
-          <p className="text-muted-foreground">Identifiant de la session actuelle (à communiquer pour l'attribution du rôle) :</p>
-          <code className="mt-2 block break-all font-mono text-xs">{overview.data?.userId ?? "inconnu"}</code>
+        <div className="rounded-lg border border-border/60 bg-card/40 p-4 text-sm space-y-3">
+          <p className="text-muted-foreground">Identifiant de la session actuelle :</p>
+          <code className="block break-all font-mono text-xs">{overview.data?.userId ?? "inconnu"}</code>
+          <Button variant="outline" onClick={() => void navigate({ to: "/admin/login" })}>
+            Se connecter avec un compte administrateur
+          </Button>
         </div>
       </div>
     );
   }
+
 
 
   const state = overview.data?.journeyState ?? null;
@@ -164,6 +170,18 @@ function AdminPage() {
         <Button variant="outline" onClick={() => void refreshAll()}>
           Recharger l'état
         </Button>
+        <Button
+          variant="ghost"
+          onClick={async () => {
+            await queryClient.cancelQueries();
+            queryClient.clear();
+            await supabase.auth.signOut();
+            await navigate({ to: "/admin/login", replace: true });
+          }}
+        >
+          Déconnexion
+        </Button>
+
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
