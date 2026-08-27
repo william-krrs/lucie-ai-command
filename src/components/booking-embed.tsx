@@ -278,10 +278,17 @@ export function BookingEmbed({
       }
     }
     void buildUrl();
+    // Dès qu'une session apparaît (bootstrap anonyme / connexion), on retente
+    // l'émission du token signé.
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session) void buildUrl();
+    });
     return () => {
       cancelled = true;
+      sub.subscription.unsubscribe();
     };
   }, [baseBookingUrl, bookingType, issueBookingTokenFn]);
+
 
   // Realtime : le webhook iClosed peut confirmer/annuler le RDV côté serveur.
   useEffect(() => {
