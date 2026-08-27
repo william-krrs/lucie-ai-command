@@ -24,6 +24,7 @@ import { Route as DemoRouteImport } from './routes/demo'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DTokenRouteImport } from './routes/d.$token'
+import { Route as AdminLoginRouteImport } from './routes/admin_.login'
 import { Route as ApiPublicHooksStripeRouteImport } from './routes/api/public/hooks/stripe'
 import { Route as ApiPublicHooksSendRemindersRouteImport } from './routes/api/public/hooks/send-reminders'
 import { Route as ApiPublicHooksIclosedRouteImport } from './routes/api/public/hooks/iclosed'
@@ -103,6 +104,11 @@ const DTokenRoute = DTokenRouteImport.update({
   path: '/d/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminLoginRoute = AdminLoginRouteImport.update({
+  id: '/admin_/login',
+  path: '/admin/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicHooksStripeRoute = ApiPublicHooksStripeRouteImport.update({
   id: '/api/public/hooks/stripe',
   path: '/api/public/hooks/stripe',
@@ -135,6 +141,7 @@ export interface FileRoutesByFullPath {
   '/recommandation': typeof RecommandationRoute
   '/roi': typeof RoiRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/admin/login': typeof AdminLoginRoute
   '/d/$token': typeof DTokenRoute
   '/api/public/hooks/iclosed': typeof ApiPublicHooksIclosedRoute
   '/api/public/hooks/send-reminders': typeof ApiPublicHooksSendRemindersRoute
@@ -155,6 +162,7 @@ export interface FileRoutesByTo {
   '/recommandation': typeof RecommandationRoute
   '/roi': typeof RoiRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/admin/login': typeof AdminLoginRoute
   '/d/$token': typeof DTokenRoute
   '/api/public/hooks/iclosed': typeof ApiPublicHooksIclosedRoute
   '/api/public/hooks/send-reminders': typeof ApiPublicHooksSendRemindersRoute
@@ -176,6 +184,7 @@ export interface FileRoutesById {
   '/recommandation': typeof RecommandationRoute
   '/roi': typeof RoiRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/admin_/login': typeof AdminLoginRoute
   '/d/$token': typeof DTokenRoute
   '/api/public/hooks/iclosed': typeof ApiPublicHooksIclosedRoute
   '/api/public/hooks/send-reminders': typeof ApiPublicHooksSendRemindersRoute
@@ -198,6 +207,7 @@ export interface FileRouteTypes {
     | '/recommandation'
     | '/roi'
     | '/sitemap.xml'
+    | '/admin/login'
     | '/d/$token'
     | '/api/public/hooks/iclosed'
     | '/api/public/hooks/send-reminders'
@@ -218,6 +228,7 @@ export interface FileRouteTypes {
     | '/recommandation'
     | '/roi'
     | '/sitemap.xml'
+    | '/admin/login'
     | '/d/$token'
     | '/api/public/hooks/iclosed'
     | '/api/public/hooks/send-reminders'
@@ -238,6 +249,7 @@ export interface FileRouteTypes {
     | '/recommandation'
     | '/roi'
     | '/sitemap.xml'
+    | '/admin_/login'
     | '/d/$token'
     | '/api/public/hooks/iclosed'
     | '/api/public/hooks/send-reminders'
@@ -259,6 +271,7 @@ export interface RootRouteChildren {
   RecommandationRoute: typeof RecommandationRoute
   RoiRoute: typeof RoiRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  AdminLoginRoute: typeof AdminLoginRoute
   DTokenRoute: typeof DTokenRoute
   ApiPublicHooksIclosedRoute: typeof ApiPublicHooksIclosedRoute
   ApiPublicHooksSendRemindersRoute: typeof ApiPublicHooksSendRemindersRoute
@@ -372,6 +385,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin_/login': {
+      id: '/admin_/login'
+      path: '/admin/login'
+      fullPath: '/admin/login'
+      preLoaderRoute: typeof AdminLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/stripe': {
       id: '/api/public/hooks/stripe'
       path: '/api/public/hooks/stripe'
@@ -411,6 +431,7 @@ const rootRouteChildren: RootRouteChildren = {
   RecommandationRoute: RecommandationRoute,
   RoiRoute: RoiRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  AdminLoginRoute: AdminLoginRoute,
   DTokenRoute: DTokenRoute,
   ApiPublicHooksIclosedRoute: ApiPublicHooksIclosedRoute,
   ApiPublicHooksSendRemindersRoute: ApiPublicHooksSendRemindersRoute,
