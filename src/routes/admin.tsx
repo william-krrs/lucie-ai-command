@@ -319,6 +319,173 @@ function AdminPage() {
           <p className="text-sm text-muted-foreground">Aucun rendez-vous de test.</p>
         )}
       </Card>
+
+      <ClientsPanel />
     </div>
+  );
+}
+
+const CLIENTS_QUERY_KEY = ["admin-clients"] as const;
+
+function fmt(value: string | null | undefined) {
+  if (!value) return "—";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return new Intl.DateTimeFormat("fr-FR", {
+    timeZone: "Europe/Paris",
+    dateStyle: "short",
+    timeStyle: "short",
+  }).format(date);
+}
+
+function BookingCell({ booking }: { booking: AdminClientRow["r2Booking"] }) {
+  if (!booking) return <>—</>;
+  return (
+    <span>
+      {booking.statusNorm} · {fmt(booking.meetingAt)}
+    </span>
+  );
+}
+
+/**
+ * Poste de pilotage opérationnel : lecture seule sur tout le parcours,
+ * seule action autorisée sur un client = installation_status (validé et
+ * gardé côté serveur). Aucune donnée Stripe n'est modifiable ici.
+ */
+function ClientsPanel() {
+  const queryClient = useQueryClient();
+  const [selected, setSelected] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  const listClients = useServerFn(adminListClients);
+  const setClientInstall = useServerFn(adminSetClientInstallationStatus);
+
+  const clients = useQuery({
+    queryKey: CLIENTS_QUERY_KEY,
+    queryFn: () => listClients(),
+  });
+
+  const current = clients.data?.find((c) => c.userId === selected) ?? null;
+
+  async function apply(status: AdminInstallationStatus) {
+    if (!current) return;
+    setBusy(true);
+    try {
+      await setClientInstall({ data: { targetUserId: current.userId, status } });
+      await queryClient.invalidateQueries({ queryKey: CLIENTS_QUERY_KEY });
+      toast.success(`installation_status = ${status}`);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Action impossible.";
+      toast.error(message === "Forbidden" ? "Accès refusé." : message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <Card className="p-5">
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+        <h2 className="text-lg font-semibold">Clients</h2>
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => void queryClient.invalidateQueries({ queryKey: CLIENTS_QUERY_KEY })}
+        >
+          Recharger l'état
+        </Button>
+      </div>
+
+      {clients.isLoading ? (
+        <p className="text-sm text-muted-foreground">Chargement…</p>
+      ) : !clients.data || clients.data.length === 0 ? (
+        <p className="text-sm text-muted-foreground">Aucun client avec un parcours enregistré.</p>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-xs sm:text-sm">
+            <thead className="text-muted-foreground">
+              <tr>
+                <th className="py-2 pr-4">Client</th>
+                <th className="py-2 pr-4">Paiement</th>
+                <th className="py-2 pr-4">Formule</th>
+                <th className="py-2 pr-4">Config.</th>
+                <th className="py-2 pr-4">Installation</th>
+                <th className="py-2 pr-4">Parcours</th>
+                <th className="py-2 pr-4" />
+              </tr>
+            </thead>
+            <tbody>
+              {clients.data.map((c) => (
+                <tr key={c.userId} className="border-t border-border/50">
+                  <td className="py-2 pr-4">
+                    <div>{c.name ?? c.email ?? "—"}</div>
+                    <div className="font-mono text-[10px] text-muted-foreground">{c.userId}</div>
+                  </td>
+                  <td className="py-2 pr-4">
+                    <Badge variant="secondary">{c.paymentStatus}</Badge>
+                  </td>
+                  <td className="py-2 pr-4">{c.paidPlan ?? "—"}</td>
+                  <td className="py-2 pr-4">{c.configurationSubmitted ? "oui" : "non"}</td>
+                  <td className="py-2 pr-4">
+                    <Badge variant="secondary">{c.installationStatus}</Badge>
+                  </td>
+                  <td className="py-2 pr-4">{c.journeyStage}</td>
+                  <td className="py-2 pr-4">
+                    <Button size="sm" variant="outline" onClick={() => setSelected(c.userId)}>
+                      Ouvrir
+                    </Button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {current ? (
+        <div className="mt-6 rounded-lg border border-border/60 bg-card/40 p-4">
+          <h3 className="mb-3 text-sm font-semibold">
+            Fiche client — {current.name ?? current.email ?? current.userId}
+          </h3>
+          <Row label="user_id" value={current.userId} />
+          <Row label="email" value={current.email ?? "—"} />
+          <Row label="client_ref" value={current.clientRef ?? "—"} />
+          <Row label="formule payée" value={current.paidPlan ?? "—"} />
+          <Row
+            label="payment_status (lecture seule)"
+            value={<Badge variant="secondary">{current.paymentStatus}</Badge>}
+          />
+          <Row label="paid_at" value={fmt(current.paidAt)} />
+          <Row label="configuration reçue" value={current.configurationSubmitted ? "oui" : "non"} />
+          <Row
+            label="installation_status"
+            value={<Badge variant="secondary">{current.installationStatus}</Badge>}
+          />
+          <Row label="RDV Démo (R2)" value={<BookingCell booking={current.r2Booking} />} />
+          <Row label="RDV Test (setup)" value={<BookingCell booking={current.setupBooking} />} />
+          <Row label="parcours" value={current.journeyStage} />
+
+          <div className="mt-4">
+            <h4 className="mb-2 text-sm font-semibold">Changer installation_status</h4>
+            <div className="flex flex-wrap gap-2">
+              {INSTALL_STATUSES.map((status) => (
+                <Button
+                  key={status}
+                  size="sm"
+                  variant={current.installationStatus === status ? "default" : "outline"}
+                  disabled={busy}
+                  onClick={() => void apply(status)}
+                >
+                  {status}
+                </Button>
+              ))}
+            </div>
+            <p className="mt-2 text-xs text-muted-foreground">
+              ready_for_test et live sont refusés côté serveur si le client n'est pas payé. Les
+              données de paiement et les rendez-vous restent en lecture seule.
+            </p>
+          </div>
+        </div>
+      ) : null}
+    </Card>
   );
 }
