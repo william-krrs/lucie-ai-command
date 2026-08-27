@@ -242,6 +242,7 @@ export function BookingEmbed({
   useEffect(() => {
     let cancelled = false;
     async function buildUrl() {
+      let hadSession = false;
       try {
         const clientRef = getClientRef();
         // Le token est émis par une fonction serveur authentifiée : sans session
@@ -250,6 +251,7 @@ export function BookingEmbed({
         const { data: sessionData } = await supabase.auth.getSession();
         if (cancelled) return;
         if (!sessionData.session) throw new Error("no-session");
+        hadSession = true;
         const { token } = await issueBookingTokenFn({
           data: { clientRef, bookingType },
         });
@@ -263,8 +265,17 @@ export function BookingEmbed({
         next.searchParams.set("utm_source", "lucie-command-center");
         next.searchParams.set("utm_medium", bookingType);
         setBookingUrl(next.toString());
-      } catch {
+      } catch (error) {
         if (cancelled) return;
+        // Session présente mais émission échouée : ce n'est PAS un cas nominal.
+        // On journalise une raison technique non sensible (pas de token, pas
+        // d'identifiant) pour que le repli reste détectable en production.
+        if (hadSession) {
+          console.error(
+            "[booking-token] emission failed with an active session",
+            { bookingType, reason: error instanceof Error ? error.name : "unknown" },
+          );
+        }
         // Repli : sans token, on garde utm_client_ref pour la corrélation legacy.
         try {
           const next = new URL(baseBookingUrl);
@@ -277,6 +288,7 @@ export function BookingEmbed({
         }
       }
     }
+
     void buildUrl();
     // Dès qu'une session apparaît (bootstrap anonyme / connexion), on retente
     // l'émission du token signé.
