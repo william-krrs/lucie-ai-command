@@ -23,18 +23,24 @@ const LEGACY_KEY_V2 = "lucie:booking:v2";
 const LEGACY_KEY = "lucie:booking:v1";
 const CLIENT_REF_KEY = "lucie:booking:clientRef";
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 function getOrCreateClientRef(): string {
   if (typeof window === "undefined") return "";
   let ref = window.localStorage.getItem(CLIENT_REF_KEY);
-  if (!ref) {
+  // `bookings.client_ref` est une colonne uuid : une référence héritée non-UUID
+  // (ancien localStorage, fixture de test) empêcherait toute corrélation et
+  // toute émission de token signé. On la remplace par un uuid valide.
+  if (!ref || !UUID_RE.test(ref)) {
     ref =
       typeof crypto !== "undefined" && "randomUUID" in crypto
         ? crypto.randomUUID()
-        : `ref-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+        : `${Date.now().toString(16).padStart(8, "0").slice(0, 8)}-0000-4000-8000-${Math.random().toString(16).slice(2, 14).padEnd(12, "0")}`;
     window.localStorage.setItem(CLIENT_REF_KEY, ref);
   }
   return ref;
 }
+
 
 export function getClientRef(): string {
   return getOrCreateClientRef();
