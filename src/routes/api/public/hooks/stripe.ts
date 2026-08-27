@@ -5,7 +5,8 @@ import type { PlanKey } from "@/lib/stripe-plans";
 /**
  * Webhook Stripe (endpoint public, non authentifié).
  *
- * URL à coller dans Stripe : https://diagnostic.lucieassistant.fr/api/public/hooks/stripe
+ * URL d'endpoint à coller dans Stripe : <origine publique>/api/public/hooks/stripe
+ * (en production : le domaine personnalisé du projet).
  * Événement écouté : checkout.session.completed
  *
  * Sécurité :
