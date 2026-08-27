@@ -82,3 +82,10 @@ Modifiés :
 Configuration : confirmation d'email obligatoire (réglage par défaut, aucune activation d'auto-confirm).
 
 Non fait dans cette étape : conversion automatique simulation → client, désactivation définitive des inscriptions anonymes, rattachement d'un diagnostic partagé à un nouveau compte.
+
+## Addendum UX — 1 compte = 1 parcours (simulations masquées pour les clients)
+
+- Un compte email authentifié ne voit jamais le sélecteur « Simulations commerciales » (Prospect actif / Enregistrer / Nouveau) : cette UX est réservée au contexte commercial (visiteur sans compte, session anonyme, admin).
+- Zone compte client = `AccountMenu` existant : email du client, « Mon compte », « Déconnexion ».
+- `prospect-store` et les données locales ne sont ni supprimés ni migrés : retrait d'affichage uniquement, via un gate de rendu dans `AppShell` (`ProspectSwitcherGate`).
+- Aucune fausse association simulation locale ↔ user_id.

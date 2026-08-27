@@ -53,8 +53,15 @@ export function useAccount(): AccountInfo {
         // considérant qu'aucun compte n'est présent (le mur s'affiche).
         if (!cancelled) setReady(true);
       });
+    // Filet de sécurité : si la lecture de session reste en suspens (réseau
+    // indisponible), on dégrade vers l'état visiteur plutôt que de bloquer
+    // indéfiniment toute l'UX dépendante du statut de compte.
+    const fallback = window.setTimeout(() => {
+      if (!cancelled) setReady(true);
+    }, 4000);
     return () => {
       cancelled = true;
+      window.clearTimeout(fallback);
       sub.subscription.unsubscribe();
     };
   }, []);

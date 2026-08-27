@@ -25,7 +25,7 @@ import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from 
 import { useBooking } from "@/lib/booking-store";
 import { useJourneyAccess } from "@/lib/journey-access";
 import { SidebarProgress } from "@/components/sidebar-progress";
-import { ProspectSwitcher } from "@/components/prospect-switcher";
+import { ProspectSwitcherGate } from "@/components/prospect-switcher-gate";
 import { BookingSync } from "@/components/booking-sync";
 import { TopStepBar } from "@/components/top-step-bar";
 import { KeyboardShortcuts } from "@/components/keyboard-shortcuts";
@@ -217,7 +217,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           </Link>
           <div className="flex items-center gap-2">
             <AccountMenu compact />
-            <ProspectSwitcher />
+            <ProspectSwitcherGate />
             <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
             <SheetTrigger
               aria-label={mobileOpen ? "Fermer le menu de navigation" : "Ouvrir le menu de navigation"}
@@ -276,7 +276,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             <Presentation className="h-3.5 w-3.5" aria-hidden="true" />
             Mode Démo
           </Link>
-          <ProspectSwitcher />
+          <ProspectSwitcherGate />
         </div>
         <div
           id="main-content"
