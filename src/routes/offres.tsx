@@ -307,22 +307,24 @@ function Offres() {
               </ul>
 
               <Button
-                asChild
                 className={cn(
                   "mt-7 h-11 rounded-xl transition-all",
                   featured
                     ? "bg-primary text-primary-foreground shadow-[var(--shadow-elevated)] hover:bg-primary/90"
                     : "bg-foreground text-background hover:bg-foreground/90",
                 )}
+                onClick={() => handleCheckout(p.key)}
+                disabled={!!checkoutPlan}
+                aria-label={`Payer ${p.name} en ligne`}
               >
-                <a
-                  href={STRIPE_LINKS[p.key]}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  {p.cta}
-                </a>
+                {checkoutPlan === p.key ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
+                    Redirection vers Stripe…
+                  </>
+                ) : (
+                  p.cta
+                )}
               </Button>
             </div>
           );
