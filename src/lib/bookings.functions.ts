@@ -79,6 +79,12 @@ export const upsertBooking = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+/** `bookings.client_ref` est une colonne uuid : toute autre valeur ferait échouer Postgres. */
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+export function isClientRef(value: unknown): value is string {
+  return typeof value === "string" && UUID_RE.test(value);
+}
+
 function validateRef(input: unknown): { clientRef: string; bookingType: BookingType } {
   if (!input || typeof input !== "object") throw new Error("invalid input");
   const i = input as Record<string, unknown>;
@@ -88,6 +94,7 @@ function validateRef(input: unknown): { clientRef: string; bookingType: BookingT
     bookingType: isBookingType(i.bookingType) ? i.bookingType : DEFAULT_BOOKING_TYPE,
   };
 }
+
 
 export const cancelBooking = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
