@@ -244,10 +244,17 @@ export function BookingEmbed({
     async function buildUrl() {
       try {
         const clientRef = getClientRef();
+        // Le token est émis par une fonction serveur authentifiée : sans session
+        // (bootstrap anonyme encore en cours), on part directement sur le repli
+        // plutôt que de déclencher une 401.
+        const { data: sessionData } = await supabase.auth.getSession();
+        if (cancelled) return;
+        if (!sessionData.session) throw new Error("no-session");
         const { token } = await issueBookingTokenFn({
           data: { clientRef, bookingType },
         });
         if (cancelled) return;
+
         const next = new URL(baseBookingUrl);
         next.searchParams.set("utm_booking_token", token);
         // Corrélation secondaire conservée : le token signé reste prioritaire
