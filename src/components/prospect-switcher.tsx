@@ -66,7 +66,7 @@ export function ProspectSwitcher({ className }: { className?: string }) {
     const p = saveCurrentAsProspect();
     setProspects(listProspects());
     setActiveId(p.id);
-    toast.success(`Prospect « ${p.label} » enregistré.`);
+    toast.success(`Simulation « ${p.label} » enregistrée.`);
   }
 
   return (
@@ -124,14 +124,14 @@ export function ProspectSwitcher({ className }: { className?: string }) {
               }}
             >
               <Plus className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
-              Nouveau
+              Nouvelle simulation
             </Button>
           </div>
         </div>
         <ul className="max-h-[50vh] overflow-auto p-2" role="list">
           {prospects.length === 0 ? (
             <li className="rounded-lg px-3 py-6 text-center text-xs text-muted-foreground">
-              Aucun prospect enregistré pour le moment.
+              Aucune simulation enregistrée pour le moment.
               <br />
               Remplissez le diagnostic puis cliquez sur « Enregistrer l'actuel ».
             </li>
@@ -158,7 +158,7 @@ export function ProspectSwitcher({ className }: { className?: string }) {
                         loadProspect(p.id);
                       }}
                       className="flex min-w-0 flex-1 items-center gap-2 text-left"
-                      aria-label={`Charger le prospect ${p.label}`}
+                      aria-label={`Charger la simulation ${p.label}`}
                     >
                       <span
                         className={cn(
@@ -192,6 +192,9 @@ export function ProspectSwitcher({ className }: { className?: string }) {
                             {p.label}
                           </span>
                         )}
+                        <span className="mt-0.5 inline-flex items-center rounded-full border border-border px-1.5 py-px text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
+                          Prospect
+                        </span>
                         <span className="block truncate text-[11px] text-muted-foreground">
                           {[p.activity, p.city].filter(Boolean).join(" · ") || "Diagnostic vide"}
                         </span>
@@ -218,7 +221,7 @@ export function ProspectSwitcher({ className }: { className?: string }) {
                       type="button"
                       onClick={(e) => {
                         e.stopPropagation();
-                        if (!confirm(`Supprimer le prospect « ${p.label} » ?`)) return;
+                        if (!confirm(`Supprimer la simulation « ${p.label} » ?`)) return;
                         deleteProspect(p.id);
                         setProspects(listProspects());
                         if (activeId === p.id) setActiveId(null);
