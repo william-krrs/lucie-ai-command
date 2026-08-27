@@ -89,6 +89,7 @@ function validateRef(input: unknown): { clientRef: string; bookingType: BookingT
   };
 }
 
+
 export const cancelBooking = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator(validateRef)
@@ -167,6 +168,10 @@ export const getBookingByRef = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .inputValidator(validateRef)
   .handler(async ({ data, context }): Promise<{ booking: ServerBooking | null }> => {
+    // `client_ref` est une colonne uuid : une référence locale héritée
+    // (non-uuid) ne peut correspondre à aucune ligne — on évite l'erreur 500.
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(data.clientRef))
+      return { booking: null };
     const { data: row, error } = await context.supabase
       .from("bookings")
       .select(SELECT_COLUMNS)
@@ -192,6 +197,8 @@ export const listBookingsByRef = createServerFn({ method: "GET" })
     return { clientRef };
   })
   .handler(async ({ data, context }): Promise<{ bookings: ServerBooking[] }> => {
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(data.clientRef))
+      return { bookings: [] };
     const { data: rows, error } = await context.supabase
       .from("bookings")
       .select(SELECT_COLUMNS)
