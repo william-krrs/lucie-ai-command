@@ -14,9 +14,12 @@ import {
   adminCleanupTestBookings,
   adminGetOverview,
   adminListBookings,
+  adminListClients,
   adminPrepareBeforeStripe,
   adminResetJourney,
+  adminSetClientInstallationStatus,
   adminSetInstallationStatus,
+  type AdminClientRow,
   type AdminInstallationStatus,
 } from "@/lib/admin.functions";
 
