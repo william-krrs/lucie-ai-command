@@ -167,6 +167,7 @@ export function loadProspect(id: string) {
 export function startNewProspect() {
   safeSet(DIAG_KEY, null);
   safeSet(BOOKING_KEY, null);
+  safeSet(LEGACY_BOOKING_KEY, null);
   safeSet(PREP_KEY, null);
   setActiveProspectId(null);
   if (typeof window !== "undefined") window.location.reload();
