@@ -141,9 +141,14 @@ function AdminPage() {
           title="Accès refusé"
           description="Ce compte ne possède pas le rôle administrateur. L'autorisation est vérifiée côté serveur."
         />
+        <div className="rounded-lg border border-border/60 bg-card/40 p-4 text-sm">
+          <p className="text-muted-foreground">Identifiant de la session actuelle (à communiquer pour l'attribution du rôle) :</p>
+          <code className="mt-2 block break-all font-mono text-xs">{overview.data?.userId ?? "inconnu"}</code>
+        </div>
       </div>
     );
   }
+
 
   const state = overview.data?.journeyState ?? null;
 
