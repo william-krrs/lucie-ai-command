@@ -58,6 +58,10 @@ const DEFAULT_STATE: DiagnosticState = {
 type Ctx = {
   state: DiagnosticState;
   update: <K extends keyof DiagnosticState>(key: K, value: DiagnosticState[K]) => void;
+  /** Remplace l'intégralité de l'état (restauration serveur). */
+  replace: (next: Partial<DiagnosticState>) => void;
+  /** true si l'état diffère encore des valeurs par défaut. */
+  isPristine: boolean;
   reset: () => void;
 };
 
@@ -112,6 +116,8 @@ export function LucieProvider({ children }: { children: ReactNode }) {
     () => ({
       state,
       update: (key, value) => setState((s) => ({ ...s, [key]: value })),
+      replace: (next) => setState((s) => ({ ...s, ...next })),
+      isPristine: JSON.stringify(state) === JSON.stringify(DEFAULT_STATE),
       reset: () => {
         setState(DEFAULT_STATE);
         if (typeof window !== "undefined") {

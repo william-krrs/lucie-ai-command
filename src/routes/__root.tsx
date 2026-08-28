@@ -17,6 +17,7 @@ import { BookingProvider } from "@/lib/booking-store";
 import { JourneyAccessProvider } from "@/lib/journey-access";
 import { AppShell } from "@/components/app-shell";
 import { AnonAuthBootstrap } from "@/components/anon-auth-bootstrap";
+import { DiagnosticSync } from "@/components/diagnostic-sync";
 import { REQUIRE_ACCOUNT } from "@/lib/config";
 
 if (typeof window !== "undefined") {
@@ -184,6 +185,7 @@ function RootComponent() {
               REQUIRE_ACCOUNT est actif. Les sessions anonymes existantes ne sont
               pas invalidées, mais ne valent jamais compte client. */}
           {!REQUIRE_ACCOUNT && <AnonAuthBootstrap />}
+          <DiagnosticSync />
           {isStandalone ? (
             <Outlet />
           ) : (
