@@ -58,6 +58,10 @@ const DEFAULT_STATE: DiagnosticState = {
 type Ctx = {
   state: DiagnosticState;
   update: <K extends keyof DiagnosticState>(key: K, value: DiagnosticState[K]) => void;
+  /** Remplace l'intégralité de l'état (restauration serveur). */
+  replace: (next: Partial<DiagnosticState>) => void;
+  /** true si l'état diffère encore des valeurs par défaut. */
+  isPristine: boolean;
   reset: () => void;
 };
 
