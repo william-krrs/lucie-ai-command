@@ -116,6 +116,8 @@ export function LucieProvider({ children }: { children: ReactNode }) {
     () => ({
       state,
       update: (key, value) => setState((s) => ({ ...s, [key]: value })),
+      replace: (next) => setState((s) => ({ ...s, ...next })),
+      isPristine: JSON.stringify(state) === JSON.stringify(DEFAULT_STATE),
       reset: () => {
         setState(DEFAULT_STATE);
         if (typeof window !== "undefined") {
