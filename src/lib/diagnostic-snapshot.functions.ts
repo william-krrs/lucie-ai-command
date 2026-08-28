@@ -11,18 +11,21 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
  * - RLS propriétaire côté base (les sessions anonymes sont exclues).
  */
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type JsonObject = { [key: string]: any };
+
 export type DiagnosticSnapshotDTO = {
-  diagnostic: Record<string, unknown>;
-  metrics: Record<string, unknown> | null;
-  recommendation: Record<string, unknown> | null;
+  diagnostic: JsonObject;
+  metrics: JsonObject | null;
+  recommendation: JsonObject | null;
   updatedAt: string;
 } | null;
 
 type Ctx = { supabase: any; userId: string };
 
-function asObject(value: unknown): Record<string, unknown> | null {
+function asObject(value: unknown): JsonObject | null {
   return value && typeof value === "object" && !Array.isArray(value)
-    ? (value as Record<string, unknown>)
+    ? (value as JsonObject)
     : null;
 }
 
