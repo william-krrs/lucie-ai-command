@@ -96,6 +96,32 @@ export function writeLocalDiagnosticUpdatedAt(iso: string) {
   }
 }
 
+/** Compte propriétaire du cache diagnostic local (anti-mélange de comptes). */
+export const DIAGNOSTIC_OWNER_KEY = "lucie:diagnostic:v1:owner";
+
+export function readLocalDiagnosticOwner(): string | null {
+  if (typeof window === "undefined") return null;
+  try {
+    return window.localStorage.getItem(DIAGNOSTIC_OWNER_KEY);
+  } catch {
+    return null;
+  }
+}
+
+export function writeLocalDiagnosticOwner(userId: string) {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(DIAGNOSTIC_OWNER_KEY, userId);
+  } catch {
+    // ignore
+  }
+}
+
+/** true si l'état correspond encore aux valeurs par défaut. */
+export function isDefaultDiagnostic(state: DiagnosticState): boolean {
+  return JSON.stringify(state) === JSON.stringify(DEFAULT_STATE);
+}
+
 
 function readPersisted(): DiagnosticState | null {
   if (typeof window === "undefined") return null;
@@ -182,6 +208,7 @@ export function LucieProvider({ children }: { children: ReactNode }) {
           try {
             window.localStorage.removeItem(DIAGNOSTIC_KEY);
             window.localStorage.removeItem(DIAGNOSTIC_UPDATED_AT_KEY);
+            window.localStorage.removeItem(DIAGNOSTIC_OWNER_KEY);
           } catch {
             // ignore
           }
