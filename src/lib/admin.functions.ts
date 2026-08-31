@@ -362,19 +362,27 @@ function pickBooking(rows: any[], type: string): AdminClientBooking {
 async function buildClientRows(userIds?: string[]): Promise<AdminClientRow[]> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-  const { data: usersRes, error: usersError } = await supabaseAdmin.auth.admin.listUsers({
-    page: 1,
-    perPage: 200,
-  });
-  if (usersError) {
-    console.error("[admin] list users", usersError);
-    throw new Error("Lecture des clients impossible.");
+  // Pagination complète : listUsers() est plafonné par page, on itère jusqu'à
+  // épuisement pour ne jamais tronquer silencieusement la liste des clients.
+  const perPage = 200;
+  const allUsers: any[] = [];
+  for (let page = 1; page <= 50; page++) {
+    const { data: usersRes, error: usersError } = await supabaseAdmin.auth.admin.listUsers({
+      page,
+      perPage,
+    });
+    if (usersError) {
+      console.error("[admin] list users", usersError);
+      throw new Error("Lecture des clients impossible.");
+    }
+    const batch = usersRes?.users ?? [];
+    allUsers.push(...batch);
+    if (batch.length < perPage) break;
   }
 
-  let users = (usersRes?.users ?? []).filter(
-    (u: any) => u.is_anonymous !== true && !!u.email,
-  );
+  let users = allUsers.filter((u: any) => u.is_anonymous !== true && !!u.email);
   if (userIds) users = users.filter((u: any) => userIds.includes(u.id));
+
   const ids = users.map((u: any) => u.id);
   if (ids.length === 0) return [];
 
