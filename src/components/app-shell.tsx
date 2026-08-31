@@ -302,6 +302,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 </div>
                 {navList}
               </nav>
+              <div onClickCapture={() => setMobileOpen(false)}>{adminNav}</div>
               <div className="pb-6">
                 <SidebarProgress onNavigate={() => setMobileOpen(false)} />
               </div>
