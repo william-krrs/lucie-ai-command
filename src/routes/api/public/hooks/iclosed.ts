@@ -380,11 +380,16 @@ async function handle(request: Request): Promise<Response> {
     // Un nouveau créneau doit redéclencher les rappels.
     reminder_24h_sent_at: null,
     reminder_2h_sent_at: null,
-    user_id: userId,
   };
 
   if (rowId) {
-    const { error } = await supabaseAdmin.from("bookings").update(common).eq("id", rowId);
+    // Ne jamais écraser un propriétaire déjà résolu : sans token signé
+    // (user_id inconnu), on laisse la colonne user_id intacte.
+    const { error } = await supabaseAdmin
+      .from("bookings")
+      .update(userId ? { ...common, user_id: userId } : common)
+      .eq("id", rowId);
+
     if (error) {
       console.error("[iclosed webhook] update failed", error.message);
       return new Response("Update failed", { status: 500 });
@@ -396,8 +401,10 @@ async function handle(request: Request): Promise<Response> {
   // le token signé (si présent), sinon orpheline rattachable plus tard par e-mail.
   const { error } = await supabaseAdmin.from("bookings").insert({
     ...common,
+    user_id: userId,
     client_ref: effectiveClientRef ?? crypto.randomUUID(),
   });
+
   if (error) {
     console.error("[iclosed webhook] insert failed", error.message);
     return new Response("Insert failed", { status: 500 });

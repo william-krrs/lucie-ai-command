@@ -47,37 +47,82 @@ export const upsertBooking = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator(validate)
   .handler(async ({ data, context }) => {
-    const { error } = await context.supabase
+    const values = {
+      client_ref: data.clientRef,
+      booking_type: data.bookingType,
+      user_id: context.userId,
+      email: data.email,
+      name: data.name ?? null,
+      phone: data.phone ?? null,
+      meeting_date: data.meetingDate,
+      meeting_time: data.meetingTime ?? null,
+      meeting_at: data.meetingAt,
+      timezone: data.timezone ?? "Europe/Paris",
+      iclosed_event_id: data.iclosedEventId ?? null,
+      meeting_location: data.meetingLocation ?? null,
+      status: "pending",
+      status_norm: "confirmed" as const,
+      canceled_at: null,
+      // Reset reminders on reschedule so they fire again for the new slot.
+      reminder_24h_sent_at: null,
+      reminder_2h_sent_at: null,
+    };
+
+    // Un upsert ON CONFLICT (client_ref, booking_type) échoue en 42501 quand la
+    // ligne existante appartient à un autre user_id (ou est orpheline) : la
+    // policy UPDATE est évaluée sur la ligne existante. On résout donc le
+    // conflit explicitement, sans jamais écraser le RDV d'un autre compte.
+    const { data: updated, error: updateError } = await context.supabase
       .from("bookings")
-      .upsert(
-        {
-          client_ref: data.clientRef,
-          booking_type: data.bookingType,
-          user_id: context.userId,
-          email: data.email,
-          name: data.name ?? null,
-          phone: data.phone ?? null,
-          meeting_date: data.meetingDate,
-          meeting_time: data.meetingTime ?? null,
-          meeting_at: data.meetingAt,
-          timezone: data.timezone ?? "Europe/Paris",
-          iclosed_event_id: data.iclosedEventId ?? null,
-          meeting_location: data.meetingLocation ?? null,
-          status: "pending",
-          status_norm: "confirmed",
-          canceled_at: null,
-          // Reset reminders on reschedule so they fire again for the new slot.
-          reminder_24h_sent_at: null,
-          reminder_2h_sent_at: null,
-        },
-        { onConflict: "client_ref,booking_type" },
-      );
-    if (error) {
-      console.error("[upsertBooking] error", error);
-      throw new Error(error.message);
+      .update(values)
+      .eq("client_ref", data.clientRef)
+      .eq("booking_type", data.bookingType)
+      .eq("user_id", context.userId)
+      .select("id");
+    if (updateError) {
+      console.error("[upsertBooking] update", updateError);
+      throw new Error(updateError.message);
+    }
+    if (updated && updated.length > 0) return { ok: true };
+
+    const { error: insertError } = await context.supabase.from("bookings").insert(values);
+    if (!insertError) return { ok: true };
+
+    // 23505 : une ligne existe déjà pour ce couple mais n'appartient pas à
+    // l'utilisateur (RLS la masque). Elle n'est adoptée que si elle est
+    // orpheline (user_id null, typiquement créée par le webhook iClosed).
+    if (insertError.code !== "23505") {
+      console.error("[upsertBooking] insert", insertError);
+      throw new Error(insertError.message);
+    }
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: existing, error: lookupError } = await supabaseAdmin
+      .from("bookings")
+      .select("id, user_id")
+      .eq("client_ref", data.clientRef)
+      .eq("booking_type", data.bookingType)
+      .maybeSingle();
+    if (lookupError) {
+      console.error("[upsertBooking] conflict lookup", lookupError);
+      throw new Error(lookupError.message);
+    }
+    if (!existing || (existing.user_id && existing.user_id !== context.userId)) {
+      throw new Error("Ce rendez-vous est déjà rattaché à un autre compte.");
+    }
+
+    const { error: adoptError } = await supabaseAdmin
+      .from("bookings")
+      .update(values)
+      .eq("id", existing.id)
+      .is("user_id", null);
+    if (adoptError) {
+      console.error("[upsertBooking] adopt", adoptError);
+      throw new Error(adoptError.message);
     }
     return { ok: true };
   });
+
 
 function validateRef(input: unknown): { clientRef: string; bookingType: BookingType } {
   if (!input || typeof input !== "object") throw new Error("invalid input");
