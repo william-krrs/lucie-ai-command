@@ -187,7 +187,7 @@ function AdminPage() {
 
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div id="admin-etat" className="grid scroll-mt-24 gap-6 lg:grid-cols-2">
         <Card className="p-5">
           <h2 className="mb-3 text-lg font-semibold">Identité</h2>
           <Row label="user_id" value={overview.data?.userId} />
@@ -225,7 +225,7 @@ function AdminPage() {
         </Card>
       </div>
 
-      <Card className="p-5">
+      <Card id="admin-actions" className="scroll-mt-24 p-5">
         <h2 className="mb-1 text-lg font-semibold">Actions de test</h2>
         <p className="mb-4 text-sm text-muted-foreground">
           Ces actions ne portent que sur votre propre compte et n'écrivent jamais un paiement payé.
@@ -386,7 +386,7 @@ function ClientsPanel() {
   }
 
   return (
-    <Card className="p-5">
+    <Card id="admin-clients" className="scroll-mt-24 p-5">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-lg font-semibold">Clients</h2>
         <Button
