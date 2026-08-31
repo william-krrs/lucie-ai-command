@@ -30,6 +30,8 @@ import { BookingSync } from "@/components/booking-sync";
 import { TopStepBar } from "@/components/top-step-bar";
 import { KeyboardShortcuts } from "@/components/keyboard-shortcuts";
 import { AccountMenu } from "@/components/account-menu";
+import { useIsAdmin } from "@/lib/use-is-admin";
+import { ShieldCheck } from "lucide-react";
 
 const NAV = [
   { to: "/", label: "Accueil", icon: Home },
