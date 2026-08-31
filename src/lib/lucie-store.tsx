@@ -115,6 +115,8 @@ export function LucieProvider({ children }: { children: ReactNode }) {
   const hydrated = useRef(false);
   /** Horodatage à écrire au prochain enregistrement local (restauration serveur). */
   const pendingUpdatedAt = useRef<string | null>(null);
+  /** Origine de la dernière modification d'état. */
+  const changeSource = useRef<"hydrate" | "user" | "server">("hydrate");
 
   // Hydrate from localStorage after mount to avoid SSR mismatches.
   useEffect(() => {
@@ -125,7 +127,10 @@ export function LucieProvider({ children }: { children: ReactNode }) {
     const onStorage = (e: StorageEvent) => {
       if (e.key === DIAGNOSTIC_KEY) {
         const next = readPersisted();
-        if (next) setState(next);
+        if (next) {
+          changeSource.current = "hydrate";
+          setState(next);
+        }
       }
     };
     window.addEventListener("storage", onStorage);
@@ -137,17 +142,17 @@ export function LucieProvider({ children }: { children: ReactNode }) {
     if (!hydrated.current || typeof window === "undefined") return;
     try {
       const serialized = JSON.stringify(state);
-      // Ne pas rafraîchir l'horodatage quand rien n'a réellement changé
-      // (hydratation, restauration serveur) : sinon un vieux cache local
-      // paraîtrait plus récent que le serveur à chaque chargement.
-      const unchanged = window.localStorage.getItem(DIAGNOSTIC_KEY) === serialized;
       window.localStorage.setItem(DIAGNOSTIC_KEY, serialized);
-      if (!unchanged) {
-        const forced = pendingUpdatedAt.current;
-        window.localStorage.setItem(
-          DIAGNOSTIC_UPDATED_AT_KEY,
-          forced ?? new Date().toISOString(),
-        );
+      // L'horodatage local n'est rafraîchi QUE pour une vraie modification
+      // utilisateur. Une hydratation (ordre des clés, champ ajouté au schéma…)
+      // ne doit jamais faire passer un vieux cache pour plus récent que le
+      // serveur ; une restauration serveur conserve l'horodatage serveur.
+      const source = changeSource.current;
+      changeSource.current = "hydrate";
+      if (source === "server" && pendingUpdatedAt.current) {
+        window.localStorage.setItem(DIAGNOSTIC_UPDATED_AT_KEY, pendingUpdatedAt.current);
+      } else if (source === "user") {
+        window.localStorage.setItem(DIAGNOSTIC_UPDATED_AT_KEY, new Date().toISOString());
       }
       pendingUpdatedAt.current = null;
     } catch {
@@ -160,15 +165,18 @@ export function LucieProvider({ children }: { children: ReactNode }) {
     () => ({
       state,
       update: (key, value) => {
+        changeSource.current = "user";
         pendingUpdatedAt.current = null;
         setState((s) => ({ ...s, [key]: value }));
       },
       replace: (next, serverUpdatedAt) => {
+        changeSource.current = "server";
         pendingUpdatedAt.current = serverUpdatedAt ?? null;
         setState((s) => ({ ...s, ...next }));
       },
       isPristine: JSON.stringify(state) === JSON.stringify(DEFAULT_STATE),
       reset: () => {
+        changeSource.current = "user";
         setState(DEFAULT_STATE);
         if (typeof window !== "undefined") {
           try {
