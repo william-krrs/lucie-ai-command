@@ -58,8 +58,13 @@ const DEFAULT_STATE: DiagnosticState = {
 type Ctx = {
   state: DiagnosticState;
   update: <K extends keyof DiagnosticState>(key: K, value: DiagnosticState[K]) => void;
-  /** Remplace l'intégralité de l'état (restauration serveur). */
-  replace: (next: Partial<DiagnosticState>) => void;
+  /**
+   * Remplace l'intégralité de l'état (restauration serveur).
+   * `serverUpdatedAt` conserve l'horodatage serveur côté local : sans lui, la
+   * persistance locale réécrirait `now()` et le cache paraîtrait, au
+   * rechargement suivant, plus récent que le serveur.
+   */
+  replace: (next: Partial<DiagnosticState>, serverUpdatedAt?: string) => void;
   /** true si l'état diffère encore des valeurs par défaut. */
   isPristine: boolean;
   reset: () => void;
