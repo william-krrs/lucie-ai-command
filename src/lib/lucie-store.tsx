@@ -113,6 +113,8 @@ function readPersisted(): DiagnosticState | null {
 export function LucieProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<DiagnosticState>(DEFAULT_STATE);
   const hydrated = useRef(false);
+  /** Horodatage à écrire au prochain enregistrement local (restauration serveur). */
+  const pendingUpdatedAt = useRef<string | null>(null);
 
   // Hydrate from localStorage after mount to avoid SSR mismatches.
   useEffect(() => {
@@ -141,8 +143,13 @@ export function LucieProvider({ children }: { children: ReactNode }) {
       const unchanged = window.localStorage.getItem(DIAGNOSTIC_KEY) === serialized;
       window.localStorage.setItem(DIAGNOSTIC_KEY, serialized);
       if (!unchanged) {
-        window.localStorage.setItem(DIAGNOSTIC_UPDATED_AT_KEY, new Date().toISOString());
+        const forced = pendingUpdatedAt.current;
+        window.localStorage.setItem(
+          DIAGNOSTIC_UPDATED_AT_KEY,
+          forced ?? new Date().toISOString(),
+        );
       }
+      pendingUpdatedAt.current = null;
     } catch {
       // Storage quota / disabled — silently ignore.
     }
@@ -152,8 +159,14 @@ export function LucieProvider({ children }: { children: ReactNode }) {
   const value = useMemo<Ctx>(
     () => ({
       state,
-      update: (key, value) => setState((s) => ({ ...s, [key]: value })),
-      replace: (next) => setState((s) => ({ ...s, ...next })),
+      update: (key, value) => {
+        pendingUpdatedAt.current = null;
+        setState((s) => ({ ...s, [key]: value }));
+      },
+      replace: (next, serverUpdatedAt) => {
+        pendingUpdatedAt.current = serverUpdatedAt ?? null;
+        setState((s) => ({ ...s, ...next }));
+      },
       isPristine: JSON.stringify(state) === JSON.stringify(DEFAULT_STATE),
       reset: () => {
         setState(DEFAULT_STATE);
