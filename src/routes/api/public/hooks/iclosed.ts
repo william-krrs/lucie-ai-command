@@ -401,8 +401,10 @@ async function handle(request: Request): Promise<Response> {
   // le token signé (si présent), sinon orpheline rattachable plus tard par e-mail.
   const { error } = await supabaseAdmin.from("bookings").insert({
     ...common,
+    user_id: userId,
     client_ref: effectiveClientRef ?? crypto.randomUUID(),
   });
+
   if (error) {
     console.error("[iclosed webhook] insert failed", error.message);
     return new Response("Insert failed", { status: 500 });
