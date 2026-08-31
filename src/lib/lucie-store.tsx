@@ -129,12 +129,20 @@ export function LucieProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!hydrated.current || typeof window === "undefined") return;
     try {
-      window.localStorage.setItem(DIAGNOSTIC_KEY, JSON.stringify(state));
-      window.localStorage.setItem(DIAGNOSTIC_UPDATED_AT_KEY, new Date().toISOString());
+      const serialized = JSON.stringify(state);
+      // Ne pas rafraîchir l'horodatage quand rien n'a réellement changé
+      // (hydratation, restauration serveur) : sinon un vieux cache local
+      // paraîtrait plus récent que le serveur à chaque chargement.
+      const unchanged = window.localStorage.getItem(DIAGNOSTIC_KEY) === serialized;
+      window.localStorage.setItem(DIAGNOSTIC_KEY, serialized);
+      if (!unchanged) {
+        window.localStorage.setItem(DIAGNOSTIC_UPDATED_AT_KEY, new Date().toISOString());
+      }
     } catch {
       // Storage quota / disabled — silently ignore.
     }
   }, [state]);
+
 
   const value = useMemo<Ctx>(
     () => ({
