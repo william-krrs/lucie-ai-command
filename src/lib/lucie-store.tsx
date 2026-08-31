@@ -208,6 +208,7 @@ export function LucieProvider({ children }: { children: ReactNode }) {
           try {
             window.localStorage.removeItem(DIAGNOSTIC_KEY);
             window.localStorage.removeItem(DIAGNOSTIC_UPDATED_AT_KEY);
+            window.localStorage.removeItem(DIAGNOSTIC_OWNER_KEY);
           } catch {
             // ignore
           }
