@@ -54,24 +54,43 @@ export function DiagnosticSync() {
 
     let cancelled = false;
     void (async () => {
-      try {
-        const snapshot = await load({});
+      const pushLocal = async () => {
+        const res = await save({
+          data: {
+            diagnostic: latest.current.state,
+            metrics: latest.current.metrics,
+            recommendation: latest.current.recommendation,
+          },
+        });
+        writeLocalDiagnosticUpdatedAt(res.updatedAt);
+      };
+
+      // La lecture serveur peut échouer ponctuellement (réseau). Sans nouvelle
+      // tentative, on repartirait du cache local et on écraserait un snapshot
+      // serveur plus récent : on réessaie, et en cas d'échec définitif on
+      // n'active JAMAIS la sauvegarde automatique.
+      let snapshot: Awaited<ReturnType<typeof load>> | undefined;
+      for (let attempt = 0; attempt < 3; attempt++) {
         if (cancelled) return;
+        try {
+          snapshot = await load({});
+          break;
+        } catch (error) {
+          console.error("[diagnostic-sync] lecture serveur", error);
+          if (attempt === 2) {
+            syncedFor.current = null; // autorise une nouvelle tentative
+            return;
+          }
+          await new Promise((r) => setTimeout(r, 800 * (attempt + 1)));
+        }
+      }
+      if (cancelled) return;
 
-        const pushLocal = async () => {
-          const res = await save({
-            data: {
-              diagnostic: latest.current.state,
-              metrics: latest.current.metrics,
-              recommendation: latest.current.recommendation,
-            },
-          });
-          writeLocalDiagnosticUpdatedAt(res.updatedAt);
-        };
-
+      try {
         if (!snapshot) {
           // Aucun snapshot serveur : le local peut initialiser le serveur.
           if (!isPristine) await pushLocal();
+          ready.current = true;
           return;
         }
 
@@ -88,10 +107,9 @@ export function DiagnosticSync() {
           replace(snapshot.diagnostic as Record<string, never>, snapshot.updatedAt);
           writeLocalDiagnosticUpdatedAt(snapshot.updatedAt);
         }
+        ready.current = true;
       } catch (error) {
         console.error("[diagnostic-sync] réconciliation", error);
-      } finally {
-        if (!cancelled) ready.current = true;
       }
     })();
     return () => {
