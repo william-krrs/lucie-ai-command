@@ -130,6 +130,7 @@ export function LucieProvider({ children }: { children: ReactNode }) {
     if (!hydrated.current || typeof window === "undefined") return;
     try {
       window.localStorage.setItem(DIAGNOSTIC_KEY, JSON.stringify(state));
+      window.localStorage.setItem(DIAGNOSTIC_UPDATED_AT_KEY, new Date().toISOString());
     } catch {
       // Storage quota / disabled — silently ignore.
     }
@@ -146,11 +147,13 @@ export function LucieProvider({ children }: { children: ReactNode }) {
         if (typeof window !== "undefined") {
           try {
             window.localStorage.removeItem(DIAGNOSTIC_KEY);
+            window.localStorage.removeItem(DIAGNOSTIC_UPDATED_AT_KEY);
           } catch {
             // ignore
           }
         }
       },
+
     }),
     [state],
   );
