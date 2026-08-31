@@ -352,27 +352,39 @@ function pickBooking(rows: any[], type: string): AdminClientBooking {
   };
 }
 
+/**
+ * Source de vérité de la liste Clients : les vrais comptes email Supabase.
+ *
+ * Un compte sans ligne journey_state reste un client (il vient de s'inscrire) :
+ * la liste ne part donc plus de journey_state, elle l'agrège. Les sessions
+ * anonymes (héritées) sont exclues. Appelé uniquement après assertAdmin().
+ */
 async function buildClientRows(userIds?: string[]): Promise<AdminClientRow[]> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-  let stateQuery = supabaseAdmin
-    .from("journey_state")
-    .select(
-      "user_id, client_ref, demo_completed_at, payment_status, paid_at, paid_plan, installation_status, updated_at",
-    )
-    .order("updated_at", { ascending: false })
-    .limit(100);
-  if (userIds) stateQuery = stateQuery.in("user_id", userIds);
-
-  const { data: states, error } = await stateQuery;
-  if (error) {
-    console.error("[admin] clients list", error);
+  const { data: usersRes, error: usersError } = await supabaseAdmin.auth.admin.listUsers({
+    page: 1,
+    perPage: 200,
+  });
+  if (usersError) {
+    console.error("[admin] list users", usersError);
     throw new Error("Lecture des clients impossible.");
   }
-  const ids = (states ?? []).map((s: any) => s.user_id);
+
+  let users = (usersRes?.users ?? []).filter(
+    (u: any) => u.is_anonymous !== true && !!u.email,
+  );
+  if (userIds) users = users.filter((u: any) => userIds.includes(u.id));
+  const ids = users.map((u: any) => u.id);
   if (ids.length === 0) return [];
 
-  const [bookingsRes, prepRes] = await Promise.all([
+  const [statesRes, bookingsRes, prepRes] = await Promise.all([
+    supabaseAdmin
+      .from("journey_state")
+      .select(
+        "user_id, client_ref, demo_completed_at, payment_status, paid_at, paid_plan, installation_status, updated_at",
+      )
+      .in("user_id", ids),
     supabaseAdmin
       .from("bookings")
       .select("user_id, booking_type, status_norm, meeting_at, timezone, email, name, client_ref, created_at")
@@ -385,38 +397,46 @@ async function buildClientRows(userIds?: string[]): Promise<AdminClientRow[]> {
       .order("created_at", { ascending: false }),
   ]);
 
+  if (statesRes.error) console.error("[admin] clients states", statesRes.error);
+  const states = (statesRes.data ?? []) as any[];
   const bookings = (bookingsRes.data ?? []) as any[];
   const preps = (prepRes.data ?? []) as any[];
 
-  return (states ?? []).map((s: any) => {
-    const mine = bookings.filter((b) => b.user_id === s.user_id);
-    const prep = preps.find((p) => p.user_id === s.user_id) ?? null;
+  const rows = users.map((u: any) => {
+    const s = states.find((row) => row.user_id === u.id) ?? null;
+    const mine = bookings.filter((b) => b.user_id === u.id);
+    const prep = preps.find((p) => p.user_id === u.id) ?? null;
     const anyBooking = mine[0] ?? null;
     const base = {
-      paymentStatus: s.payment_status as string,
+      paymentStatus: (s?.payment_status as string) ?? "unpaid",
       configurationSubmitted: !!prep,
-      installationStatus: s.installation_status as AdminInstallationStatus,
-      demoCompletedAt: (s.demo_completed_at as string | null) ?? null,
+      installationStatus: (s?.installation_status as AdminInstallationStatus) ?? "not_started",
+      demoCompletedAt: (s?.demo_completed_at as string | null) ?? null,
       setupBooking: pickBooking(mine, "setup_test"),
     };
     return {
-      userId: s.user_id,
-      email: prep?.contact_email ?? anyBooking?.email ?? null,
+      userId: u.id,
+      // L'email du compte authentifié fait foi ; les autres sources ne servent
+      // que de repli d'affichage.
+      email: u.email ?? prep?.contact_email ?? anyBooking?.email ?? null,
       name: prep?.contact_name ?? anyBooking?.name ?? null,
-      clientRef: s.client_ref ?? anyBooking?.client_ref ?? null,
-      paidPlan: s.paid_plan ?? null,
+      clientRef: s?.client_ref ?? anyBooking?.client_ref ?? null,
+      paidPlan: s?.paid_plan ?? null,
       paymentStatus: base.paymentStatus,
-      paidAt: s.paid_at ?? null,
+      paidAt: s?.paid_at ?? null,
       configurationSubmitted: base.configurationSubmitted,
       installationStatus: base.installationStatus,
       demoCompletedAt: base.demoCompletedAt,
       r2Booking: pickBooking(mine, "r2_demo"),
       setupBooking: base.setupBooking,
       journeyStage: stageOf(base),
-      updatedAt: s.updated_at ?? null,
+      updatedAt: s?.updated_at ?? u.created_at ?? null,
     } satisfies AdminClientRow;
   });
+
+  return rows.sort((a, b) => (b.updatedAt ?? "").localeCompare(a.updatedAt ?? ""));
 }
+
 
 /** Liste des clients (lecture seule). Admin uniquement. */
 export const adminListClients = createServerFn({ method: "GET" })
@@ -464,9 +484,27 @@ export const adminSetClientInstallationStatus = createServerFn({ method: "POST" 
       console.error("[admin] client state read", error);
       throw new Error("Lecture du client impossible.");
     }
-    if (!state) throw new Error("Aucun parcours pour ce client.");
-
     const requiresPaid = data.status === "ready_for_test" || data.status === "live";
+
+    // Un compte tout juste créé n'a pas encore de ligne journey_state : on la
+    // crée avec les défauts verrouillés (unpaid) plutôt que d'échouer.
+    if (!state) {
+      if (requiresPaid) {
+        throw new Error(
+          "Client non payé : impossible de passer en ready_for_test ou live. Stripe reste la seule autorité du paiement.",
+        );
+      }
+      const { error: insertError } = await supabaseAdmin
+        .from("journey_state")
+        .insert({ user_id: data.targetUserId, installation_status: data.status } as never);
+      if (insertError) {
+        console.error("[admin] client state insert", insertError);
+        throw new Error("Écriture du statut d'installation impossible.");
+      }
+      const created = await buildClientRows([data.targetUserId]);
+      return created[0] ?? null;
+    }
+
     if (requiresPaid && state.payment_status !== "paid") {
       throw new Error(
         "Client non payé : impossible de passer en ready_for_test ou live. Stripe reste la seule autorité du paiement.",
