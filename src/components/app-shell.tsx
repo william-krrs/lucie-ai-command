@@ -144,6 +144,46 @@ export function AppShell({ children }: { children: ReactNode }) {
     </ul>
   );
 
+  const isAdmin = useIsAdmin();
+
+  // Bloc navigation réservé aux admins autorisés (vérifié côté serveur) :
+  // permet de passer de /admin au parcours client sans saisir d'URL.
+  const adminNav = isAdmin ? (
+    <nav className="px-3 pb-4" aria-label="Navigation administration">
+      <div className="px-3 pb-2 pt-4 text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
+        Administration
+      </div>
+      <ul className="space-y-1" role="list">
+        {[
+          { to: "/admin" as const, hash: undefined, label: "Test Center", icon: ShieldCheck },
+          { to: "/admin" as const, hash: "admin-clients", label: "Clients", icon: UserRoundIcon },
+          { to: "/" as const, hash: undefined, label: "Parcours client", icon: Home },
+        ].map((item) => {
+          const Icon = item.icon;
+          const active = pathname === item.to && !item.hash;
+          return (
+            <li key={item.label}>
+              <Link
+                to={item.to}
+                hash={item.hash}
+                aria-current={active ? "page" : undefined}
+                className={cn(
+                  "group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+                  active
+                    ? "bg-primary text-primary-foreground shadow-[var(--shadow-elevated)]"
+                    : "text-foreground/70 hover:bg-accent hover:text-accent-foreground",
+                )}
+              >
+                <Icon className="h-4 w-4 shrink-0" strokeWidth={2} aria-hidden="true" />
+                <span className="truncate">{item.label}</span>
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
+    </nav>
+  ) : null;
+
   return (
     <div className="flex min-h-screen w-full bg-background text-foreground">
       <a href="#main-content" className="skip-link">
