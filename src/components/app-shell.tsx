@@ -18,6 +18,7 @@ import {
   CheckCircle2,
   CalendarClock,
   Presentation,
+  Users,
 } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
@@ -30,6 +31,8 @@ import { BookingSync } from "@/components/booking-sync";
 import { TopStepBar } from "@/components/top-step-bar";
 import { KeyboardShortcuts } from "@/components/keyboard-shortcuts";
 import { AccountMenu } from "@/components/account-menu";
+import { useIsAdmin } from "@/lib/use-is-admin";
+import { ShieldCheck } from "lucide-react";
 
 const NAV = [
   { to: "/", label: "Accueil", icon: Home },
@@ -142,6 +145,46 @@ export function AppShell({ children }: { children: ReactNode }) {
     </ul>
   );
 
+  const isAdmin = useIsAdmin();
+
+  // Bloc navigation réservé aux admins autorisés (vérifié côté serveur) :
+  // permet de passer de /admin au parcours client sans saisir d'URL.
+  const adminNav = isAdmin ? (
+    <nav className="px-3 pb-4" aria-label="Navigation administration">
+      <div className="px-3 pb-2 pt-4 text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
+        Administration
+      </div>
+      <ul className="space-y-1" role="list">
+        {[
+          { to: "/admin" as const, hash: undefined, label: "Test Center", icon: ShieldCheck },
+          { to: "/admin" as const, hash: "admin-clients", label: "Clients", icon: Users },
+          { to: "/" as const, hash: undefined, label: "Parcours client", icon: Home },
+        ].map((item) => {
+          const Icon = item.icon;
+          const active = pathname === item.to && !item.hash;
+          return (
+            <li key={item.label}>
+              <Link
+                to={item.to}
+                hash={item.hash}
+                aria-current={active ? "page" : undefined}
+                className={cn(
+                  "group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+                  active
+                    ? "bg-primary text-primary-foreground shadow-[var(--shadow-elevated)]"
+                    : "text-foreground/70 hover:bg-accent hover:text-accent-foreground",
+                )}
+              >
+                <Icon className="h-4 w-4 shrink-0" strokeWidth={2} aria-hidden="true" />
+                <span className="truncate">{item.label}</span>
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
+    </nav>
+  ) : null;
+
   return (
     <div className="flex min-h-screen w-full bg-background text-foreground">
       <a href="#main-content" className="skip-link">
@@ -194,15 +237,19 @@ export function AppShell({ children }: { children: ReactNode }) {
           </p>
         </div>
 
+        {adminNav}
+
         <div className="flex items-center justify-between gap-2 border-t border-border px-6 py-4 text-[11px] text-muted-foreground">
           <span>Spark Media Marketing</span>
-          <Link
-            to="/admin/login"
-            rel="nofollow"
-            className="opacity-50 transition-opacity hover:opacity-100 hover:underline"
-          >
-            Administration
-          </Link>
+          {isAdmin && (
+            <Link
+              to="/admin"
+              rel="nofollow"
+              className="opacity-50 transition-opacity hover:opacity-100 hover:underline"
+            >
+              Administration
+            </Link>
+          )}
         </div>
 
       </aside>
@@ -255,6 +302,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 </div>
                 {navList}
               </nav>
+              <div onClickCapture={() => setMobileOpen(false)}>{adminNav}</div>
               <div className="pb-6">
                 <SidebarProgress onNavigate={() => setMobileOpen(false)} />
               </div>
