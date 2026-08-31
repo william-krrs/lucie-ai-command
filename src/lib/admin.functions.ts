@@ -484,9 +484,27 @@ export const adminSetClientInstallationStatus = createServerFn({ method: "POST" 
       console.error("[admin] client state read", error);
       throw new Error("Lecture du client impossible.");
     }
-    if (!state) throw new Error("Aucun parcours pour ce client.");
-
     const requiresPaid = data.status === "ready_for_test" || data.status === "live";
+
+    // Un compte tout juste créé n'a pas encore de ligne journey_state : on la
+    // crée avec les défauts verrouillés (unpaid) plutôt que d'échouer.
+    if (!state) {
+      if (requiresPaid) {
+        throw new Error(
+          "Client non payé : impossible de passer en ready_for_test ou live. Stripe reste la seule autorité du paiement.",
+        );
+      }
+      const { error: insertError } = await supabaseAdmin
+        .from("journey_state")
+        .insert({ user_id: data.targetUserId, installation_status: data.status } as never);
+      if (insertError) {
+        console.error("[admin] client state insert", insertError);
+        throw new Error("Écriture du statut d'installation impossible.");
+      }
+      const created = await buildClientRows([data.targetUserId]);
+      return created[0] ?? null;
+    }
+
     if (requiresPaid && state.payment_status !== "paid") {
       throw new Error(
         "Client non payé : impossible de passer en ready_for_test ou live. Stripe reste la seule autorité du paiement.",
