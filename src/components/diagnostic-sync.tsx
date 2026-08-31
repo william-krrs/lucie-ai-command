@@ -84,8 +84,8 @@ export function DiagnosticSync() {
         if (localIsProvablyNewer) {
           await pushLocal();
         } else {
-          // Serveur autoritaire.
-          replace(snapshot.diagnostic as Record<string, never>);
+          // Serveur autoritaire (l'horodatage serveur est conservé localement).
+          replace(snapshot.diagnostic as Record<string, never>, snapshot.updatedAt);
           writeLocalDiagnosticUpdatedAt(snapshot.updatedAt);
         }
       } catch (error) {
