@@ -237,15 +237,19 @@ export function AppShell({ children }: { children: ReactNode }) {
           </p>
         </div>
 
+        {adminNav}
+
         <div className="flex items-center justify-between gap-2 border-t border-border px-6 py-4 text-[11px] text-muted-foreground">
           <span>Spark Media Marketing</span>
-          <Link
-            to="/admin/login"
-            rel="nofollow"
-            className="opacity-50 transition-opacity hover:opacity-100 hover:underline"
-          >
-            Administration
-          </Link>
+          {isAdmin && (
+            <Link
+              to="/admin"
+              rel="nofollow"
+              className="opacity-50 transition-opacity hover:opacity-100 hover:underline"
+            >
+              Administration
+            </Link>
+          )}
         </div>
 
       </aside>
