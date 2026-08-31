@@ -420,7 +420,12 @@ function ClientsPanel() {
               {clients.data.map((c) => (
                 <tr key={c.userId} className="border-t border-border/50">
                   <td className="py-2 pr-4">
-                    <div>{c.name ?? c.email ?? "—"}</div>
+                    {/* L'email du compte identifie le client ; le nom (issu
+                        d'un RDV ou du questionnaire) reste secondaire. */}
+                    <div>{c.email ?? "—"}</div>
+                    {c.name && c.name !== c.email ? (
+                      <div className="text-[11px] text-muted-foreground">{c.name}</div>
+                    ) : null}
                     <div className="font-mono text-[10px] text-muted-foreground">{c.userId}</div>
                   </td>
                   <td className="py-2 pr-4">
