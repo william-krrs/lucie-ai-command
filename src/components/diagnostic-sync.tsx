@@ -1,7 +1,13 @@
 import { useEffect, useRef } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useAccount } from "@/lib/auth-account";
-import { useLucie, useMetrics, useRecommendation } from "@/lib/lucie-store";
+import {
+  useLucie,
+  useMetrics,
+  useRecommendation,
+  readLocalDiagnosticUpdatedAt,
+  writeLocalDiagnosticUpdatedAt,
+} from "@/lib/lucie-store";
 import {
   getDiagnosticSnapshot,
   saveDiagnosticSnapshot,
@@ -10,13 +16,13 @@ import {
 /**
  * Persistance serveur du diagnostic pour un compte client authentifié.
  *
- * Règle V1 (1 compte = 1 parcours) :
- * - le localStorage reste un cache UX, la source durable est la table
- *   `diagnostic_snapshots`, indexée par le user_id du bearer token ;
- * - à la connexion : si l'état local est encore vierge, on restaure le
- *   serveur ; sinon l'état local (plus récent, saisi par le client) est
- *   poussé vers le serveur ;
- * - ensuite chaque modification est sauvegardée avec un debounce.
+ * Règle V1 (1 compte = 1 parcours), arbitrage sûr à la reconnexion :
+ * - aucun snapshot serveur → le local peut initialiser le serveur ;
+ * - un snapshot serveur existe → il est AUTORITAIRE, sauf preuve explicite
+ *   que le local est plus récent (`lucie:diagnostic:v1:updatedAt` strictement
+ *   postérieur à `updated_at` serveur) ;
+ * - un vieux cache local (horodatage absent ou antérieur) ne peut jamais
+ *   écraser silencieusement des données serveur plus récentes.
  *
  * Aucune écriture n'a lieu pour un visiteur ou une session anonyme.
  */
@@ -51,16 +57,36 @@ export function DiagnosticSync() {
       try {
         const snapshot = await load({});
         if (cancelled) return;
-        if (snapshot?.diagnostic && isPristine) {
-          replace(snapshot.diagnostic as Record<string, never>);
-        } else {
-          await save({
+
+        const pushLocal = async () => {
+          const res = await save({
             data: {
               diagnostic: latest.current.state,
               metrics: latest.current.metrics,
               recommendation: latest.current.recommendation,
             },
           });
+          writeLocalDiagnosticUpdatedAt(res.updatedAt);
+        };
+
+        if (!snapshot) {
+          // Aucun snapshot serveur : le local peut initialiser le serveur.
+          if (!isPristine) await pushLocal();
+          return;
+        }
+
+        const localAt = readLocalDiagnosticUpdatedAt();
+        const localIsProvablyNewer =
+          !isPristine &&
+          !!localAt &&
+          new Date(localAt).getTime() > new Date(snapshot.updatedAt).getTime();
+
+        if (localIsProvablyNewer) {
+          await pushLocal();
+        } else {
+          // Serveur autoritaire.
+          replace(snapshot.diagnostic as Record<string, never>);
+          writeLocalDiagnosticUpdatedAt(snapshot.updatedAt);
         }
       } catch (error) {
         console.error("[diagnostic-sync] réconciliation", error);
@@ -83,10 +109,13 @@ export function DiagnosticSync() {
           metrics: latest.current.metrics,
           recommendation: latest.current.recommendation,
         },
-      }).catch((error) => console.error("[diagnostic-sync] sauvegarde", error));
+      })
+        .then((res) => writeLocalDiagnosticUpdatedAt(res.updatedAt))
+        .catch((error) => console.error("[diagnostic-sync] sauvegarde", error));
     }, 1500);
     return () => window.clearTimeout(timer);
   }, [state, status, save]);
 
   return null;
 }
+
