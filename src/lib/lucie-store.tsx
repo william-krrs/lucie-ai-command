@@ -68,6 +68,29 @@ type Ctx = {
 const LucieCtx = createContext<Ctx | null>(null);
 
 const DIAGNOSTIC_KEY = "lucie:diagnostic:v1";
+/** Horodatage de la dernière modification locale (arbitrage local/serveur). */
+export const DIAGNOSTIC_UPDATED_AT_KEY = "lucie:diagnostic:v1:updatedAt";
+
+/** Date ISO de la dernière modification locale, ou null si inconnue. */
+export function readLocalDiagnosticUpdatedAt(): string | null {
+  if (typeof window === "undefined") return null;
+  try {
+    return window.localStorage.getItem(DIAGNOSTIC_UPDATED_AT_KEY);
+  } catch {
+    return null;
+  }
+}
+
+/** Force l'horodatage local (utilisé après une restauration serveur). */
+export function writeLocalDiagnosticUpdatedAt(iso: string) {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(DIAGNOSTIC_UPDATED_AT_KEY, iso);
+  } catch {
+    // ignore
+  }
+}
+
 
 function readPersisted(): DiagnosticState | null {
   if (typeof window === "undefined") return null;
