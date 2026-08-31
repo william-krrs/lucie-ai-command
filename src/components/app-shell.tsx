@@ -18,6 +18,7 @@ import {
   CheckCircle2,
   CalendarClock,
   Presentation,
+  Users,
 } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
@@ -156,7 +157,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       <ul className="space-y-1" role="list">
         {[
           { to: "/admin" as const, hash: undefined, label: "Test Center", icon: ShieldCheck },
-          { to: "/admin" as const, hash: "admin-clients", label: "Clients", icon: UserRoundIcon },
+          { to: "/admin" as const, hash: "admin-clients", label: "Clients", icon: Users },
           { to: "/" as const, hash: undefined, label: "Parcours client", icon: Home },
         ].map((item) => {
           const Icon = item.icon;
