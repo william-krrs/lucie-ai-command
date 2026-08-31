@@ -7,6 +7,9 @@ import {
   useRecommendation,
   readLocalDiagnosticUpdatedAt,
   writeLocalDiagnosticUpdatedAt,
+  readLocalDiagnosticOwner,
+  writeLocalDiagnosticOwner,
+  isDefaultDiagnostic,
 } from "@/lib/lucie-store";
 import {
   getDiagnosticSnapshot,
@@ -28,7 +31,7 @@ import {
  */
 export function DiagnosticSync() {
   const { status, userId } = useAccount();
-  const { state, replace, isPristine } = useLucie();
+  const { state, replace, reset } = useLucie();
   const metrics = useMetrics();
   const recommendation = useRecommendation();
 
@@ -54,6 +57,12 @@ export function DiagnosticSync() {
 
     let cancelled = false;
     void (async () => {
+      // Le cache local appartient-il bien à ce compte ? Un cache laissé par un
+      // autre compte (même navigateur) ne doit JAMAIS être poussé au serveur.
+      const owner = readLocalDiagnosticOwner();
+      const foreignLocal = !!owner && owner !== userId;
+      const isPristine = isDefaultDiagnostic(latest.current.state);
+
       const pushLocal = async () => {
         const res = await save({
           data: {
@@ -89,13 +98,21 @@ export function DiagnosticSync() {
       try {
         if (!snapshot) {
           // Aucun snapshot serveur : le local peut initialiser le serveur.
-          if (!isPristine) await pushLocal();
+          if (foreignLocal) {
+            // Aucun snapshot pour ce compte et cache local d'un autre compte :
+            // on repart d'un parcours vierge plutôt que d'importer ses données.
+            reset();
+          } else if (!isPristine) {
+            await pushLocal();
+          }
+          writeLocalDiagnosticOwner(userId);
           ready.current = true;
           return;
         }
 
         const localAt = readLocalDiagnosticUpdatedAt();
         const localIsProvablyNewer =
+          !foreignLocal &&
           !isPristine &&
           !!localAt &&
           new Date(localAt).getTime() > new Date(snapshot.updatedAt).getTime();
@@ -107,6 +124,7 @@ export function DiagnosticSync() {
           replace(snapshot.diagnostic as Record<string, never>, snapshot.updatedAt);
           writeLocalDiagnosticUpdatedAt(snapshot.updatedAt);
         }
+        writeLocalDiagnosticOwner(userId);
         ready.current = true;
       } catch (error) {
         console.error("[diagnostic-sync] réconciliation", error);
@@ -115,7 +133,7 @@ export function DiagnosticSync() {
     return () => {
       cancelled = true;
     };
-  }, [status, userId, isPristine, load, save, replace]);
+  }, [status, userId, load, save, replace, reset]);
 
   // 2. Sauvegarde debouncée des modifications ultérieures.
   useEffect(() => {
