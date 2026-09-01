@@ -238,17 +238,22 @@ export const adminSetInstallationStatus = createServerFn({ method: "POST" })
   .handler(async ({ data, context }): Promise<AdminOverview> => {
     const ctx = context as unknown as Ctx;
     await assertAdmin(ctx);
+    const before = await readOverview(ctx);
     if (data.status === "ready_for_test" || data.status === "live") {
-      const current = await readOverview(ctx);
-      if (current.journeyState?.paymentStatus !== "paid") {
+      if (before.journeyState?.paymentStatus !== "paid") {
         throw new Error(
           "Compte non payé : ready_for_test et live sont refusés (Stripe reste la seule autorité).",
         );
       }
     }
+    const previous = before.journeyState?.installationStatus ?? "not_started";
     await upsertState(ctx.userId, { installation_status: data.status });
+    // Email d'avancement : uniquement sur transition réelle, jamais bloquant.
+    const { notifyInstallationStatusChange } = await import("@/lib/installation-emails.server");
+    await notifyInstallationStatusChange(ctx.userId, previous, data.status);
     return readOverview(ctx);
   });
+
 
 /** Supprime bookings + corrélations de test de l'utilisateur admin. */
 export const adminCleanupTestBookings = createServerFn({ method: "POST" })
