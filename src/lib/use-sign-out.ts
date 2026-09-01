@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useBooking } from "@/lib/booking-store";
 import { BOOKING_TYPES } from "@/lib/booking-types";
 import { forgetNext } from "@/lib/auth-account";
+import { markDiagnosticLoggedOut } from "@/lib/lucie-store";
 
 /**
  * Déconnexion propre.

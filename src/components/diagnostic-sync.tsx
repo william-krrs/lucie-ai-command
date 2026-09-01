@@ -9,6 +9,7 @@ import {
   writeLocalDiagnosticUpdatedAt,
   readLocalDiagnosticOwner,
   writeLocalDiagnosticOwner,
+  readLocalDiagnosticLogoutAt,
   isDefaultDiagnostic,
 } from "@/lib/lucie-store";
 import {
