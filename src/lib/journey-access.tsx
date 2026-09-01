@@ -2,7 +2,6 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
-import { readAdminMode } from "@/lib/admin-mode";
 import { useBooking } from "@/lib/booking-store";
 import { REQUIRE_ACCOUNT, UNLOCK_ALL_PAGES } from "@/lib/config";
 import {
@@ -35,7 +34,7 @@ export type JourneyAccess = {
   setupBookingStatusNorm: JourneyStateDTO["setupBookingStatusNorm"];
   /** meeting_at (ISO) du RDV Test confirmé côté serveur. */
   setupMeetingAt: string | null;
-  /** Aperçu interne (?admin=lucie) ou UNLOCK_ALL_PAGES. */
+  /** Aperçu interne : UNLOCK_ALL_PAGES uniquement. */
   bypass: boolean;
   refresh: () => Promise<void>;
   completeDemo: () => Promise<void>;
@@ -66,7 +65,7 @@ export function JourneyAccessProvider({ children }: { children: ReactNode }) {
   const [now, setNow] = useState(() => Date.now());
 
   useEffect(() => {
-    setBypass(UNLOCK_ALL_PAGES || readAdminMode());
+    setBypass(UNLOCK_ALL_PAGES);
     let cancelled = false;
     // Une session anonyme n'est jamais un compte client : quand
     // REQUIRE_ACCOUNT est actif, seul un compte email porte un parcours.

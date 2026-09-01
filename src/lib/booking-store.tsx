@@ -8,7 +8,6 @@ import {
   type Context,
   type ReactNode,
 } from "react";
-import { readAdminMode } from "@/lib/admin-mode";
 import { UNLOCK_ALL_PAGES } from "@/lib/config";
 import {
   BOOKING_TYPES,
@@ -272,10 +271,8 @@ function bookingFromIclosedConfirmation(
 
 export function BookingProvider({ children }: { children: ReactNode }) {
   const [bookings, setBookings] = useState<BookingMap>({});
-  const [adminPreview, setAdminPreview] = useState(false);
 
   useEffect(() => {
-    setAdminPreview(readAdminMode());
     setBookings(read());
     const onStorage = (e: StorageEvent) => {
       if (e.key === STORAGE_KEY || e.key === LEGACY_KEY_V2 || e.key === LEGACY_KEY) {
@@ -363,7 +360,7 @@ export function BookingProvider({ children }: { children: ReactNode }) {
     // Lucie de revoir chaque étape sans créer de faux rendez-vous prospect.
     const active = !!demo && demo.status !== "cancelled" && demo.statusNorm === "confirmed";
     const today = todayISO();
-    const isUnlocked = UNLOCK_ALL_PAGES || active || adminPreview;
+    const isUnlocked = UNLOCK_ALL_PAGES || active;
     const isPendingMeeting = active && demo!.date > today;
     return {
       bookings,
@@ -378,7 +375,7 @@ export function BookingProvider({ children }: { children: ReactNode }) {
       isUnlocked,
       isPendingMeeting,
     };
-  }, [adminPreview, bookings, setBookingFor, updateBookingFor, clearBookingFor]);
+  }, [bookings, setBookingFor, updateBookingFor, clearBookingFor]);
 
   return <BookingCtx.Provider value={value}>{children}</BookingCtx.Provider>;
 }

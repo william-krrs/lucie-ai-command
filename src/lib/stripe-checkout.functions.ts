@@ -1,7 +1,13 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { STRIPE_PLANS, type PlanKey } from "@/lib/stripe-plans";
+import {
+  STRIPE_PLANS,
+  SETUP_FEE_AMOUNT,
+  SETUP_FEE_NAME,
+  type PlanKey,
+} from "@/lib/stripe-plans";
+
 import { SITE_DOMAIN } from "@/lib/config";
 
 /**
@@ -49,16 +55,24 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
     const origin = await publicOrigin();
     const params = new URLSearchParams();
     params.set("mode", "subscription");
+    // Ligne 0 : abonnement mensuel récurrent.
     params.set("line_items[0][quantity]", "1");
     params.set("line_items[0][price_data][currency]", "eur");
     params.set("line_items[0][price_data][unit_amount]", String(cfg.unitAmount));
     params.set("line_items[0][price_data][recurring][interval]", "month");
     params.set("line_items[0][price_data][product_data][name]", cfg.name);
+    // Ligne 1 : frais d'installation, one-shot (aucun bloc `recurring`) →
+    // ajoutée uniquement à la première facture, jamais aux renouvellements.
+    params.set("line_items[1][quantity]", "1");
+    params.set("line_items[1][price_data][currency]", "eur");
+    params.set("line_items[1][price_data][unit_amount]", String(SETUP_FEE_AMOUNT));
+    params.set("line_items[1][price_data][product_data][name]", SETUP_FEE_NAME);
     params.set("client_reference_id", userId);
     params.set("metadata[user_id]", userId);
     params.set("metadata[plan]", plan);
     params.set("subscription_data[metadata][user_id]", userId);
     params.set("subscription_data[metadata][plan]", plan);
+
     params.set(
       "success_url",
       `${origin}/merci?plan=${plan}&session_id={CHECKOUT_SESSION_ID}`,

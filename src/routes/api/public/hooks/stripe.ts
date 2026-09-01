@@ -60,9 +60,13 @@ export const Route = createFileRoute("/api/public/hooks/stripe")({
         try {
           await markJourneyPaid(session);
         } catch (err) {
+          // Erreur interne/transitoire : on renvoie un 5xx pour que Stripe
+          // retente. L'idempotence (stripe_session_id) garantit qu'un retry
+          // ne crée jamais de double paiement.
           console.error("[stripe-webhook] markJourneyPaid", err);
-          return new Response("ok", { status: 200 }); // 200 pour ne pas rejouer en boucle
+          return new Response("Retry", { status: 500 });
         }
+
 
         return new Response("ok", { status: 200 });
       },

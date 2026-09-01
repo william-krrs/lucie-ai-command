@@ -17,7 +17,7 @@ import { Label } from "@/components/ui/label";
 import { BOOKING_URL, REQUIRE_ACCOUNT } from "@/lib/config";
 import { supabase } from "@/integrations/supabase/client";
 import { DEFAULT_BOOKING_TYPE, type BookingType } from "@/lib/booking-types";
-import { useAdminMode } from "@/lib/admin-mode";
+import { useIsAdmin } from "@/lib/use-is-admin";
 
 import { useBooking, formatBookingDate, getClientRef, type Booking } from "@/lib/booking-store";
 import { upsertBooking, cancelBooking } from "@/lib/bookings.functions";
@@ -201,7 +201,7 @@ export function BookingEmbed({
   })();
   const setBooking = (b: Parameters<typeof setBookingFor>[1]) => setBookingFor(bookingType, b);
   const clearBooking = () => clearBookingFor(bookingType);
-  const isAdmin = useAdminMode();
+  const isAdmin = useIsAdmin();
 
   const [awaitingConfirm, setAwaitingConfirm] = useState(false);
   const [rescheduling, setRescheduling] = useState(false);
