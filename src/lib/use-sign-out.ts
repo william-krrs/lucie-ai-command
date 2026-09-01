@@ -29,6 +29,10 @@ export function useSignOut() {
     for (const type of BOOKING_TYPES) clearBookingFor(type);
     queryClient.clear();
     forgetNext();
+    // Le diagnostic local est conservé, mais on horodate la déconnexion :
+    // toute saisie ultérieure est une donnée de visiteur (pas de l'ancien
+    // compte) et ne doit jamais être effacée à la connexion d'un autre compte.
+    markDiagnosticLoggedOut();
     await supabase.auth.signOut();
     await navigate({ to: "/", replace: true });
     await router.invalidate();
