@@ -93,6 +93,14 @@ export const submitPreparation = createServerFn({ method: "POST" })
         .eq("payment_status", "paid")
         .eq("installation_status", "not_started");
       if (installError) console.error("[submitPreparation] installation_status", installError);
+      else {
+        // Transition réelle not_started -> in_progress : email client (non bloquant).
+        const { notifyInstallationStatusChange } = await import(
+          "@/lib/installation-emails.server"
+        );
+        await notifyInstallationStatusChange(context.userId, "not_started", "in_progress");
+      }
+
     }
 
     // Email dispatch is wired once the sender domain is configured.
