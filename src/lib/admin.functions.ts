@@ -238,17 +238,22 @@ export const adminSetInstallationStatus = createServerFn({ method: "POST" })
   .handler(async ({ data, context }): Promise<AdminOverview> => {
     const ctx = context as unknown as Ctx;
     await assertAdmin(ctx);
+    const before = await readOverview(ctx);
     if (data.status === "ready_for_test" || data.status === "live") {
-      const current = await readOverview(ctx);
-      if (current.journeyState?.paymentStatus !== "paid") {
+      if (before.journeyState?.paymentStatus !== "paid") {
         throw new Error(
           "Compte non payé : ready_for_test et live sont refusés (Stripe reste la seule autorité).",
         );
       }
     }
+    const previous = before.journeyState?.installationStatus ?? "not_started";
     await upsertState(ctx.userId, { installation_status: data.status });
+    // Email d'avancement : uniquement sur transition réelle, jamais bloquant.
+    const { notifyInstallationStatusChange } = await import("@/lib/installation-emails.server");
+    await notifyInstallationStatusChange(ctx.userId, previous, data.status);
     return readOverview(ctx);
   });
+
 
 /** Supprime bookings + corrélations de test de l'utilisateur admin. */
 export const adminCleanupTestBookings = createServerFn({ method: "POST" })
@@ -485,7 +490,7 @@ export const adminSetClientInstallationStatus = createServerFn({ method: "POST" 
 
     const { data: state, error } = await supabaseAdmin
       .from("journey_state")
-      .select("id, payment_status")
+      .select("id, payment_status, installation_status")
       .eq("user_id", data.targetUserId)
       .maybeSingle();
     if (error) {
@@ -493,6 +498,7 @@ export const adminSetClientInstallationStatus = createServerFn({ method: "POST" 
       throw new Error("Lecture du client impossible.");
     }
     const requiresPaid = data.status === "ready_for_test" || data.status === "live";
+    const { notifyInstallationStatusChange } = await import("@/lib/installation-emails.server");
 
     // Un compte tout juste créé n'a pas encore de ligne journey_state : on la
     // crée avec les défauts verrouillés (unpaid) plutôt que d'échouer.
@@ -509,6 +515,7 @@ export const adminSetClientInstallationStatus = createServerFn({ method: "POST" 
         console.error("[admin] client state insert", insertError);
         throw new Error("Écriture du statut d'installation impossible.");
       }
+      await notifyInstallationStatusChange(data.targetUserId, "not_started", data.status);
       const created = await buildClientRows([data.targetUserId]);
       return created[0] ?? null;
     }
@@ -519,6 +526,12 @@ export const adminSetClientInstallationStatus = createServerFn({ method: "POST" 
       );
     }
 
+    const previous = (state.installation_status ?? "not_started") as
+      | "not_started"
+      | "in_progress"
+      | "ready_for_test"
+      | "live";
+
     const { error: updateError } = await supabaseAdmin
       .from("journey_state")
       .update({ installation_status: data.status } as never)
@@ -528,6 +541,10 @@ export const adminSetClientInstallationStatus = createServerFn({ method: "POST" 
       throw new Error("Écriture du statut d'installation impossible.");
     }
 
+    // Email d'avancement : uniquement si le statut a réellement changé.
+    await notifyInstallationStatusChange(data.targetUserId, previous, data.status);
+
     const rows = await buildClientRows([data.targetUserId]);
     return rows[0] ?? null;
+
   });
