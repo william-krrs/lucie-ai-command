@@ -121,7 +121,6 @@ export function DiagnosticSync() {
           return;
         }
 
-        const localAt = readLocalDiagnosticUpdatedAt();
         const localIsProvablyNewer =
           !foreignLocal &&
           !isPristine &&
