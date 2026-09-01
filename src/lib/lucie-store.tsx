@@ -99,6 +99,30 @@ export function writeLocalDiagnosticUpdatedAt(iso: string) {
 /** Compte propriétaire du cache diagnostic local (anti-mélange de comptes). */
 export const DIAGNOSTIC_OWNER_KEY = "lucie:diagnostic:v1:owner";
 
+/** Horodatage de la dernière déconnexion (distingue les saisies post-logout). */
+export const DIAGNOSTIC_LOGOUT_AT_KEY = "lucie:diagnostic:v1:logoutAt";
+
+export function readLocalDiagnosticLogoutAt(): string | null {
+  if (typeof window === "undefined") return null;
+  try {
+    return window.localStorage.getItem(DIAGNOSTIC_LOGOUT_AT_KEY);
+  } catch {
+    return null;
+  }
+}
+
+/** Marque l'instant de déconnexion : toute modification ultérieure du
+ * diagnostic local est une saisie de visiteur, non attribuable à l'ancien
+ * compte. Le diagnostic lui-même n'est JAMAIS touché. */
+export function markDiagnosticLoggedOut() {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(DIAGNOSTIC_LOGOUT_AT_KEY, new Date().toISOString());
+  } catch {
+    // ignore
+  }
+}
+
 export function readLocalDiagnosticOwner(): string | null {
   if (typeof window === "undefined") return null;
   try {

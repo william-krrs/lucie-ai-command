@@ -9,6 +9,7 @@ import {
   writeLocalDiagnosticUpdatedAt,
   readLocalDiagnosticOwner,
   writeLocalDiagnosticOwner,
+  readLocalDiagnosticLogoutAt,
   isDefaultDiagnostic,
 } from "@/lib/lucie-store";
 import {
@@ -60,7 +61,17 @@ export function DiagnosticSync() {
       // Le cache local appartient-il bien à ce compte ? Un cache laissé par un
       // autre compte (même navigateur) ne doit JAMAIS être poussé au serveur.
       const owner = readLocalDiagnosticOwner();
-      const foreignLocal = !!owner && owner !== userId;
+      const foreignOwned = !!owner && owner !== userId;
+      // Exception : une saisie faite APRÈS la déconnexion de l'ancien compte
+      // (updatedAt > logoutAt) est une donnée de visiteur. Elle appartient à
+      // la personne devant l'écran — qui vient de se connecter — et ne doit
+      // jamais être effacée comme un reliquat de l'ancien compte.
+      const localAt = readLocalDiagnosticUpdatedAt();
+      const logoutAt = readLocalDiagnosticLogoutAt();
+      const isPostLogoutEntry =
+        !!localAt && !!logoutAt &&
+        new Date(localAt).getTime() > new Date(logoutAt).getTime();
+      const foreignLocal = foreignOwned && !isPostLogoutEntry;
       const isPristine = isDefaultDiagnostic(latest.current.state);
 
       const pushLocal = async () => {
@@ -110,7 +121,6 @@ export function DiagnosticSync() {
           return;
         }
 
-        const localAt = readLocalDiagnosticUpdatedAt();
         const localIsProvablyNewer =
           !foreignLocal &&
           !isPristine &&
