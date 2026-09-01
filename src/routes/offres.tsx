@@ -354,16 +354,16 @@ function OffresContent() {
             </div>
             <div>
               <div className="text-[11px] font-medium uppercase tracking-widest text-primary">
-                Installation incluse
+                Installation et personnalisation
               </div>
               <h2
                 id="installation-included"
                 className="mt-1 text-lg font-semibold tracking-tight text-foreground sm:text-xl"
               >
-                Frais d'installation de 490 € inclus
+                Frais d'installation de 490 € (une seule fois)
               </h2>
               <p className="mt-1.5 max-w-xl text-sm text-muted-foreground">
-                Le paramétrage complet de Lucie, la connexion à vos outils et la mise en production sont désormais inclus dans chaque formule. Installation en 3 à 5 jours selon la complexité de votre activité.
+                Le paramétrage complet de Lucie, la connexion à vos outils et la mise en production sont facturés 490 € une seule fois, ajoutés à votre premier paiement. Les renouvellements mensuels ne comprennent que votre abonnement. Installation en 3 à 5 jours selon la complexité de votre activité.
               </p>
               <div className="mt-3 flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
                 <span className="inline-flex items-center gap-1.5">

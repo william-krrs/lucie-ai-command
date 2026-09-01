@@ -349,9 +349,9 @@ function MerciContent() {
                 <div className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
                   Installation incluse
                 </div>
-                <div className="mt-1 text-lg font-semibold text-foreground">490 € inclus</div>
+                <div className="mt-1 text-lg font-semibold text-foreground">490 € une seule fois</div>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  Paramétrage, connexion et mise en production sans frais supplémentaires.
+                  Paramétrage, connexion et mise en production, facturés une seule fois avec votre premier paiement.
                 </p>
               </div>
             </div>
