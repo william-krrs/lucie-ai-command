@@ -13,7 +13,6 @@ import { JOURNEY_QUERY_KEY } from "@/lib/journey-access";
 import {
   adminCleanupTestBookings,
   adminGetOverview,
-  adminListBookings,
   adminListClients,
   adminPrepareBeforeStripe,
   adminResetJourney,
@@ -54,7 +53,6 @@ const INSTALL_STATUSES: AdminInstallationStatus[] = [
 ];
 
 const ADMIN_QUERY_KEY = ["admin-overview"] as const;
-const ADMIN_BOOKINGS_KEY = ["admin-bookings"] as const;
 
 function Row({ label, value }: { label: string; value: React.ReactNode }) {
   return (
@@ -89,7 +87,6 @@ function AdminPage() {
   }, []);
 
   const fetchOverview = useServerFn(adminGetOverview);
-  const fetchBookings = useServerFn(adminListBookings);
   const prepare = useServerFn(adminPrepareBeforeStripe);
   const reset = useServerFn(adminResetJourney);
   const setInstall = useServerFn(adminSetInstallationStatus);
@@ -102,16 +99,10 @@ function AdminPage() {
   });
   const isAdmin = overview.data?.isAdmin === true;
 
-  const bookings = useQuery({
-    queryKey: ADMIN_BOOKINGS_KEY,
-    queryFn: () => fetchBookings(),
-    enabled: authed && isAdmin,
-  });
 
   async function refreshAll() {
     await Promise.all([
       queryClient.invalidateQueries({ queryKey: ADMIN_QUERY_KEY }),
-      queryClient.invalidateQueries({ queryKey: ADMIN_BOOKINGS_KEY }),
       queryClient.invalidateQueries({ queryKey: JOURNEY_QUERY_KEY }),
     ]);
   }
@@ -289,39 +280,6 @@ function AdminPage() {
         </div>
       </Card>
 
-      <Card className="p-5">
-        <h2 className="mb-3 text-lg font-semibold">Derniers rendez-vous (R2 / setup test)</h2>
-        {bookings.data && bookings.data.length > 0 ? (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs sm:text-sm">
-              <thead className="text-muted-foreground">
-                <tr>
-                  <th className="py-2 pr-4">Type</th>
-                  <th className="py-2 pr-4">Statut</th>
-                  <th className="py-2 pr-4">meeting_at (UTC)</th>
-                  <th className="py-2 pr-4">Heure locale</th>
-                  <th className="py-2 pr-4">Créé le</th>
-                </tr>
-              </thead>
-              <tbody>
-                {bookings.data.map((b) => (
-                  <tr key={b.id} className="border-t border-border/50">
-                    <td className="py-2 pr-4">{b.bookingType}</td>
-                    <td className="py-2 pr-4">{b.statusNorm}</td>
-                    <td className="py-2 pr-4 font-mono">{b.meetingAt ?? "—"}</td>
-                    <td className="py-2 pr-4">
-                      {b.meetingTime ?? "—"} ({b.timezone})
-                    </td>
-                    <td className="py-2 pr-4 font-mono">{b.createdAt}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <p className="text-sm text-muted-foreground">Aucun rendez-vous de test.</p>
-        )}
-      </Card>
 
       <ClientsPanel />
     </div>
