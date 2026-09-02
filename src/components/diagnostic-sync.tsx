@@ -10,6 +10,7 @@ import {
   readLocalDiagnosticOwner,
   writeLocalDiagnosticOwner,
   readLocalDiagnosticLogoutAt,
+  clearDiagnosticLoggedOut,
   isDefaultDiagnostic,
 } from "@/lib/lucie-store";
 import {
@@ -117,12 +118,16 @@ export function DiagnosticSync() {
             await pushLocal();
           }
           writeLocalDiagnosticOwner(userId);
+          clearDiagnosticLoggedOut();
           ready.current = true;
           return;
         }
 
+        // Un cache marqué d'un AUTRE propriétaire ne peut jamais écraser un
+        // snapshot serveur existant, même s'il a été modifié après une
+        // déconnexion : les données déjà enregistrées du compte priment.
         const localIsProvablyNewer =
-          !foreignLocal &&
+          !foreignOwned &&
           !isPristine &&
           !!localAt &&
           new Date(localAt).getTime() > new Date(snapshot.updatedAt).getTime();
@@ -135,6 +140,7 @@ export function DiagnosticSync() {
           writeLocalDiagnosticUpdatedAt(snapshot.updatedAt);
         }
         writeLocalDiagnosticOwner(userId);
+        clearDiagnosticLoggedOut();
         ready.current = true;
       } catch (error) {
         console.error("[diagnostic-sync] réconciliation", error);
