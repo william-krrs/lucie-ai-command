@@ -10,6 +10,7 @@ import {
   readLocalDiagnosticOwner,
   writeLocalDiagnosticOwner,
   readLocalDiagnosticLogoutAt,
+  clearDiagnosticLoggedOut,
   isDefaultDiagnostic,
 } from "@/lib/lucie-store";
 import {
