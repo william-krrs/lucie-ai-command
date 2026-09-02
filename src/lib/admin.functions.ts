@@ -39,16 +39,6 @@ export type AdminOverview = {
   bookingsCount: number;
 };
 
-export type AdminBookingRow = {
-  id: string;
-  bookingType: string;
-  statusNorm: string;
-  meetingAt: string | null;
-  meetingTime: string | null;
-  timezone: string;
-  clientRef: string;
-  createdAt: string;
-};
 
 type Ctx = { supabase: any; userId: string; claims: Record<string, unknown> };
 
@@ -128,34 +118,6 @@ export const adminGetOverview = createServerFn({ method: "GET" })
     return readOverview(ctx);
   });
 
-/** Derniers rendez-vous R2 / setup_test de l'utilisateur admin. */
-export const adminListBookings = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
-  .handler(async ({ context }): Promise<AdminBookingRow[]> => {
-    const ctx = context as unknown as Ctx;
-    await assertAdmin(ctx);
-    const { data, error } = await ctx.supabase
-      .from("bookings")
-      .select("id, booking_type, status_norm, meeting_at, meeting_time, timezone, client_ref, created_at")
-      .eq("user_id", ctx.userId)
-      .in("booking_type", ["r2_demo", "setup_test"])
-      .order("created_at", { ascending: false })
-      .limit(10);
-    if (error) {
-      console.error("[admin] list bookings", error);
-      throw new Error("Lecture des rendez-vous impossible.");
-    }
-    return (data ?? []).map((b: any) => ({
-      id: b.id,
-      bookingType: b.booking_type,
-      statusNorm: b.status_norm,
-      meetingAt: b.meeting_at,
-      meetingTime: b.meeting_time,
-      timezone: b.timezone,
-      clientRef: b.client_ref,
-      createdAt: b.created_at,
-    }));
-  });
 
 async function upsertState(
   userId: string,
