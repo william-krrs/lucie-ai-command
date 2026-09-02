@@ -123,6 +123,16 @@ export function markDiagnosticLoggedOut() {
   }
 }
 
+/** Efface l'horodatage de déconnexion (après réconciliation d'une connexion). */
+export function clearDiagnosticLoggedOut() {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.removeItem(DIAGNOSTIC_LOGOUT_AT_KEY);
+  } catch {
+    // ignore
+  }
+}
+
 export function readLocalDiagnosticOwner(): string | null {
   if (typeof window === "undefined") return null;
   try {
