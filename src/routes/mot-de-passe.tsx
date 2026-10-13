@@ -13,6 +13,8 @@ export const Route = createFileRoute("/mot-de-passe")({
   ssr: false,
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { title: "Définir mon mot de passe — Lucie" },
       {
         name: "description",

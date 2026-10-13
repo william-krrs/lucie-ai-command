@@ -28,6 +28,8 @@ export const Route = createFileRoute("/connexion")({
   validateSearch: searchSchema,
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { title: "Créer mon compte ou me connecter — Lucie" },
       {
         name: "description",

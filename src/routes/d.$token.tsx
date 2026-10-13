@@ -25,6 +25,8 @@ import { PLAN_LABELS, PRIORITY_LABELS, TIER_LABELS } from "@/lib/recommendation"
 export const Route = createFileRoute("/d/$token")({
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { title: "Diagnostic partagé — Lucie" },
       { name: "description", content: "Consultez le diagnostic Lucie partagé et téléchargez-le en PDF." },
       { name: "robots", content: "noindex, nofollow" },

@@ -10,6 +10,8 @@ import { StepNav } from "@/components/step-nav";
 export const Route = createFileRoute("/roi")({
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { title: "Calculateur ROI — Lucie Command Center" },
       {
         name: "description",

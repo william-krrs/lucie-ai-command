@@ -12,6 +12,8 @@ export const Route = createFileRoute("/admin_/login")({
   ssr: false,
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { title: "Connexion administration — Lucie" },
       {
         name: "description",
