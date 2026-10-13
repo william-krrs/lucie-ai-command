@@ -719,7 +719,7 @@ export function PreparationForm({
               </p>
               <p className="text-muted-foreground">
                 Renseignez vos informations pour que Lucie soit opérationnelle
-                sous 72 h. En cas d'urgence :{" "}
+                en 96 h. En cas d'urgence :{" "}
                 <a href="tel:+33637055980" className="underline">
                   +33 6 37 05 59 80
                 </a>
@@ -2043,8 +2043,7 @@ function SubmittedConfirmation({
         </h2>
         <p className="mt-3 max-w-xl text-sm text-muted-foreground sm:text-base">
           Merci ! Votre configuration <strong>{planLabel}</strong> est bien reçue.
-          L'équipe Lucie planifie votre cadrage sous 24 h ouvrées et lance
-          l'installation sous 72 h.
+          L'équipe Lucie planifie votre cadrage et la mise en place en 96 h.
         </p>
         <p className="mt-2 text-xs text-muted-foreground">
           Référence : <span className="font-mono font-medium text-foreground">#{reference}</span>

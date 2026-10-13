@@ -11,6 +11,8 @@ import { StepNav } from "@/components/step-nav";
 export const Route = createFileRoute("/faq")({
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
       { title: "Questions fréquentes — Lucie Command Center" },
       {
         name: "description",

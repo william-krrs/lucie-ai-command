@@ -10,6 +10,8 @@ import { BOOKING_URL_SETUP } from "@/lib/config";
 export const Route = createFileRoute("/rdv-test")({
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
       { title: "RDV Test & paramétrage — Lucie" },
       {
         name: "description",

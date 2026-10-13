@@ -71,7 +71,7 @@ export const PRIORITY_CTA: Record<Priority, PriorityCta> = {
     eyebrow: "Priorité élevée · À traiter cette semaine",
     title: "Réservez votre créneau de démarrage prioritaire",
     description:
-      "Votre profil coche toutes les cases : chaque semaine sans Lucie représente un manque à gagner concret. Notre équipe vous rappelle sous 24 h pour lancer l'installation.",
+      "Votre profil présente un potentiel de récupération estimé. Notre équipe vous rappelle sous 24 h pour préparer la mise en place en 96 h.",
     primaryLabel: "Démarrer maintenant",
     secondaryLabel: "Voir la démonstration",
   },

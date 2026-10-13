@@ -25,9 +25,13 @@ import { PLAN_LABELS, PRIORITY_LABELS, TIER_LABELS } from "@/lib/recommendation"
 export const Route = createFileRoute("/d/$token")({
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
       { title: "Diagnostic partagé — Lucie" },
       { name: "description", content: "Consultez le diagnostic Lucie partagé et téléchargez-le en PDF." },
       { name: "robots", content: "noindex, nofollow" },
+      { property: "og:title", content: "Diagnostic partagé — Lucie" },
+      { property: "og:description", content: "Diagnostic Lucie partagé : compatibilité et ROI estimé, sans garantie de résultat." },
     ],
   }),
   loader: async ({ params }) => {
@@ -161,6 +165,8 @@ function SharedDiagnosticPage() {
         `Formule recommandée : ${planKey ? PLAN_LABELS[planKey] ?? planKey : "Aucune"}. ${r.planReason}`,
         { size: 10, color: BRAND.body, gap: 12 },
       );
+
+      writeText("Estimation basée sur vos réponses, non garantie", { size: 9, color: BRAND.muted, gap: 6 });
 
       // KPIs
       writeText("Indicateurs clés", { size: 9, bold: true, color: BRAND.muted, gap: 2 });
@@ -367,6 +373,8 @@ function SharedDiagnosticPage() {
             <Kpi label="ROI mensuel estimé" value={fmtEUR(snap.recommendation.estimatedMonthlyRoi)} emphasize />
           </div>
 
+          <p className="mt-3 text-xs text-muted-foreground">Estimation basée sur vos réponses, non garantie</p>
+
           {snap.recommendation.justifications.length > 0 && (
             <ListBlock title="Pourquoi cette recommandation ?" items={snap.recommendation.justifications} />
           )}
@@ -375,8 +383,8 @@ function SharedDiagnosticPage() {
           )}
 
           <p className="text-[11px] text-muted-foreground">
-            Diagnostic généré par {BRAND_NAME} — {SITE_DOMAIN} · Estimation prudente
-            fondée sur les données déclarées.
+            Diagnostic généré par {BRAND_NAME} — {SITE_DOMAIN} · Estimation
+            fondée sur les données déclarées, non garantie.
           </p>
         </div>
 
