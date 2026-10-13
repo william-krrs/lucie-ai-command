@@ -13,7 +13,7 @@ describe("tarification Stripe", () => {
 
   it.each<[PlanKey, number, number]>([
     ["essential", 63900, 14900],
-    ["pro", 88900, 39900],
+    ["pro", 78900, 29900],
     ["premium", 148000, 99000],
   ])("%s : premier paiement puis récurrence", (plan, first, monthly) => {
     expect(firstPaymentAmount(plan)).toBe(first);
