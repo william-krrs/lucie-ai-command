@@ -33,10 +33,10 @@ export const Route = createFileRoute("/offres")({
       { title: "Offres — Lucie Command Center" },
       {
         name: "description",
-        content: "Trois formules simples : Essential, Pro et Premium. Choisissez celle qui correspond à votre volume.",
+        content: "Trois formules simples : Essentiel, Pro et Premium. Choisissez celle qui correspond à votre volume.",
       },
       { property: "og:title", content: "Offres & tarifs — Lucie" },
-      { property: "og:description", content: "Essential, Pro, Premium — 3 formules pour Lucie." },
+      { property: "og:description", content: "Essentiel, Pro, Premium — 3 formules pour Lucie." },
       { property: "og:url", content: "https://lucie-ai-command.lovable.app/offres" },
     ],
     links: [{ rel: "canonical", href: "https://lucie-ai-command.lovable.app/offres" }],
@@ -59,7 +59,7 @@ const PLANS: {
 }[] = [
   {
     key: "essential",
-    name: "Essential",
+    name: "Essentiel",
     price: "149 €",
     badge: "Entrée de gamme",
     badgeTone: "neutral",
@@ -74,18 +74,18 @@ const PLANS: {
       "Historique des appels",
       "Support standard",
     ],
-    cta: "Choisir Essential",
+    cta: "Choisir Essentiel",
   },
   {
     key: "pro",
     name: "Pro",
     price: "399 €",
-    badge: "⭐ La plus choisie",
+    badge: "Personnalisation avancée",
     badgeTone: "brand",
     icon: Star,
     tagline: PLAN_TAGLINES.pro,
     features: [
-      "Tout Essential",
+      "Tout Essentiel",
       "Personnalisation avancée",
       "Jusqu'à 6 langues",
       "Transfert d'appel",
@@ -363,12 +363,15 @@ function OffresContent() {
                 Frais d'installation de 490 € (une seule fois)
               </h2>
               <p className="mt-1.5 max-w-xl text-sm text-muted-foreground">
-                Le paramétrage complet de Lucie, la connexion à vos outils et la mise en production sont facturés 490 € une seule fois, ajoutés à votre premier paiement. Les renouvellements mensuels ne comprennent que votre abonnement. Installation en 3 à 5 jours selon la complexité de votre activité.
+                Le paramétrage complet de Lucie, la connexion à vos outils et la mise en production sont facturés 490 € une seule fois, ajoutés à votre premier paiement. Les renouvellements mensuels ne comprennent que votre abonnement. Mise en place en 96 h.
+              </p>
+              <p className="mt-3 max-w-xl text-sm font-medium text-foreground">
+                Offre de lancement : gratuit pour les 5 premiers artisans — mise en place offerte avec engagement de 3 mois, sinon 490 €
               </p>
               <div className="mt-3 flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
                 <span className="inline-flex items-center gap-1.5">
                   <Clock className="h-3.5 w-3.5" aria-hidden="true" />
-                  Installation en 3 à 5 jours selon la complexité
+                  Mise en place en 96 h
                 </span>
                 <span className="inline-flex items-center gap-1.5">
                   <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" />
