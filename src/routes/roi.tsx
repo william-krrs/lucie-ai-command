@@ -113,7 +113,7 @@ function Roi() {
                 de chiffre d'affaires sur la table chaque mois.
               </p>
 
-              <div className="mt-6 grid grid-cols-2 gap-4 border-t border-border pt-6">
+              <div className="mt-6 grid grid-cols-1 gap-4 border-t border-border pt-6 sm:grid-cols-2">
                 <RoiSummary
                   icon={TrendingDown}
                   label="Sans Lucie"
