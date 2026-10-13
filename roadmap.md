@@ -1,0 +1,4 @@
+- [ ] Harmoniser l'offre de lancement, limitée aux frais de mise en place.
+- [ ] Afficher minutes incluses et dépassement dans les descriptions des offres ; vérifier le périmètre ROI.
+- [ ] Capturer les 11 étapes à 390×844 et 1440×900, corriger les défauts observés sans contourner les protections.
+- [ ] Exécuter les tests ciblés et fournir la liste des corrections et limites, sans publier.
