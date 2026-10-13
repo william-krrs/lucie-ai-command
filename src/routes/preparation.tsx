@@ -24,7 +24,7 @@ export const Route = createFileRoute("/preparation")({
       {
         name: "description",
         content:
-          "Formulaire de configuration personnalisée après paiement : renseignez vos informations pour lancer l'installation de Lucie sous 72 h.",
+          "Formulaire de configuration personnalisée après paiement : renseignez vos informations pour lancer l'installation de Lucie en 96 h.",
       },
       {
         property: "og:title",
@@ -85,7 +85,7 @@ function PreparationContent() {
       <PageHeader
         eyebrow={`Étape 08 · Configuration — Formule ${planLabel}`}
         title="Configuration personnalisée"
-        description="Un formulaire sur mesure pour tout centraliser. Une fois validé, votre assistante sera prête pour une phase de test sous 72 h ouvrées."
+        description="Un formulaire sur mesure pour tout centraliser. Une fois validé, votre assistante sera prête pour une phase de test en 96 h."
       />
       <PreparationForm plan={plan} />
     </div>
