@@ -30,8 +30,6 @@ import { createCheckoutSession } from "@/lib/stripe-checkout.functions";
 export const Route = createFileRoute("/offres")({
   head: () => ({
     meta: [
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
       { title: "Offres — Lucie Command Center" },
       {
         name: "description",

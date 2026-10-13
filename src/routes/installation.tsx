@@ -18,8 +18,6 @@ import { useJourneyAccess } from "@/lib/journey-access";
 export const Route = createFileRoute("/installation")({
   head: () => ({
     meta: [
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
       { title: "Installation — Lucie Command Center" },
       {
         name: "description",

@@ -37,8 +37,6 @@ export const Route = createFileRoute("/admin")({
         property: "og:description",
         content: "Console interne réservée à l'équipe Lucie.",
       },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
       { name: "robots", content: "noindex, nofollow" },
     ],
   }),

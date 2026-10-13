@@ -23,8 +23,6 @@ export const Route = createFileRoute("/mot-de-passe")({
         property: "og:description",
         content: "Choisissez un nouveau mot de passe pour accéder à votre parcours.",
       },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
       { name: "robots", content: "noindex, nofollow" },
     ],
   }),

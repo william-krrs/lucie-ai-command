@@ -22,8 +22,6 @@ export const Route = createFileRoute("/admin_/login")({
         property: "og:description",
         content: "Espace de connexion réservé à l'équipe Lucie Command Center.",
       },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
       { name: "robots", content: "noindex, nofollow" },
     ],
   }),

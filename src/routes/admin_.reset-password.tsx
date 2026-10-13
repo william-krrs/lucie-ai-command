@@ -22,8 +22,6 @@ export const Route = createFileRoute("/admin_/reset-password")({
         property: "og:description",
         content: "Définition d'un nouveau mot de passe pour l'espace d'administration Lucie.",
       },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
       { name: "robots", content: "noindex, nofollow" },
     ],
   }),

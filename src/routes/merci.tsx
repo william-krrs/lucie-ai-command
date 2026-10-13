@@ -150,8 +150,6 @@ export const Route = createFileRoute("/merci")({
   validateSearch: planSearchSchema,
   head: () => ({
     meta: [
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
       { title: "Merci — Paiement confirmé | Lucie" },
       {
         name: "description",

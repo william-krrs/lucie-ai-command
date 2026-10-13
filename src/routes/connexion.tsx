@@ -39,8 +39,6 @@ export const Route = createFileRoute("/connexion")({
         property: "og:description",
         content: "Créez votre compte Lucie pour suivre votre parcours personnalisé.",
       },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
       { name: "robots", content: "noindex, nofollow" },
     ],
   }),
