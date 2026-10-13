@@ -111,9 +111,9 @@ export const Route = createFileRoute("/")({
 });
 
 const STATS = [
-  { icon: PhoneCall, label: "Appels traités", value: "12 480", trend: "+34% ce mois" },
-  { icon: Clock, label: "Temps de réponse", value: "1,2s", trend: "Valeur fictive" },
-  { icon: Users, label: "Prospects qualifiés", value: "3 210", trend: "+128 cette semaine" },
+  { icon: PhoneCall, label: "Appels traités", value: "12 480", trend: "Donnée fictive" },
+  { icon: Clock, label: "Disponibilité prévue", value: "24h/24", trend: "Réponse immédiate" },
+  { icon: Users, label: "Prospects qualifiés", value: "3 210", trend: "Donnée fictive" },
   { icon: LineChart, label: "Taux de conversion", value: "42%", trend: "Exemple fictif" },
 ];
 
@@ -139,7 +139,7 @@ const COMPANIES: Company[] = [
     summary:
       "Exemple fictif : Lucie pourrait orienter les demandes d'inscription et renseigner les appelants d'une salle de sport.",
     domain: null,
-    initials: "BF",
+    initials: "SP",
     hue: 12,
   },
   {
@@ -149,7 +149,7 @@ const COMPANIES: Company[] = [
     summary:
       "Exemple fictif : Lucie pourrait qualifier les demandes de devis d'un artisan électricien pendant ses chantiers et proposer un rendez-vous.",
     domain: null,
-    initials: "BR",
+    initials: "EL",
     hue: 220,
   },
   {
@@ -159,7 +159,7 @@ const COMPANIES: Company[] = [
     summary:
       "Exemple fictif : Lucie pourrait renseigner les propriétaires et locataires d'une conciergerie et organiser les demandes d'intervention.",
     domain: null,
-    initials: "KC",
+    initials: "CO",
     hue: 300,
   },
   {
@@ -169,7 +169,7 @@ const COMPANIES: Company[] = [
     summary:
       "Exemple fictif : Lucie pourrait répondre immédiatement, 24h/24, aux demandes de dépannage en climatisation et qualifier les pannes.",
     domain: null,
-    initials: "ED",
+    initials: "CL",
     hue: 170,
   },
   {
@@ -179,7 +179,7 @@ const COMPANIES: Company[] = [
     summary:
       "Exemple fictif : Lucie pourrait recueillir les demandes de devis d'une entreprise de maçonnerie pendant les chantiers.",
     domain: null,
-    initials: "SB",
+    initials: "MA",
     hue: 30,
   },
   {
@@ -189,7 +189,7 @@ const COMPANIES: Company[] = [
     summary:
       "Exemple fictif : Lucie pourrait qualifier les projets de création, d'entretien ou d'élagage avant de proposer un rendez-vous.",
     domain: null,
-    initials: "DV",
+    initials: "PA",
     hue: 140,
   },
   {
@@ -199,7 +199,7 @@ const COMPANIES: Company[] = [
     summary:
       "Exemple fictif : Lucie pourrait centraliser les demandes de dépannage et proposer des rendez-vous pour une entreprise de rénovation.",
     domain: null,
-    initials: "AM",
+    initials: "RE",
     hue: 260,
   },
 ];

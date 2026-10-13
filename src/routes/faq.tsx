@@ -46,7 +46,7 @@ const QUESTIONS = [
   },
   {
     q: "Comment sont protégées les données ?",
-    a: "Toutes les conversations sont chiffrées de bout en bout, stockées dans l'Union européenne, et conformes RGPD. Vous restez propriétaire de vos données à 100%.",
+    a: "Les modalités de protection, d'hébergement, de conservation et d'accès aux données sont à confirmer avec notre équipe avant la mise en place, selon votre configuration et les services utilisés.",
   },
   {
     q: "Lucie parle-t-elle plusieurs langues ?",
