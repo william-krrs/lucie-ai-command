@@ -21,7 +21,7 @@ export const STRIPE_PLANS: Record<
   { name: string; unitAmount: number; label: string }
 > = {
   essential: { name: "Lucie Essential", unitAmount: 14900, label: "Essential" },
-  pro: { name: "Lucie Pro", unitAmount: 39900, label: "Pro" },
+  pro: { name: "Lucie Pro", unitAmount: 29900, label: "Pro" },
   premium: { name: "Lucie Premium", unitAmount: 99000, label: "Premium" },
 };
 

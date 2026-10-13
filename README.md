@@ -266,7 +266,7 @@ Choisir Essential
 
 PRO
 
-399 €/mois TTC
+299 €/mois TTC
 
 Badge bleu
 

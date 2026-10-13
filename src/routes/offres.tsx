@@ -79,7 +79,7 @@ const PLANS: {
   {
     key: "pro",
     name: "Pro",
-    price: "399 €",
+    price: "299 €",
     badge: "Personnalisation avancée",
     badgeTone: "brand",
     icon: Star,
