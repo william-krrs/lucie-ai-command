@@ -223,7 +223,7 @@ function RoiSummary({
         <div className={"grid h-8 w-8 shrink-0 place-items-center rounded-lg " + cls}>
           <Icon className="h-4 w-4" />
         </div>
-        <div className="kpi-label truncate">{label}</div>
+        <div className="kpi-label min-w-0 break-words">{label}</div>
       </div>
       <div className="mt-2.5 kpi-value-md text-foreground break-words">
         {value}

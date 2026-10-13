@@ -32,7 +32,7 @@ export function TopStepBar({ className }: { className?: string }) {
         <Link
           to={prev.to}
           aria-label={`Étape précédente : ${prev.label}`}
-          className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-border bg-card px-2.5 text-xs font-medium text-foreground/80 transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            className="inline-flex h-11 min-w-11 items-center justify-center gap-1.5 rounded-lg border border-border bg-card px-2.5 text-xs font-medium text-foreground/80 transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
         >
           <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" />
           <span className="hidden sm:inline max-w-[8rem] truncate">{prev.label}</span>
@@ -52,7 +52,7 @@ export function TopStepBar({ className }: { className?: string }) {
         <Link
           to={next.to}
           aria-label={`Étape suivante : ${next.label}`}
-          className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-primary px-3 text-xs font-medium text-primary-foreground shadow-[var(--shadow-elevated)] transition-transform hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            className="inline-flex h-11 items-center gap-1.5 rounded-lg bg-primary px-3 text-xs font-medium text-primary-foreground shadow-[var(--shadow-elevated)] transition-transform hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
         >
           <span className="hidden sm:inline max-w-[10rem] truncate">{next.label}</span>
           <span className="sm:hidden">Suivant</span>
