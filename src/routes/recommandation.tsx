@@ -57,7 +57,7 @@ export const Route = createFileRoute("/recommandation")({
       {
         property: "og:description",
         content:
-          "Le récapitulatif objectif de votre compatibilité avec Lucie.",
+          "Le récapitulatif de votre compatibilité avec Lucie, basé sur vos réponses.",
       },
       {
         property: "og:url",
@@ -404,7 +404,7 @@ function RecommandationPage() {
       <PageHeader
         eyebrow="Étape 04 · Recommandation"
         title="Votre diagnostic est terminé"
-        description="Voici la synthèse objective de votre situation, la formule que Lucie recommande — ou pas — et les prochaines étapes."
+        description="Voici la synthèse basée sur vos réponses, la formule recommandée — ou pas — et les prochaines étapes."
         actions={
           <div className="flex flex-wrap gap-2">
             <Button
@@ -912,6 +912,7 @@ function RecommandationPage() {
               value={formatEUR(m.monthlyLostRevenue)}
             />
           </dl>
+          <p className="mt-3 text-xs text-muted-foreground">Estimation basée sur vos réponses, non garantie</p>
 
           <div className="mt-6 rounded-2xl border border-border bg-background p-4">
             <div className="text-[11px] uppercase tracking-widest text-muted-foreground">

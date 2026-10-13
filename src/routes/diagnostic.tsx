@@ -161,10 +161,10 @@ function Diagnostic() {
           <div className="flex items-center justify-between">
             <div>
               <div className="text-[11px] uppercase tracking-widest text-muted-foreground">
-                Tableau de bord live
+                Simulation de votre activité
               </div>
               <div className="text-lg font-semibold tracking-tight text-foreground">
-                Indicateurs recalculés en temps réel
+                Estimations recalculées en temps réel
               </div>
             </div>
             <Badge className="rounded-full bg-primary/10 text-primary hover:bg-primary/10">
@@ -200,7 +200,7 @@ function Diagnostic() {
             />
             <Kpi
               icon={Clock}
-              label="Temps économisé / mois"
+              label="Temps économisé estimé / mois"
               value={`${m.timeSavedHours} h`}
               tone="brand"
             />
@@ -226,6 +226,7 @@ function Diagnostic() {
               </span>{" "}
               par an.
             </p>
+            <p className="mt-3 text-xs text-muted-foreground">Estimation basée sur vos réponses, non garantie</p>
           </div>
 
             <RecommendationCard />
@@ -297,7 +298,7 @@ function Kpi({
           <Icon className="h-4 w-4" />
         </div>
         <span className="text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
-          Live
+          Estimation
         </span>
       </div>
       <div className={"mt-5 sm:mt-6 break-words " + (big ? "kpi-value-xl text-foreground" : "kpi-value-lg text-foreground")}>

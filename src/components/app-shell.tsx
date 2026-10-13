@@ -230,10 +230,10 @@ export function AppShell({ children }: { children: ReactNode }) {
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[oklch(0.65_0.17_155)] opacity-75" />
               <Circle className="h-2 w-2 fill-[oklch(0.65_0.17_155)] text-[oklch(0.65_0.17_155)]" />
             </span>
-            Lucie en ligne
+            Lucie · Assistante IA
           </div>
           <p className="mt-2 text-[11px] leading-relaxed text-muted-foreground">
-            Assistante IA active — répond aux appels en 1,2s en moyenne.
+            Lucie répond immédiatement, 24h/24, et se présente comme une assistante IA.
           </p>
         </div>
 

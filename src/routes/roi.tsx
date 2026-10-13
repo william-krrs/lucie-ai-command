@@ -13,10 +13,10 @@ export const Route = createFileRoute("/roi")({
       { title: "Calculateur ROI — Lucie Command Center" },
       {
         name: "description",
-        content: "Calculez en direct le chiffre d'affaires que vos appels manqués vous coûtent chaque semaine, mois et année.",
+        content: "Estimez le chiffre d'affaires potentiellement perdu à partir de vos réponses, sans garantie de résultat.",
       },
       { property: "og:title", content: "Calculateur ROI — Lucie" },
-      { property: "og:description", content: "Le vrai coût de vos appels manqués, en temps réel." },
+      { property: "og:description", content: "Estimation du coût potentiel de vos appels manqués, basée sur vos réponses." },
       { property: "og:url", content: "https://lucie-ai-command.lovable.app/roi" },
     ],
     links: [{ rel: "canonical", href: "https://lucie-ai-command.lovable.app/roi" }],
@@ -33,7 +33,7 @@ function Roi() {
       <PageHeader
         eyebrow="Étape 03 · ROI"
         title="Calculateur de ROI"
-        description="Ajustez les curseurs pour projeter le chiffre d'affaires que vous récupérez avec Lucie."
+        description="Ajustez les hypothèses pour estimer le chiffre d'affaires potentiellement récupérable avec Lucie."
       />
 
       <div className="grid gap-8 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
@@ -89,9 +89,9 @@ function Roi() {
 
         <div className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-3">
-            <RoiCard label="CA perdu / semaine" value={formatEUR(m.weeklyLostRevenue)} />
-            <RoiCard label="CA perdu / mois" value={formatEUR(m.monthlyLostRevenue)} highlight />
-            <RoiCard label="CA perdu / an" value={formatEUR(m.yearlyLostRevenue)} />
+            <RoiCard label="CA perdu estimé / semaine" value={formatEUR(m.weeklyLostRevenue)} />
+            <RoiCard label="CA perdu estimé / mois" value={formatEUR(m.monthlyLostRevenue)} highlight />
+            <RoiCard label="CA perdu estimé / an" value={formatEUR(m.yearlyLostRevenue)} />
           </div>
 
           <div className="relative overflow-hidden rounded-3xl border border-primary/20 bg-gradient-to-br from-primary/[0.08] to-primary/[0.02] p-5 sm:p-8 shadow-[var(--shadow-elevated)]">
@@ -120,13 +120,15 @@ function Roi() {
                 />
                 <RoiSummary
                   icon={TrendingUp}
-                  label="Récupéré avec Lucie"
+                  label="Récupération estimée"
                   value={formatEUR(m.monthlyLostRevenue * 0.75)}
                   tone="success"
                 />
               </div>
             </div>
           </div>
+          <p className="mt-3 text-xs text-muted-foreground">Estimation basée sur vos réponses, non garantie</p>
+          <p className="text-xs text-muted-foreground">Hypothèse de simulation : récupération de 75 % du CA potentiellement perdu, non fondée sur des résultats clients.</p>
         </div>
       </div>
       <StepNav current="/roi" />

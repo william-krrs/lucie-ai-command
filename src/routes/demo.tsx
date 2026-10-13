@@ -195,7 +195,7 @@ function DemoMode() {
                   "Diagnostic personnalisé Lucie"}
               </div>
               <div className="mt-4 text-[clamp(2.2rem,5vw,4rem)] font-semibold leading-[1.05] tracking-tight text-foreground">
-                Comment Lucie récupère votre chiffre d'affaires perdu.
+                Le chiffre d'affaires potentiellement récupérable avec Lucie.
               </div>
               <p className="mt-6 text-lg leading-relaxed text-muted-foreground">
                 Une démonstration en 7 étapes, calculée à partir de vos chiffres.
@@ -222,7 +222,7 @@ function DemoMode() {
       {
         id: "loss",
         eyebrow: "Étape 2 — Manque à gagner",
-        title: "Ce que ces appels manqués vous coûtent",
+        title: "Estimation du coût de vos appels manqués",
         render: () => (
           <SlideGrid
             items={[
@@ -287,8 +287,8 @@ function DemoMode() {
       },
       {
         id: "roi",
-        eyebrow: "Étape 4 — ROI attendu",
-        title: "Ce que Lucie vous rapporte, chaque mois",
+        eyebrow: "Étape 4 — ROI estimé",
+        title: "Estimation du revenu récupérable chaque mois",
         render: () => (
           <div className="flex w-full flex-col items-center gap-8">
             <div className="text-center">
@@ -719,6 +719,7 @@ function DemoMode() {
             </h1>
           </div>
           <div className="w-full">{current.render()}</div>
+          <p className="text-center text-xs text-muted-foreground">Estimation basée sur vos réponses, non garantie</p>
         </article>
       </section>
 

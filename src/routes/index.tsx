@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { StepNav } from "@/components/step-nav";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
-import { SOCIAL_PROOF_COMPANY_COUNT } from "@/lib/config";
 import { getLogoStatus, setLogoStatus, logoCacheKey } from "@/lib/logo-cache";
 
 type LogoStatus = "loading" | "loaded" | "error";
@@ -110,10 +109,10 @@ export const Route = createFileRoute("/")({
 });
 
 const STATS = [
-  { icon: PhoneCall, label: "Appels traités", value: "12 480", trend: "+34% ce mois" },
-  { icon: Clock, label: "Temps de réponse", value: "1,2s", trend: "moyenne réseau" },
-  { icon: Users, label: "Prospects qualifiés", value: "3 210", trend: "+128 cette semaine" },
-  { icon: LineChart, label: "Taux de conversion", value: "42%", trend: "vs 18% humain" },
+  { icon: PhoneCall, label: "Appels traités", value: "12 480", trend: "Donnée fictive" },
+  { icon: Clock, label: "Disponibilité prévue", value: "24h/24", trend: "Réponse immédiate" },
+  { icon: Users, label: "Prospects qualifiés", value: "3 210", trend: "Donnée fictive" },
+  { icon: LineChart, label: "Taux de conversion", value: "42%", trend: "Exemple fictif" },
 ];
 
 type Company = {
@@ -132,73 +131,73 @@ type Company = {
 // Si logoUrl est absent, le logo est récupéré automatiquement via le favicon du domaine.
 const COMPANIES: Company[] = [
   {
-    name: "Basic Fit",
+    name: "Exemple · Salle de sport",
     sector: "Salles de sport · Fitness",
-    city: "Réseau national",
+    city: "Exemple fictif",
     summary:
-      "Enseigne leader du fitness low-cost en Europe. Lucie prend le relais sur les appels entrants des clubs pour orienter les prospects vers l'inscription en ligne et désengorger l'accueil.",
-    domain: "basic-fit.com",
-    initials: "BF",
+      "Exemple fictif : Lucie pourrait orienter les demandes d'inscription et renseigner les appelants d'une salle de sport.",
+    domain: null,
+    initials: "SP",
     hue: 12,
   },
   {
-    name: "Bruselec — Yohann Brusseau",
+    name: "Exemple · Artisan électricien",
     sector: "Électricité · Photovoltaïque",
-    city: "Fonsorbes / Toulouse (31)",
+    city: "Exemple fictif",
     summary:
-      "Artisan électricien spécialisé en panneaux photovoltaïques et bornes de recharge. Lucie qualifie les demandes de devis pendant les chantiers et bloque les rendez-vous d'audit directement dans l'agenda.",
-    domain: "electricien-31.fr",
-    initials: "BR",
+      "Exemple fictif : Lucie pourrait qualifier les demandes de devis d'un artisan électricien pendant ses chantiers et proposer un rendez-vous.",
+    domain: null,
+    initials: "EL",
     hue: 220,
   },
   {
-    name: "Kris Conciergerie 66 — Christine Mintz",
+    name: "Exemple · Conciergerie",
     sector: "Conciergerie & location saisonnière",
-    city: "Amélie-les-Bains-Palalda (66)",
+    city: "Exemple fictif",
     summary:
-      "Conciergerie dédiée aux propriétaires de locations saisonnières dans les Pyrénées-Orientales (accueil locataires, états des lieux, remise des clés, entretien). Lucie assure la permanence téléphonique, qualifie les demandes des propriétaires et locataires et bloque les interventions dans l'agenda.",
-    domain: "krisconciergerie.com",
-    initials: "KC",
+      "Exemple fictif : Lucie pourrait renseigner les propriétaires et locataires d'une conciergerie et organiser les demandes d'intervention.",
+    domain: null,
+    initials: "CO",
     hue: 300,
   },
   {
-    name: "Edclim — Wendy Dewolf",
+    name: "Exemple · Climatisation",
     sector: "Climatisation & réfrigération",
-    city: "Magny-le-Hongre (77)",
+    city: "Exemple fictif",
     summary:
-      "Installation, maintenance et dépannage de systèmes de climatisation. Lucie répond aux urgences en 1,2 s, qualifie les pannes et priorise les interventions selon le type d'équipement.",
-    domain: "ed-clim.fr",
-    initials: "ED",
+      "Exemple fictif : Lucie pourrait répondre immédiatement, 24h/24, aux demandes de dépannage en climatisation et qualifier les pannes.",
+    domain: null,
+    initials: "CL",
     hue: 170,
   },
   {
-    name: "Scalisi Bâti Rénov — Mickaël Angelo Scalisi",
+    name: "Exemple · Maçonnerie",
     sector: "Maçonnerie & rénovation",
-    city: "Vidauban (83)",
+    city: "Exemple fictif",
     summary:
-      "Entreprise de maçonnerie, gros œuvre et rénovation immobilière dans le Var. Lucie prend les demandes de devis en journée pendant que les équipes sont sur les chantiers.",
-    domain: "scalisi-batirenov.fr",
-    initials: "SB",
+      "Exemple fictif : Lucie pourrait recueillir les demandes de devis d'une entreprise de maçonnerie pendant les chantiers.",
+    domain: null,
+    initials: "MA",
     hue: 30,
   },
   {
-    name: "Ligonde Désiré — Désir Vert Paysagiste",
+    name: "Exemple · Paysagiste",
     sector: "Paysagisme & entretien de jardins",
-    city: "Savigny-sur-Orge (91)",
+    city: "Exemple fictif",
     summary:
-      "Création et entretien d'espaces verts pour particuliers et copropriétés. Lucie qualifie la nature du projet (création, entretien, élagage) avant de proposer un rendez-vous sur place.",
+      "Exemple fictif : Lucie pourrait qualifier les projets de création, d'entretien ou d'élagage avant de proposer un rendez-vous.",
     domain: null,
-    initials: "DV",
+    initials: "PA",
     hue: 140,
   },
   {
-    name: "AMS Rénovation — Mehdi Aloui",
+    name: "Exemple · Rénovation",
     sector: "Rénovation & multi-services",
-    city: "La Motte-Servolex (73)",
+    city: "Exemple fictif",
     summary:
-      "Multi-services de dépannage et rénovation intérieure/extérieure en Savoie. Lucie centralise les demandes urgentes et convertit les appels manqués en rendez-vous confirmés.",
-    domain: "ams-renovation73.fr",
-    initials: "AM",
+      "Exemple fictif : Lucie pourrait centraliser les demandes de dépannage et proposer des rendez-vous pour une entreprise de rénovation.",
+    domain: null,
+    initials: "RE",
     hue: 260,
   },
 ];
@@ -224,13 +223,13 @@ function Home() {
               Nouvelle génération d'assistante IA
             </div>
             <h2 className="mt-5 text-4xl md:text-5xl font-semibold leading-[1.05] tracking-tight text-foreground">
-              Ne perdez plus jamais <br />
-              un appel entrant.
+              Vos appels ne restent plus <br />
+              sans réponse.
             </h2>
             <p className="mt-5 max-w-xl text-[15px] leading-relaxed text-muted-foreground">
-              Lucie répond en 1,2 seconde, qualifie chaque prospect, prend les rendez-vous et
-              synchronise votre agenda. Vous récupérez le chiffre d'affaires que vos concurrents
-              laissent filer.
+              Lucie répond immédiatement, 24h/24, se présente comme une assistante IA, qualifie
+              les demandes, prend les rendez-vous et synchronise votre agenda. Vous restez
+              disponible pour votre activité.
             </p>
             <div className="mt-8 flex flex-wrap items-center gap-3">
               <Button asChild size="lg" className="group h-12 rounded-xl px-6 shadow-[var(--shadow-elevated)]">
@@ -248,7 +247,7 @@ function Home() {
               <TooltipProvider delayDuration={150}>
                 <ul
                   role="list"
-                  aria-label={`Aperçu de ${COMPANIES.length} entreprises clientes de Lucie`}
+                  aria-label="Exemples fictifs de secteurs d’activité"
                   className="flex -space-x-2"
                   onKeyDown={(e: KeyboardEvent<HTMLUListElement>) => {
                     const keys = ["ArrowRight", "ArrowLeft", "Home", "End"];
@@ -318,19 +317,19 @@ function Home() {
                     <TooltipTrigger asChild>
                       <button
                         type="button"
-                        aria-label={`+${SOCIAL_PROOF_COMPANY_COUNT} entreprises utilisent Lucie au quotidien. Plus d'informations`}
+                        aria-label="Exemples fictifs d’utilisation de Lucie. Plus d’informations"
                         className="inline-flex cursor-help items-center gap-1 rounded text-left underline-offset-4 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
                       >
-                        +{SOCIAL_PROOF_COMPANY_COUNT} entreprises utilisent Lucie au quotidien
+                        Exemples fictifs d’utilisation de Lucie
                         <Info className="h-3 w-3 text-muted-foreground/80" aria-hidden="true" />
                       </button>
                     </TooltipTrigger>
                     <TooltipContent role="tooltip" side="top" align="start" className="max-w-[260px] text-xs leading-relaxed">
-                      Chiffre basé sur les entreprises actives utilisant Lucie pour répondre à leurs appels entrants et qualifier leurs prospects en direct.
+                      Ces scénarios illustrent des usages possibles. Ils ne représentent pas des clients actifs ni des résultats observés.
                     </TooltipContent>
                   </Tooltip>
                   <span className="text-[10px] text-muted-foreground/60">
-                    Logos via les sites officiels ou URLs personnalisées.
+                    Illustrations de secteurs, sans référence client.
                   </span>
                 </div>
               </TooltipProvider>
@@ -341,12 +340,12 @@ function Home() {
             <div className="flex items-center justify-between border-b border-border pb-3">
               <div className="flex items-center gap-2">
                 <div className="h-2 w-2 rounded-full bg-[oklch(0.65_0.17_155)]" />
-                <span className="text-xs font-medium text-foreground">Appel entrant · N°23</span>
+                <span className="text-xs font-medium text-foreground">Exemple d’appel entrant · N°23</span>
               </div>
               <span className="text-[11px] text-muted-foreground">01 · 12 s</span>
             </div>
             <div className="mt-4 space-y-3 text-sm">
-              <Bubble side="left">Bonjour, je m'appelle Lucie, l'assistante de Spark Media. Comment puis-je vous aider ?</Bubble>
+              <Bubble side="left">Bonjour, je m'appelle Lucie, l'assistante IA de Spark Media. Comment puis-je vous aider ?</Bubble>
               <Bubble side="right">Je cherche un devis pour une prestation SEO.</Bubble>
               <Bubble side="left">Parfait, je note. Vous êtes plutôt B2B ou B2C, et sur quel budget mensuel ?</Bubble>
               <div className="rounded-xl border border-dashed border-border bg-card p-3 text-[11px] text-muted-foreground">
@@ -361,7 +360,9 @@ function Home() {
         </div>
       </section>
 
-      <section data-vr="kpi-grid" className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <section aria-label="Exemple de tableau de bord — données de démonstration">
+        <p className="mb-4 text-sm font-medium text-muted-foreground">Exemple de tableau de bord — données de démonstration</p>
+        <div data-vr="kpi-grid" className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {STATS.map((s) => {
           const Icon = s.icon;
           return (
@@ -374,7 +375,7 @@ function Home() {
                   <Icon className="h-4 w-4" />
                 </div>
                 <span className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
-                  Live
+                  Exemple
                 </span>
               </div>
               <div className="mt-5 sm:mt-6 kpi-value-lg text-foreground break-words">{s.value}</div>
@@ -383,6 +384,7 @@ function Home() {
             </div>
           );
         })}
+        </div>
       </section>
       <StepNav current="/" />
 
@@ -406,7 +408,7 @@ function Home() {
                   </div>
                   <div className="min-w-0">
                     <SheetTitle className="text-base leading-tight">{selected.name}</SheetTitle>
-                    <SheetDescription className="mt-0.5 text-xs">Fiche entreprise</SheetDescription>
+                    <SheetDescription className="mt-0.5 text-xs">Exemple fictif de secteur</SheetDescription>
                   </div>
                 </div>
               </SheetHeader>

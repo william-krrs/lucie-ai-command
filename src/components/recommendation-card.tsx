@@ -205,6 +205,8 @@ export function RecommendationCard({
         </div>
       </div>
 
+      <p className="mt-3 text-xs text-muted-foreground">Estimation basée sur vos réponses, non garantie</p>
+
       {showCta && (
         <div className="mt-5 flex flex-wrap gap-2">
           <Button asChild className="rounded-xl">

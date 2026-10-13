@@ -28,7 +28,7 @@ export const Route = createFileRoute("/faq")({
 const QUESTIONS = [
   {
     q: "Comment fonctionne Lucie ?",
-    a: "Lucie est une assistante IA vocale connectée à votre ligne téléphonique. Elle décroche à chaque appel entrant, comprend la demande, qualifie le prospect, prend un rendez-vous dans votre agenda et vous envoie un résumé structuré.",
+    a: "Lucie est une assistante IA vocale connectée à votre ligne téléphonique. Elle se présente toujours comme une assistante IA, comprend la demande, qualifie le prospect, prend un rendez-vous dans votre agenda et vous envoie un résumé structuré.",
   },
   {
     q: "Puis-je garder mon numéro ?",
@@ -40,11 +40,11 @@ const QUESTIONS = [
   },
   {
     q: "Combien de temps pour l'installation ?",
-    a: "Entre 5 et 10 jours ouvrés selon la complexité de vos workflows et le nombre de scénarios à couvrir. Vous recevez un planning précis dès la signature.",
+    a: "La mise en place de Lucie est prévue en 96 h. Vous recevez un planning précis dès la signature.",
   },
   {
     q: "Comment sont protégées les données ?",
-    a: "Toutes les conversations sont chiffrées de bout en bout, stockées dans l'Union européenne, et conformes RGPD. Vous restez propriétaire de vos données à 100%.",
+    a: "Les modalités de protection, d'hébergement, de conservation et d'accès aux données sont à confirmer avec notre équipe avant la mise en place, selon votre configuration et les services utilisés.",
   },
   {
     q: "Lucie parle-t-elle plusieurs langues ?",
@@ -58,7 +58,7 @@ function Faq() {
       <PageHeader
         eyebrow="Étape 11 · FAQ"
         title="Questions fréquentes"
-        description="Les points que vos équipes et vos clients nous demandent le plus souvent."
+        description="Les réponses sur le fonctionnement, les formules et la mise en place de Lucie."
       />
 
       <section

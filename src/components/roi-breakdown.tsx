@@ -118,19 +118,19 @@ export function RoiBreakdown() {
       <div className="mt-6 grid gap-3 sm:grid-cols-3">
         <Impact
           icon={TrendingUp}
-          label="Mensuel récupéré"
+          label="Récupération mensuelle estimée"
           value={formatEUR(recovered)}
-          hint="Base : 75 % des appels manqués reconvertis."
+          hint="Hypothèse de simulation : récupération de 75 % du CA potentiel perdu."
         />
         <Impact
           icon={Users}
-          label="Nouveaux clients / mois"
+          label="Clients potentiels estimés / mois"
           value={`+${Math.round(convertedOpps * 0.75).toLocaleString("fr-FR")}`}
-          hint="Rendez-vous qualifiés capturés par Lucie."
+          hint="Projection théorique, pas un résultat observé."
         />
         <Impact
           icon={Clock}
-          label="Temps équipe économisé"
+          label="Temps équipe économisé estimé"
           value={`${m.timeSavedHours} h / mois`}
           hint="Appels traités sans mobiliser vos collaborateurs."
         />
@@ -142,6 +142,8 @@ export function RoiBreakdown() {
         <Projection label="Sur 6 mois" value={formatEUR(recovered * 6)} />
         <Projection label="Sur 12 mois" value={formatEUR(recovered * 12)} highlight />
       </div>
+
+      <p className="mt-3 text-xs text-muted-foreground">Estimation basée sur vos réponses, non garantie</p>
 
       {/* Hypothèses détaillées */}
       <Fold
@@ -156,15 +158,15 @@ export function RoiBreakdown() {
             moyenne standard pour lisser les variations mensuelles.
           </li>
           <li>
-            <strong className="text-foreground">Taux de reprise Lucie 75 %</strong> —
-            base observée sur les clients existants (rappel immédiat + prise de RDV).
+            <strong className="text-foreground">Hypothèse de récupération 75 %</strong> —
+            hypothèse de simulation, non fondée sur des résultats clients.
           </li>
           <li>
             <strong className="text-foreground">Panier moyen</strong> déclaré par
             vous — utilisé tel quel, sans marge de sécurité.
           </li>
           <li>
-            <strong className="text-foreground">Estimation prudente</strong> :
+            <strong className="text-foreground">Périmètre de l’estimation</strong> :
             les gains de rétention, d'image et de notation ne sont pas comptés.
           </li>
         </ul>

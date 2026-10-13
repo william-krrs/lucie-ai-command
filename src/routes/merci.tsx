@@ -154,7 +154,7 @@ export const Route = createFileRoute("/merci")({
       {
         name: "description",
         content:
-          "Votre paiement a bien été confirmé. Prochaine étape : l'installation de Lucie sous 3 à 5 jours.",
+          "Votre paiement a bien été confirmé. Prochaine étape : la mise en place de Lucie en 96 h.",
       },
       { property: "og:title", content: "Merci — Paiement confirmé | Lucie" },
       { property: "og:description", content: "Paiement reçu. On lance l'installation de Lucie." },
@@ -347,7 +347,7 @@ function MerciContent() {
               </div>
               <div>
                 <div className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
-                  Installation incluse
+                  Frais de mise en place
                 </div>
                 <div className="mt-1 text-lg font-semibold text-foreground">490 € une seule fois</div>
                 <p className="mt-1 text-xs text-muted-foreground">
@@ -372,8 +372,8 @@ function MerciContent() {
             },
             {
               icon: Clock,
-              title: "Installation 3 à 5 jours",
-              text: "Selon la complexité de votre configuration.",
+              title: "Mise en place en 96 h",
+              text: "Du paramétrage à la mise en production.",
             },
           ].map((s) => {
             const Icon = s.icon;

@@ -34,7 +34,7 @@ const BEFORE = [
   "Clients perdus",
 ];
 const AFTER = [
-  "Réponse immédiate en 1,2s",
+  "Réponse immédiate, 24h/24",
   "Qualification automatique",
   "Prise de rendez-vous instantanée",
   "Résumés d'appels envoyés",
@@ -96,7 +96,7 @@ function DemonstrationContent() {
       <PageHeader
         eyebrow="Étape 05 · Démonstration"
         title="Avant / après Lucie"
-        description="Le quotidien commercial de vos équipes, transformé."
+        description="Exemple de fonctionnement avant / après Lucie, sans résultat garanti."
       />
 
       <div className="grid gap-6 md:grid-cols-2">
@@ -105,7 +105,7 @@ function DemonstrationContent() {
             Sans Lucie
           </div>
           <div className="text-[11px] uppercase tracking-widest text-muted-foreground">
-            Situation actuelle
+            Exemple de situation
           </div>
           <h3 className="mt-2 text-2xl font-semibold tracking-tight text-foreground">
             Le chaos silencieux
@@ -129,7 +129,7 @@ function DemonstrationContent() {
           <div className="absolute right-6 top-6 rounded-full bg-primary/10 px-3 py-1 text-[11px] font-medium uppercase tracking-widest text-primary">
             Avec Lucie
           </div>
-          <div className="text-[11px] uppercase tracking-widest text-primary">Après déploiement</div>
+          <div className="text-[11px] uppercase tracking-widest text-primary">Exemple après déploiement</div>
           <h3 className="mt-2 text-2xl font-semibold tracking-tight text-foreground">
             Un pipeline maîtrisé
           </h3>

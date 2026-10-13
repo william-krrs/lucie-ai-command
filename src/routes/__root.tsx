@@ -123,8 +123,6 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:title", content: "Accueil — Lucie" },
       { name: "twitter:description", content: "L'assistante IA qui répond à vos appels, qualifie vos prospects et vous aide à générer plus de chiffre d'affaires." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/ba208f51-9fc4-40c3-ace2-04d15fed8b37/id-preview-1c17b07a--cfb4238d-d6e6-492e-a4a0-9d09593f08d2.lovable.app-1784733743990.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/ba208f51-9fc4-40c3-ace2-04d15fed8b37/id-preview-1c17b07a--cfb4238d-d6e6-492e-a4a0-9d09593f08d2.lovable.app-1784733743990.png" },
     ],
     links: [
       {
