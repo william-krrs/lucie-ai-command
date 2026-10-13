@@ -311,7 +311,7 @@ function OffresContent() {
                 <span className="kpi-value-xl text-foreground">{p.price}</span>
                 <span className="text-sm text-muted-foreground">/mois TTC</span>
               </div>
-              <p className="mt-1.5 text-xs text-muted-foreground">{p.tagline}</p>
+              <p className="mt-1.5 text-xs text-muted-foreground">{p.tagline.split(". ")[0]}.</p>
               <p className="mt-3 text-sm font-semibold text-foreground">
                 {INCLUDED_MINUTES[p.key].toLocaleString("fr-FR")} min incluses / mois
               </p>

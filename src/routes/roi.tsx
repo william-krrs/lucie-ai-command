@@ -130,6 +130,7 @@ function Roi() {
             </div>
           </div>
           <p className="mt-3 text-xs text-muted-foreground">Estimation basée sur vos réponses, non garantie</p>
+          <p className="text-xs text-muted-foreground">Chiffre d'affaires récupérable estimé, avant abonnement, frais de mise en place et éventuels dépassements de minutes.</p>
           <p className="text-xs text-muted-foreground">Hypothèse de simulation : récupération de 75 % du CA potentiellement perdu, non fondée sur des résultats clients.</p>
         </div>
       </div>
