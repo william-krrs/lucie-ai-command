@@ -112,7 +112,7 @@ export const Route = createFileRoute("/")({
 
 const STATS = [
   { icon: PhoneCall, label: "Appels traités", value: "12 480", trend: "+34% ce mois" },
-  { icon: Clock, label: "Temps de réponse", value: "1,2s", trend: "moyenne réseau" },
+  { icon: Clock, label: "Temps de réponse", value: "1,2s", trend: "Valeur fictive" },
   { icon: Users, label: "Prospects qualifiés", value: "3 210", trend: "+128 cette semaine" },
   { icon: LineChart, label: "Taux de conversion", value: "42%", trend: "Exemple fictif" },
 ];
