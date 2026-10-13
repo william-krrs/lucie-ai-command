@@ -12,6 +12,8 @@ import { useJourneyAccess } from "@/lib/journey-access";
 export const Route = createFileRoute("/demonstration")({
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { title: "Démonstration — Lucie Command Center" },
       {
         name: "description",

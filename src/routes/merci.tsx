@@ -25,6 +25,7 @@ import { CrmExport } from "@/components/crm-export";
 import { cn } from "@/lib/utils";
 import { CONTACT_EMAIL } from "@/lib/config";
 import { getPaymentState } from "@/lib/stripe-checkout.functions";
+import { INCLUDED_MINUTES, LAUNCH_OFFER, OVERAGE_LABEL } from "@/lib/offer-terms";
 
 const planSearchSchema = z.object({
   plan: z.enum(["essential", "pro", "premium"]).optional(),
@@ -160,6 +161,8 @@ export const Route = createFileRoute("/merci")({
       { property: "og:description", content: "Paiement reçu. On lance l'installation de Lucie." },
       { property: "og:url", content: "https://lucie-ai-command.lovable.app/merci" },
       { name: "robots", content: "noindex" },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [{ rel: "canonical", href: "https://lucie-ai-command.lovable.app/merci" }],
   }),
@@ -196,7 +199,10 @@ function MerciContent() {
   const isPaid = paymentStatus === "paid";
   const isRefunded = paymentStatus === "refunded";
   const serverPaidPlan = paymentQuery.data?.paidPlan ?? null;
-  const effectivePlan = plan ?? serverPaidPlan ?? null;
+  const candidatePlan = plan ?? serverPaidPlan ?? null;
+  const effectivePlan = candidatePlan === "essential" || candidatePlan === "pro" || candidatePlan === "premium"
+    ? candidatePlan
+    : null;
   const planLabel = effectivePlan ? PLAN_LABELS[effectivePlan] : "votre formule Lucie";
   const planMissing = !effectivePlan;
 
@@ -336,6 +342,11 @@ function MerciContent() {
                 <p className="mt-1 text-xs text-muted-foreground">
                   Abonnement mensuel activé dès réception du paiement.
                 </p>
+                {effectivePlan && (
+                  <p className="mt-2 text-xs text-muted-foreground">
+                    {INCLUDED_MINUTES[effectivePlan].toLocaleString("fr-FR")} min incluses / mois. {OVERAGE_LABEL}
+                  </p>
+                )}
               </div>
             </div>
           </div>
@@ -352,8 +363,7 @@ function MerciContent() {
                 <div className="mt-1 text-lg font-semibold text-foreground">490 € une seule fois</div>
                 <p className="mt-1 text-xs text-muted-foreground">
                   Paramétrage, connexion et mise en production, facturés une seule fois avec votre premier paiement.
-                  Offre de lancement : mise en place offerte pour les 5 premiers artisans avec engagement de 3 mois,
-                  sinon 490 €.
+                  {LAUNCH_OFFER}
                 </p>
               </div>
             </div>

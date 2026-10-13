@@ -109,7 +109,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 active
                   ? "bg-primary text-primary-foreground shadow-[var(--shadow-elevated)]"
                   : locked
-                    ? "text-foreground/40 hover:bg-accent/40"
+                    ? "text-muted-foreground hover:bg-accent/40"
                     : "text-foreground/70 hover:bg-accent hover:text-accent-foreground",
               )}
             >
@@ -195,7 +195,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       </a>
       <aside
         aria-label="Navigation principale"
-        className="hidden lg:flex sticky top-0 h-screen w-64 xl:w-72 shrink-0 flex-col border-r border-border bg-sidebar"
+        className="hidden lg:flex sticky top-0 h-screen w-64 xl:w-72 shrink-0 flex-col overflow-y-auto border-r border-border bg-sidebar"
       >
         <div className="flex items-center gap-3 px-6 pt-8 pb-6">
           <div className="grid h-10 w-10 place-items-center rounded-xl bg-primary text-primary-foreground shadow-[var(--shadow-elevated)]">
@@ -271,7 +271,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               aria-haspopup="dialog"
               aria-expanded={mobileOpen}
               aria-controls="mobile-nav-panel"
-              className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-card text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+              className="inline-flex h-11 w-11 items-center justify-center rounded-lg border border-border bg-card text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             >
               <Menu className="h-4 w-4" aria-hidden="true" />
             </SheetTrigger>
@@ -279,7 +279,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               id="mobile-nav-panel"
               side="right"
               aria-label="Menu de navigation"
-              className="w-[85%] max-w-sm bg-sidebar p-0"
+              className="w-[85%] max-w-sm overflow-y-auto bg-sidebar p-0"
             >
               <SheetTitle className="sr-only">Menu de navigation</SheetTitle>
               <SheetDescription className="sr-only">
@@ -310,7 +310,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             </Sheet>
           </div>
         </div>
-        <div className="sticky top-[57px] z-30 flex items-center justify-end border-b border-border bg-background/85 px-4 py-2 backdrop-blur lg:hidden overflow-x-auto">
+        <div className="sticky top-[69px] z-30 flex items-center justify-end border-b border-border bg-background/85 px-4 py-2 backdrop-blur lg:hidden overflow-x-auto">
           <TopStepBar />
         </div>
         <div className="sticky top-0 z-30 hidden items-center justify-end gap-3 border-b border-border bg-background/85 px-6 py-3 backdrop-blur lg:flex">

@@ -42,10 +42,10 @@ export function StepNav({ current }: { current: StepPath }) {
             to={s.to}
             aria-label={`Aller à ${s.label}`}
             className={cn(
-              "h-1.5 flex-1 rounded-full transition-colors",
-              i < idx && "bg-primary/50",
-              i === idx && "bg-primary",
-              i > idx && "bg-border hover:bg-muted-foreground/40",
+              "relative flex h-11 flex-1 items-center rounded-none bg-transparent after:h-1.5 after:w-full after:rounded-full after:bg-current transition-colors",
+              i < idx && "text-primary/50",
+              i === idx && "text-primary",
+              i > idx && "text-border hover:text-muted-foreground/40",
             )}
           />
         ))}

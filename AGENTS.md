@@ -8,3 +8,5 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+
+- Keep launch-offer wording and included-minute allowances in the shared offer-terms module so offer descriptions remain consistent without altering payment automation.

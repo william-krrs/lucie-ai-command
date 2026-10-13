@@ -144,6 +144,7 @@ export function RoiBreakdown() {
       </div>
 
       <p className="mt-3 text-xs text-muted-foreground">Estimation basée sur vos réponses, non garantie</p>
+      <p className="mt-1 text-xs text-muted-foreground">Chiffre d'affaires récupérable estimé, avant abonnement, frais de mise en place et éventuels dépassements de minutes.</p>
 
       {/* Hypothèses détaillées */}
       <Fold

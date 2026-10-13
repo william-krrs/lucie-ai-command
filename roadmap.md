@@ -1,0 +1,5 @@
+- [x] Harmoniser l'offre de lancement, limitée aux frais de mise en place.
+- [x] Afficher minutes incluses et dépassement dans les descriptions des offres ; préciser que le ROI projette du CA avant coûts.
+- [x] Capturer les 11 étapes à 390×844 et 1440×900 en rendu initial, corriger textes coupés et contrôles de navigation.
+- [ ] Valider les interactions et les six étapes authentifiées : bloqué par les délais de navigation de l'aperçu avec JavaScript actif ; captures de ces étapes limitées au chargement initial, aucun verrou contourné.
+- [x] Exécuter les tests ciblés et fournir la liste des corrections et limites, sans publier.

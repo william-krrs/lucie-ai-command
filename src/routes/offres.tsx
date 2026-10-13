@@ -26,6 +26,7 @@ import { useJourneyAccess } from "@/lib/journey-access";
 import { BOOKING_URL_SETUP } from "@/lib/config";
 import { useUniqueModule, MODULE_IDS } from "@/lib/module-registry";
 import { createCheckoutSession } from "@/lib/stripe-checkout.functions";
+import { INCLUDED_MINUTES, LAUNCH_OFFER, OVERAGE_LABEL } from "@/lib/offer-terms";
 
 export const Route = createFileRoute("/offres")({
   head: () => ({
@@ -38,6 +39,8 @@ export const Route = createFileRoute("/offres")({
       { property: "og:title", content: "Offres & tarifs — Lucie" },
       { property: "og:description", content: "Essentiel, Pro, Premium — 3 formules pour Lucie." },
       { property: "og:url", content: "https://lucie-ai-command.lovable.app/offres" },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [{ rel: "canonical", href: "https://lucie-ai-command.lovable.app/offres" }],
   }),
@@ -118,6 +121,8 @@ const PLANS: {
 ];
 
 const COMPARISON: { label: string; values: Record<PlanKey, string | boolean> }[] = [
+  { label: "Minutes incluses / mois", values: { essential: "300 min", pro: "800 min", premium: "2 500 min" } },
+  { label: "Au-delà / minute", values: { essential: "0,35 €", pro: "0,35 €", premium: "0,35 €" } },
   { label: "Réponse appels", values: { essential: true, pro: true, premium: true } },
   { label: "Appels sortants", values: { essential: false, pro: false, premium: true } },
   { label: "Agenda", values: { essential: true, pro: true, premium: true } },
@@ -265,12 +270,12 @@ function OffresContent() {
               )}
             >
               {featured && (
-                <span className="absolute -top-3 left-1/2 -translate-x-1/2 inline-flex items-center gap-1.5 rounded-full bg-primary px-3 py-1 text-[11px] font-medium uppercase tracking-widest text-primary-foreground shadow-[var(--shadow-elevated)] animate-fade-in">
+                <span className="absolute -top-3 left-1/2 -translate-x-1/2 inline-flex whitespace-nowrap items-center gap-1.5 rounded-full bg-primary px-3 py-1 text-[11px] font-medium uppercase tracking-widest text-primary-foreground shadow-[var(--shadow-elevated)] animate-fade-in">
                   <Sparkles className="h-3 w-3" aria-hidden="true" /> Notre recommandation
                 </span>
               )}
 
-              <div className="flex items-center justify-between">
+              <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="flex items-center gap-2">
                   <div
                     className={cn(
@@ -306,7 +311,11 @@ function OffresContent() {
                 <span className="kpi-value-xl text-foreground">{p.price}</span>
                 <span className="text-sm text-muted-foreground">/mois TTC</span>
               </div>
-              <p className="mt-1.5 text-xs text-muted-foreground">{p.tagline}</p>
+              <p className="mt-1.5 text-xs text-muted-foreground">{p.tagline.split(". ")[0]}.</p>
+              <p className="mt-3 text-sm font-semibold text-foreground">
+                {INCLUDED_MINUTES[p.key].toLocaleString("fr-FR")} min incluses / mois
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground">{OVERAGE_LABEL}</p>
 
               <ul className="mt-6 flex-1 space-y-2.5">
                 {p.features.map((f) => (
@@ -367,7 +376,7 @@ function OffresContent() {
                 Le paramétrage complet de Lucie, la connexion à vos outils et la mise en production sont facturés 490 € une seule fois, ajoutés à votre premier paiement. Les renouvellements mensuels ne comprennent que votre abonnement. Mise en place en 96 h.
               </p>
               <p className="mt-3 max-w-xl text-sm font-medium text-foreground">
-                Offre de lancement : gratuit pour les 5 premiers artisans — mise en place offerte avec engagement de 3 mois, sinon 490 €
+                {LAUNCH_OFFER}
               </p>
               <div className="mt-3 flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
                 <span className="inline-flex items-center gap-1.5">

@@ -20,6 +20,8 @@ export const Route = createFileRoute("/preparation")({
   validateSearch: searchSchema,
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { title: "Configuration personnalisée | Lucie" },
       {
         name: "description",

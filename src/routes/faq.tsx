@@ -7,6 +7,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { StepNav } from "@/components/step-nav";
+import { LAUNCH_OFFER, OVERAGE_LABEL } from "@/lib/offer-terms";
 
 export const Route = createFileRoute("/faq")({
   head: () => ({
@@ -19,6 +20,8 @@ export const Route = createFileRoute("/faq")({
       { property: "og:title", content: "FAQ — Lucie" },
       { property: "og:description", content: "Les réponses aux questions les plus fréquentes sur Lucie." },
       { property: "og:url", content: "https://lucie-ai-command.lovable.app/faq" },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [{ rel: "canonical", href: "https://lucie-ai-command.lovable.app/faq" }],
   }),
@@ -26,6 +29,14 @@ export const Route = createFileRoute("/faq")({
 });
 
 const QUESTIONS = [
+  {
+    q: "Quels sont les tarifs et les minutes incluses ?",
+    a: `Essentiel : 149 €/mois TTC avec 300 min incluses. Pro : 299 €/mois TTC avec 800 min incluses. Premium : 990 €/mois TTC avec 2 500 min incluses. ${OVERAGE_LABEL}`,
+  },
+  {
+    q: "Que couvre l'offre de lancement ?",
+    a: `${LAUNCH_OFFER} Cette offre concerne uniquement les frais de mise en place : l'abonnement mensuel reste payant.`,
+  },
   {
     q: "Comment fonctionne Lucie ?",
     a: "Lucie est une assistante IA vocale connectée à votre ligne téléphonique. Elle se présente toujours comme une assistante IA, comprend la demande, qualifie le prospect, prend un rendez-vous dans votre agenda et vous envoie un résumé structuré.",

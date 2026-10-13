@@ -30,6 +30,8 @@ import { BOOKING_URL } from "@/lib/config";
 export const Route = createFileRoute("/demo")({
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { title: "Mode Démo — Lucie Command Center" },
       {
         name: "description",

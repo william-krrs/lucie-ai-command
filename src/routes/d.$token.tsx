@@ -21,10 +21,13 @@ import {
   type DiagnosticSnapshot,
 } from "@/lib/share.functions";
 import { PLAN_LABELS, PRIORITY_LABELS, TIER_LABELS } from "@/lib/recommendation";
+import { INCLUDED_MINUTES, OVERAGE_LABEL } from "@/lib/offer-terms";
 
 export const Route = createFileRoute("/d/$token")({
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { title: "Diagnostic partagé — Lucie" },
       { name: "description", content: "Consultez le diagnostic Lucie partagé et téléchargez-le en PDF." },
       { name: "robots", content: "noindex, nofollow" },
@@ -549,6 +552,7 @@ function ScoreBlock({ snap }: { snap: DiagnosticSnapshot }) {
         <span>
           <strong>Formule recommandée : {r.plan ? PLAN_LABELS[r.plan] : "Aucune"}.</strong>{" "}
           {r.planReason}
+          {r.plan && <span className="mt-2 block text-xs text-muted-foreground">{INCLUDED_MINUTES[r.plan].toLocaleString("fr-FR")} min incluses / mois. {OVERAGE_LABEL}</span>}
         </span>
       </div>
     </div>

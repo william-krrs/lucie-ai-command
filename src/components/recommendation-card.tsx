@@ -12,6 +12,7 @@ import {
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { formatEUR, useRecommendation } from "@/lib/lucie-store";
+import { INCLUDED_MINUTES, OVERAGE_LABEL } from "@/lib/offer-terms";
 import {
   PLAN_LABELS,
   PRIORITY_LABELS,
@@ -194,6 +195,11 @@ export function RecommendationCard({
             <Sparkles className="h-4 w-4 text-primary" aria-hidden="true" />
             {rec.plan ? PLAN_LABELS[rec.plan] : "Aucune"}
           </div>
+          {rec.plan && (
+            <p className="mt-2 text-xs text-muted-foreground">
+              {INCLUDED_MINUTES[rec.plan].toLocaleString("fr-FR")} min incluses / mois. {OVERAGE_LABEL}
+            </p>
+          )}
         </div>
         <div className="rounded-2xl border border-border bg-card p-4">
           <div className="text-[11px] uppercase tracking-widest text-muted-foreground">

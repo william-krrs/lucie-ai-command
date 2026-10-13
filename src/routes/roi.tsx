@@ -10,6 +10,8 @@ import { StepNav } from "@/components/step-nav";
 export const Route = createFileRoute("/roi")({
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { title: "Calculateur ROI — Lucie Command Center" },
       {
         name: "description",
@@ -111,7 +113,7 @@ function Roi() {
                 de chiffre d'affaires sur la table chaque mois.
               </p>
 
-              <div className="mt-6 grid grid-cols-2 gap-4 border-t border-border pt-6">
+              <div className="mt-6 grid grid-cols-1 gap-4 border-t border-border pt-6 sm:grid-cols-2">
                 <RoiSummary
                   icon={TrendingDown}
                   label="Sans Lucie"
@@ -128,6 +130,7 @@ function Roi() {
             </div>
           </div>
           <p className="mt-3 text-xs text-muted-foreground">Estimation basée sur vos réponses, non garantie</p>
+          <p className="text-xs text-muted-foreground">Chiffre d'affaires récupérable estimé, avant abonnement, frais de mise en place et éventuels dépassements de minutes.</p>
           <p className="text-xs text-muted-foreground">Hypothèse de simulation : récupération de 75 % du CA potentiellement perdu, non fondée sur des résultats clients.</p>
         </div>
       </div>
@@ -223,7 +226,7 @@ function RoiSummary({
         <div className={"grid h-8 w-8 shrink-0 place-items-center rounded-lg " + cls}>
           <Icon className="h-4 w-4" />
         </div>
-        <div className="kpi-label truncate">{label}</div>
+        <div className="kpi-label min-w-0 break-words">{label}</div>
       </div>
       <div className="mt-2.5 kpi-value-md text-foreground break-words">
         {value}
