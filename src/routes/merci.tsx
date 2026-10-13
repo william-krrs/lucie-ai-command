@@ -199,7 +199,10 @@ function MerciContent() {
   const isPaid = paymentStatus === "paid";
   const isRefunded = paymentStatus === "refunded";
   const serverPaidPlan = paymentQuery.data?.paidPlan ?? null;
-  const effectivePlan = plan ?? serverPaidPlan ?? null;
+  const candidatePlan = plan ?? serverPaidPlan ?? null;
+  const effectivePlan = candidatePlan === "essential" || candidatePlan === "pro" || candidatePlan === "premium"
+    ? candidatePlan
+    : null;
   const planLabel = effectivePlan ? PLAN_LABELS[effectivePlan] : "votre formule Lucie";
   const planMissing = !effectivePlan;
 
