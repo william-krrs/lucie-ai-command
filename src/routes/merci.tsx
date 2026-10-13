@@ -352,6 +352,8 @@ function MerciContent() {
                 <div className="mt-1 text-lg font-semibold text-foreground">490 € une seule fois</div>
                 <p className="mt-1 text-xs text-muted-foreground">
                   Paramétrage, connexion et mise en production, facturés une seule fois avec votre premier paiement.
+                  Offre de lancement : mise en place offerte pour les 5 premiers artisans avec engagement de 3 mois,
+                  sinon 490 €.
                 </p>
               </div>
             </div>
