@@ -227,6 +227,7 @@ function OffresContent() {
                 ? "Après analyse, Lucie n'apporterait pas suffisamment de valeur aujourd'hui. Nous préférons être transparents plutôt que de vendre une solution inadaptée."
                 : `${rec.planReason} ${cta.description}`}
             </p>
+            <p className="mt-3 text-xs text-muted-foreground">Estimation basée sur vos réponses, non garantie</p>
           </div>
           <Button asChild variant="outline" className="rounded-xl">
             <Link to="/recommandation">

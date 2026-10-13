@@ -1653,6 +1653,7 @@ function SubmittedConfirmation({
 
       // ---- Diagnostic ----
       startSection("Diagnostic", 2);
+      writeParagraph("Estimation basée sur vos réponses, non garantie", { size: 9 });
       // Big score highlight
       ensureSpace(70);
       doc.setFillColor(...BRAND.primaryDark);
