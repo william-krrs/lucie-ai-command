@@ -41,7 +41,7 @@ export const Route = createFileRoute("/rdv-test")({
 
 function RdvTest() {
   return (
-    <AccountGate step="RDV Test & paramétrage">
+    <AccountGate afterPayment step="RDV Test & paramétrage">
       <RdvTestContent />
     </AccountGate>
   );

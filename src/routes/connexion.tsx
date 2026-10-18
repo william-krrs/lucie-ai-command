@@ -96,6 +96,20 @@ function ConnexionPage() {
     event.preventDefault();
     setBusy(true);
     try {
+      // Session anonyme (parcours payé sans compte) : on la convertit en
+      // compte email pour conserver le même user_id, donc le paiement.
+      const { data: current } = await supabase.auth.getSession();
+      const currentUser = current.session?.user as { is_anonymous?: boolean } | undefined;
+      if (currentUser?.is_anonymous) {
+        rememberNext(next);
+        const { error: linkError } = await supabase.auth.updateUser(
+          { email },
+          { emailRedirectTo: `${window.location.origin}/mot-de-passe` },
+        );
+        if (linkError) throw linkError;
+        setAwaitingConfirmation(true);
+        return;
+      }
       const { data, error } = await supabase.auth.signUp({
         email,
         password,

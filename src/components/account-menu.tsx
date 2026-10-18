@@ -1,7 +1,7 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { LogIn, LogOut, UserRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { REQUIRE_ACCOUNT } from "@/lib/config";
+import { ACCOUNT_AFTER_PAYMENT, REQUIRE_ACCOUNT } from "@/lib/config";
 import { loginHref, useAccount } from "@/lib/auth-account";
 import { useSignOut } from "@/lib/use-sign-out";
 import { cn } from "@/lib/utils";
@@ -16,7 +16,10 @@ export function AccountMenu({ compact = false }: { compact?: boolean }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const signOut = useSignOut();
 
-  if (!REQUIRE_ACCOUNT || status === "loading") return null;
+  if (status === "loading") return null;
+  // Compte après paiement : on n'invite pas à créer un compte avant ; on
+  // affiche seulement le compte une fois créé.
+  if (!REQUIRE_ACCOUNT && !(ACCOUNT_AFTER_PAYMENT && status === "account")) return null;
 
   if (status !== "account") {
     return (
