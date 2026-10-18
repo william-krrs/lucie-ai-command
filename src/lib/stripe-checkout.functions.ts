@@ -82,20 +82,21 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
       params.set("line_items[1][price_data][currency]", "eur");
       params.set("line_items[1][price_data][unit_amount]", String(setupFee));
       params.set("line_items[1][price_data][product_data][name]", SETUP_FEE_NAME);
-      params.set("client_reference_id", userId);
-      params.set("metadata[user_id]", userId);
-      params.set("metadata[plan]", plan);
-      params.set("subscription_data[metadata][user_id]", userId);
-      params.set("subscription_data[metadata][plan]", plan);
+    }
+    params.set("client_reference_id", userId);
+    params.set("metadata[user_id]", userId);
+    params.set("metadata[plan]", plan);
+    params.set("subscription_data[metadata][user_id]", userId);
+    params.set("subscription_data[metadata][plan]", plan);
     const commitment = data.commitment ? `${COMMITMENT_MONTHS}_months` : "none";
     params.set("metadata[commitment]", commitment);
     params.set("subscription_data[metadata][commitment]", commitment);
 
-      params.set(
+    params.set(
       "success_url",
       `${origin}/merci?plan=${plan}&session_id={CHECKOUT_SESSION_ID}`,
     );
-      params.set("cancel_url", `${origin}/offres`);
+    params.set("cancel_url", `${origin}/offres`);
 
     const resp = await fetch("https://api.stripe.com/v1/checkout/sessions", {
       method: "POST",
