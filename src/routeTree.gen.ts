@@ -9,97 +9,32 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
-import { Route as RoiRouteImport } from './routes/roi'
-import { Route as RecommandationRouteImport } from './routes/recommandation'
-import { Route as RdvTestRouteImport } from './routes/rdv-test'
-import { Route as PreparationRouteImport } from './routes/preparation'
-import { Route as OffresRouteImport } from './routes/offres'
-import { Route as MotDePasseRouteImport } from './routes/mot-de-passe'
-import { Route as MerciRouteImport } from './routes/merci'
-import { Route as InstallationRouteImport } from './routes/installation'
-import { Route as FaqRouteImport } from './routes/faq'
-import { Route as DiagnosticRouteImport } from './routes/diagnostic'
-import { Route as DemonstrationRouteImport } from './routes/demonstration'
-import { Route as DemoRouteImport } from './routes/demo'
-import { Route as ConnexionRouteImport } from './routes/connexion'
-import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as DTokenRouteImport } from './routes/d.$token'
-import { Route as AdminResetPasswordRouteImport } from './routes/admin_.reset-password'
+import { Route as AdminRouteImport } from './routes/admin'
+import { Route as ConnexionRouteImport } from './routes/connexion'
+import { Route as DemoRouteImport } from './routes/demo'
+import { Route as DemonstrationRouteImport } from './routes/demonstration'
+import { Route as DiagnosticRouteImport } from './routes/diagnostic'
+import { Route as FaqRouteImport } from './routes/faq'
+import { Route as InstallationRouteImport } from './routes/installation'
+import { Route as MerciRouteImport } from './routes/merci'
+import { Route as MotDePasseRouteImport } from './routes/mot-de-passe'
+import { Route as OffresRouteImport } from './routes/offres'
+import { Route as PreparationRouteImport } from './routes/preparation'
+import { Route as RdvTestRouteImport } from './routes/rdv-test'
+import { Route as RecommandationRouteImport } from './routes/recommandation'
+import { Route as RoiRouteImport } from './routes/roi'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as AdminLoginRouteImport } from './routes/admin_.login'
-import { Route as ApiPublicHooksStripeRouteImport } from './routes/api/public/hooks/stripe'
-import { Route as ApiPublicHooksSendRemindersRouteImport } from './routes/api/public/hooks/send-reminders'
+import { Route as AdminResetPasswordRouteImport } from './routes/admin_.reset-password'
+import { Route as DTokenRouteImport } from './routes/d.$token'
 import { Route as ApiPublicHooksIclosedRouteImport } from './routes/api/public/hooks/iclosed'
+import { Route as ApiPublicHooksSendRemindersRouteImport } from './routes/api/public/hooks/send-reminders'
+import { Route as ApiPublicHooksStripeRouteImport } from './routes/api/public/hooks/stripe'
 
-const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
-  id: '/sitemap.xml',
-  path: '/sitemap.xml',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const RoiRoute = RoiRouteImport.update({
-  id: '/roi',
-  path: '/roi',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const RecommandationRoute = RecommandationRouteImport.update({
-  id: '/recommandation',
-  path: '/recommandation',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const RdvTestRoute = RdvTestRouteImport.update({
-  id: '/rdv-test',
-  path: '/rdv-test',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PreparationRoute = PreparationRouteImport.update({
-  id: '/preparation',
-  path: '/preparation',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const OffresRoute = OffresRouteImport.update({
-  id: '/offres',
-  path: '/offres',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const MotDePasseRoute = MotDePasseRouteImport.update({
-  id: '/mot-de-passe',
-  path: '/mot-de-passe',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const MerciRoute = MerciRouteImport.update({
-  id: '/merci',
-  path: '/merci',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const InstallationRoute = InstallationRouteImport.update({
-  id: '/installation',
-  path: '/installation',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const FaqRoute = FaqRouteImport.update({
-  id: '/faq',
-  path: '/faq',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DiagnosticRoute = DiagnosticRouteImport.update({
-  id: '/diagnostic',
-  path: '/diagnostic',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DemonstrationRoute = DemonstrationRouteImport.update({
-  id: '/demonstration',
-  path: '/demonstration',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DemoRoute = DemoRouteImport.update({
-  id: '/demo',
-  path: '/demo',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ConnexionRoute = ConnexionRouteImport.update({
-  id: '/connexion',
-  path: '/connexion',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminRoute = AdminRouteImport.update({
@@ -107,19 +42,74 @@ const AdminRoute = AdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const ConnexionRoute = ConnexionRouteImport.update({
+  id: '/connexion',
+  path: '/connexion',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DTokenRoute = DTokenRouteImport.update({
-  id: '/d/$token',
-  path: '/d/$token',
+const DemoRoute = DemoRouteImport.update({
+  id: '/demo',
+  path: '/demo',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AdminResetPasswordRoute = AdminResetPasswordRouteImport.update({
-  id: '/admin_/reset-password',
-  path: '/admin/reset-password',
+const DemonstrationRoute = DemonstrationRouteImport.update({
+  id: '/demonstration',
+  path: '/demonstration',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DiagnosticRoute = DiagnosticRouteImport.update({
+  id: '/diagnostic',
+  path: '/diagnostic',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FaqRoute = FaqRouteImport.update({
+  id: '/faq',
+  path: '/faq',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InstallationRoute = InstallationRouteImport.update({
+  id: '/installation',
+  path: '/installation',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MerciRoute = MerciRouteImport.update({
+  id: '/merci',
+  path: '/merci',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MotDePasseRoute = MotDePasseRouteImport.update({
+  id: '/mot-de-passe',
+  path: '/mot-de-passe',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OffresRoute = OffresRouteImport.update({
+  id: '/offres',
+  path: '/offres',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PreparationRoute = PreparationRouteImport.update({
+  id: '/preparation',
+  path: '/preparation',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RdvTestRoute = RdvTestRouteImport.update({
+  id: '/rdv-test',
+  path: '/rdv-test',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RecommandationRoute = RecommandationRouteImport.update({
+  id: '/recommandation',
+  path: '/recommandation',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RoiRoute = RoiRouteImport.update({
+  id: '/roi',
+  path: '/roi',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminLoginRoute = AdminLoginRouteImport.update({
@@ -127,9 +117,19 @@ const AdminLoginRoute = AdminLoginRouteImport.update({
   path: '/admin/login',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiPublicHooksStripeRoute = ApiPublicHooksStripeRouteImport.update({
-  id: '/api/public/hooks/stripe',
-  path: '/api/public/hooks/stripe',
+const AdminResetPasswordRoute = AdminResetPasswordRouteImport.update({
+  id: '/admin_/reset-password',
+  path: '/admin/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DTokenRoute = DTokenRouteImport.update({
+  id: '/d/$token',
+  path: '/d/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicHooksIclosedRoute = ApiPublicHooksIclosedRouteImport.update({
+  id: '/api/public/hooks/iclosed',
+  path: '/api/public/hooks/iclosed',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPublicHooksSendRemindersRoute =
@@ -138,9 +138,9 @@ const ApiPublicHooksSendRemindersRoute =
     path: '/api/public/hooks/send-reminders',
     getParentRoute: () => rootRouteImport,
   } as any)
-const ApiPublicHooksIclosedRoute = ApiPublicHooksIclosedRouteImport.update({
-  id: '/api/public/hooks/iclosed',
-  path: '/api/public/hooks/iclosed',
+const ApiPublicHooksStripeRoute = ApiPublicHooksStripeRouteImport.update({
+  id: '/api/public/hooks/stripe',
+  path: '/api/public/hooks/stripe',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -319,102 +319,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/sitemap.xml': {
-      id: '/sitemap.xml'
-      path: '/sitemap.xml'
-      fullPath: '/sitemap.xml'
-      preLoaderRoute: typeof SitemapDotxmlRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/roi': {
-      id: '/roi'
-      path: '/roi'
-      fullPath: '/roi'
-      preLoaderRoute: typeof RoiRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/recommandation': {
-      id: '/recommandation'
-      path: '/recommandation'
-      fullPath: '/recommandation'
-      preLoaderRoute: typeof RecommandationRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/rdv-test': {
-      id: '/rdv-test'
-      path: '/rdv-test'
-      fullPath: '/rdv-test'
-      preLoaderRoute: typeof RdvTestRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/preparation': {
-      id: '/preparation'
-      path: '/preparation'
-      fullPath: '/preparation'
-      preLoaderRoute: typeof PreparationRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/offres': {
-      id: '/offres'
-      path: '/offres'
-      fullPath: '/offres'
-      preLoaderRoute: typeof OffresRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/mot-de-passe': {
-      id: '/mot-de-passe'
-      path: '/mot-de-passe'
-      fullPath: '/mot-de-passe'
-      preLoaderRoute: typeof MotDePasseRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/merci': {
-      id: '/merci'
-      path: '/merci'
-      fullPath: '/merci'
-      preLoaderRoute: typeof MerciRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/installation': {
-      id: '/installation'
-      path: '/installation'
-      fullPath: '/installation'
-      preLoaderRoute: typeof InstallationRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/faq': {
-      id: '/faq'
-      path: '/faq'
-      fullPath: '/faq'
-      preLoaderRoute: typeof FaqRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/diagnostic': {
-      id: '/diagnostic'
-      path: '/diagnostic'
-      fullPath: '/diagnostic'
-      preLoaderRoute: typeof DiagnosticRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/demonstration': {
-      id: '/demonstration'
-      path: '/demonstration'
-      fullPath: '/demonstration'
-      preLoaderRoute: typeof DemonstrationRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/demo': {
-      id: '/demo'
-      path: '/demo'
-      fullPath: '/demo'
-      preLoaderRoute: typeof DemoRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/connexion': {
-      id: '/connexion'
-      path: '/connexion'
-      fullPath: '/connexion'
-      preLoaderRoute: typeof ConnexionRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin': {
@@ -424,25 +333,102 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/connexion': {
+      id: '/connexion'
+      path: '/connexion'
+      fullPath: '/connexion'
+      preLoaderRoute: typeof ConnexionRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/d/$token': {
-      id: '/d/$token'
-      path: '/d/$token'
-      fullPath: '/d/$token'
-      preLoaderRoute: typeof DTokenRouteImport
+    '/demo': {
+      id: '/demo'
+      path: '/demo'
+      fullPath: '/demo'
+      preLoaderRoute: typeof DemoRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/admin_/reset-password': {
-      id: '/admin_/reset-password'
-      path: '/admin/reset-password'
-      fullPath: '/admin/reset-password'
-      preLoaderRoute: typeof AdminResetPasswordRouteImport
+    '/demonstration': {
+      id: '/demonstration'
+      path: '/demonstration'
+      fullPath: '/demonstration'
+      preLoaderRoute: typeof DemonstrationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/diagnostic': {
+      id: '/diagnostic'
+      path: '/diagnostic'
+      fullPath: '/diagnostic'
+      preLoaderRoute: typeof DiagnosticRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/faq': {
+      id: '/faq'
+      path: '/faq'
+      fullPath: '/faq'
+      preLoaderRoute: typeof FaqRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/installation': {
+      id: '/installation'
+      path: '/installation'
+      fullPath: '/installation'
+      preLoaderRoute: typeof InstallationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/merci': {
+      id: '/merci'
+      path: '/merci'
+      fullPath: '/merci'
+      preLoaderRoute: typeof MerciRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mot-de-passe': {
+      id: '/mot-de-passe'
+      path: '/mot-de-passe'
+      fullPath: '/mot-de-passe'
+      preLoaderRoute: typeof MotDePasseRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/offres': {
+      id: '/offres'
+      path: '/offres'
+      fullPath: '/offres'
+      preLoaderRoute: typeof OffresRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/preparation': {
+      id: '/preparation'
+      path: '/preparation'
+      fullPath: '/preparation'
+      preLoaderRoute: typeof PreparationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/rdv-test': {
+      id: '/rdv-test'
+      path: '/rdv-test'
+      fullPath: '/rdv-test'
+      preLoaderRoute: typeof RdvTestRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/recommandation': {
+      id: '/recommandation'
+      path: '/recommandation'
+      fullPath: '/recommandation'
+      preLoaderRoute: typeof RecommandationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/roi': {
+      id: '/roi'
+      path: '/roi'
+      fullPath: '/roi'
+      preLoaderRoute: typeof RoiRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin_/login': {
@@ -452,11 +438,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminLoginRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/hooks/stripe': {
-      id: '/api/public/hooks/stripe'
-      path: '/api/public/hooks/stripe'
-      fullPath: '/api/public/hooks/stripe'
-      preLoaderRoute: typeof ApiPublicHooksStripeRouteImport
+    '/admin_/reset-password': {
+      id: '/admin_/reset-password'
+      path: '/admin/reset-password'
+      fullPath: '/admin/reset-password'
+      preLoaderRoute: typeof AdminResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/d/$token': {
+      id: '/d/$token'
+      path: '/d/$token'
+      fullPath: '/d/$token'
+      preLoaderRoute: typeof DTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/hooks/iclosed': {
+      id: '/api/public/hooks/iclosed'
+      path: '/api/public/hooks/iclosed'
+      fullPath: '/api/public/hooks/iclosed'
+      preLoaderRoute: typeof ApiPublicHooksIclosedRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/hooks/send-reminders': {
@@ -466,11 +466,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksSendRemindersRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/hooks/iclosed': {
-      id: '/api/public/hooks/iclosed'
-      path: '/api/public/hooks/iclosed'
-      fullPath: '/api/public/hooks/iclosed'
-      preLoaderRoute: typeof ApiPublicHooksIclosedRouteImport
+    '/api/public/hooks/stripe': {
+      id: '/api/public/hooks/stripe'
+      path: '/api/public/hooks/stripe'
+      fullPath: '/api/public/hooks/stripe'
+      preLoaderRoute: typeof ApiPublicHooksStripeRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
