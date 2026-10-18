@@ -1,4 +1,4 @@
-import { canCheckoutPlan, isSelfServePlan } from "@/lib/self-serve";
+import { canCheckoutPlan } from "@/lib/self-serve";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
@@ -46,20 +46,20 @@ async function publicOrigin(): Promise<string> {
 export const createCheckoutSession = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data) =>
-    z.object({ plan: z.enum(["essential", "pro", "premium"]), commitment: z.boolean().default(false) }).parse(data),
+    z.object({ plan: z.enum(["essential", "pro", "premium"]), commitment: z.boolean().default(false), multipleDeciders: z.boolean().default(true) }).parse(data),
   )
   .handler(async ({ data, context }): Promise<{ url: string }> => {
     const { userId } = context;
     const plan = data.plan as PlanKey;
     const cfg = STRIPE_PLANS[plan];
     // Premium : paiement uniquement après la démonstration (R2).
-    if (!isSelfServePlan(plan)) {
+    if (!canCheckoutPlan(plan, false, data.multipleDeciders)) {
       const { data: js } = await context.supabase
         .from("journey_state")
         .select("demo_completed_at")
         .eq("user_id", userId)
         .maybeSingle();
-      if (!canCheckoutPlan(plan, !!js?.demo_completed_at)) {
+      if (!canCheckoutPlan(plan, !!js?.demo_completed_at, data.multipleDeciders)) {
         throw new Error("La formule Premium nécessite d'abord une démonstration.");
       }
     }
