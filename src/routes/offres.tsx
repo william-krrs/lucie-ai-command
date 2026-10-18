@@ -27,7 +27,7 @@ import { canCheckoutPlan, canOpenOffers } from "@/lib/self-serve";
 import { BOOKING_URL_SETUP } from "@/lib/config";
 import { useUniqueModule, MODULE_IDS } from "@/lib/module-registry";
 import { createCheckoutSession } from "@/lib/stripe-checkout.functions";
-import { INCLUDED_MINUTES, LAUNCH_OFFER, OVERAGE_LABEL } from "@/lib/offer-terms";
+import { INCLUDED_MINUTES, LAUNCH_OFFER, OVERAGE_LABEL, SETUP_FEE_RULE } from "@/lib/offer-terms";
 
 export const Route = createFileRoute("/offres")({
   head: () => ({
@@ -155,6 +155,7 @@ function OffresContent() {
   const canViewOffers = bypass || canOpenOffers(rec.plan, demoDone);
   const [selected, setSelected] = useState<PlanKey>(recommendedPlan);
   const [checkoutPlan, setCheckoutPlan] = useState<PlanKey | null>(null);
+  const [commitment, setCommitment] = useState(true);
   const createCheckout = useServerFn(createCheckoutSession);
 
   // Keep the highlighted card in sync when the diagnostic changes.
@@ -166,7 +167,7 @@ function OffresContent() {
     setSelected(plan);
     setCheckoutPlan(plan);
     try {
-      const { url } = await createCheckout({ data: { plan } });
+      const { url } = await createCheckout({ data: { plan, commitment } });
       window.location.href = url;
     } catch (err) {
       console.error("[offres] checkout", err);
@@ -244,6 +245,36 @@ function OffresContent() {
           </Button>
         </div>
       </section>
+
+      <fieldset className="rounded-3xl border border-border bg-card p-4 sm:p-5">
+        <legend className="px-1 text-sm font-semibold text-foreground">Votre engagement</legend>
+        <div className="mt-2 grid gap-3 sm:grid-cols-2">
+          {[
+            { value: true, title: "Engagement 3 mois", text: "Mise en place offerte (0 €)." },
+            { value: false, title: "Sans engagement", text: "Mise en place 490 € une seule fois." },
+          ].map((o) => (
+            <label
+              key={String(o.value)}
+              className={cn(
+                "flex min-h-11 cursor-pointer items-start gap-3 rounded-2xl border p-4 transition-colors",
+                commitment === o.value ? "border-primary bg-primary/[0.06]" : "border-border",
+              )}
+            >
+              <input
+                type="radio"
+                name="commitment"
+                className="mt-1 accent-[var(--primary)]"
+                checked={commitment === o.value}
+                onChange={() => setCommitment(o.value)}
+              />
+              <span>
+                <span className="block text-sm font-semibold text-foreground">{o.title}</span>
+                <span className="block text-sm text-muted-foreground">{o.text}</span>
+              </span>
+            </label>
+          ))}
+        </div>
+      </fieldset>
 
       <div data-vr="pricing-cards" className="grid items-stretch gap-6 lg:grid-cols-3">
         {PLANS.map((p) => {
@@ -380,10 +411,10 @@ function OffresContent() {
                 id="installation-included"
                 className="mt-1 text-lg font-semibold tracking-tight text-foreground sm:text-xl"
               >
-                Frais d'installation de 490 € (une seule fois)
+                Mise en place offerte avec engagement 3 mois
               </h2>
               <p className="mt-1.5 max-w-xl text-sm text-muted-foreground">
-                Le paramétrage complet de Lucie, la connexion à vos outils et la mise en production sont facturés 490 € une seule fois, ajoutés à votre premier paiement. Les renouvellements mensuels ne comprennent que votre abonnement. Mise en place en 96 h.
+                Le paramétrage complet de Lucie, la connexion à vos outils et la mise en production. {SETUP_FEE_RULE} Les renouvellements mensuels ne comprennent que votre abonnement. Mise en place en 96 h.
               </p>
               <p className="mt-3 max-w-xl text-sm font-medium text-foreground">
                 {LAUNCH_OFFER}

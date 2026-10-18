@@ -4,7 +4,8 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import {
   STRIPE_PLANS,
-  SETUP_FEE_AMOUNT,
+  COMMITMENT_MONTHS,
+  setupFeeAmount,
   SETUP_FEE_NAME,
   type PlanKey,
 } from "@/lib/stripe-plans";
@@ -44,7 +45,7 @@ async function publicOrigin(): Promise<string> {
 export const createCheckoutSession = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data) =>
-    z.object({ plan: z.enum(["essential", "pro", "premium"]) }).parse(data),
+    z.object({ plan: z.enum(["essential", "pro", "premium"]), commitment: z.boolean().default(false) }).parse(data),
   )
   .handler(async ({ data, context }): Promise<{ url: string }> => {
     const { userId } = context;
@@ -73,17 +74,23 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
     params.set("line_items[0][price_data][unit_amount]", String(cfg.unitAmount));
     params.set("line_items[0][price_data][recurring][interval]", "month");
     params.set("line_items[0][price_data][product_data][name]", cfg.name);
-    // Ligne 1 : frais d'installation, one-shot (aucun bloc `recurring`) →
-    // ajoutée uniquement à la première facture, jamais aux renouvellements.
-    params.set("line_items[1][quantity]", "1");
-    params.set("line_items[1][price_data][currency]", "eur");
-    params.set("line_items[1][price_data][unit_amount]", String(SETUP_FEE_AMOUNT));
-    params.set("line_items[1][price_data][product_data][name]", SETUP_FEE_NAME);
+    // Ligne 1 : frais de mise en place, uniquement SANS engagement (offerts avec
+    // un engagement de 3 mois). One-shot : jamais sur les renouvellements.
+    const setupFee = setupFeeAmount(data.commitment);
+    if (setupFee > 0) {
+      params.set("line_items[1][quantity]", "1");
+      params.set("line_items[1][price_data][currency]", "eur");
+      params.set("line_items[1][price_data][unit_amount]", String(setupFee));
+      params.set("line_items[1][price_data][product_data][name]", SETUP_FEE_NAME);
+    }
     params.set("client_reference_id", userId);
     params.set("metadata[user_id]", userId);
     params.set("metadata[plan]", plan);
     params.set("subscription_data[metadata][user_id]", userId);
     params.set("subscription_data[metadata][plan]", plan);
+    const commitment = data.commitment ? `${COMMITMENT_MONTHS}_months` : "none";
+    params.set("metadata[commitment]", commitment);
+    params.set("subscription_data[metadata][commitment]", commitment);
 
     params.set(
       "success_url",

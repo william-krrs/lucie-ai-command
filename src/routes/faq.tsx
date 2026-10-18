@@ -7,7 +7,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { StepNav } from "@/components/step-nav";
-import { LAUNCH_OFFER, OVERAGE_LABEL } from "@/lib/offer-terms";
+import { LAUNCH_OFFER, OVERAGE_LABEL, SETUP_FEE_RULE } from "@/lib/offer-terms";
 
 export const Route = createFileRoute("/faq")({
   head: () => ({
@@ -35,7 +35,7 @@ const QUESTIONS = [
   },
   {
     q: "Que couvre l'offre de lancement ?",
-    a: `${LAUNCH_OFFER} Cette offre concerne uniquement les frais de mise en place : l'abonnement mensuel reste payant.`,
+    a: `${SETUP_FEE_RULE} ${LAUNCH_OFFER} Cette offre concerne uniquement les frais de mise en place : l'abonnement mensuel reste payant.`,
   },
   {
     q: "Comment fonctionne Lucie ?",

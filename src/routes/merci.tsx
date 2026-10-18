@@ -25,7 +25,7 @@ import { CrmExport } from "@/components/crm-export";
 import { cn } from "@/lib/utils";
 import { CONTACT_EMAIL } from "@/lib/config";
 import { getPaymentState } from "@/lib/stripe-checkout.functions";
-import { INCLUDED_MINUTES, LAUNCH_OFFER, OVERAGE_LABEL } from "@/lib/offer-terms";
+import { INCLUDED_MINUTES, LAUNCH_OFFER, OVERAGE_LABEL, SETUP_FEE_RULE } from "@/lib/offer-terms";
 
 const planSearchSchema = z.object({
   plan: z.enum(["essential", "pro", "premium"]).optional(),
@@ -360,9 +360,9 @@ function MerciContent() {
                 <div className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
                   Frais de mise en place
                 </div>
-                <div className="mt-1 text-lg font-semibold text-foreground">490 € une seule fois</div>
+                <div className="mt-1 text-lg font-semibold text-foreground">Offerte avec engagement 3 mois</div>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  Paramétrage, connexion et mise en production, facturés une seule fois avec votre premier paiement.
+                  Paramétrage, connexion et mise en production. {SETUP_FEE_RULE}{" "}
                   {LAUNCH_OFFER}
                 </p>
               </div>
