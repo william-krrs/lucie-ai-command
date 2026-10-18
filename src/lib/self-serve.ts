@@ -10,9 +10,17 @@ export function isSelfServePlan(plan: PlanKey | null | undefined): boolean {
   return !!plan && SELF_SERVE_PLANS.includes(plan);
 }
 
-/** Paiement autorisé : formule libre-service, ou démonstration terminée. */
-export function canCheckoutPlan(plan: PlanKey, demoCompleted: boolean): boolean {
-  return demoCompleted || isSelfServePlan(plan);
+/**
+ * RDV de démonstration (R2) obligatoire uniquement pour Premium quand la
+ * décision se prend à plusieurs (associé, etc.). Décideur seul : libre-service.
+ */
+export function needsDemo(plan: PlanKey | null | undefined, multipleDeciders: boolean): boolean {
+  return plan === "premium" && multipleDeciders;
+}
+
+/** Paiement autorisé : démonstration terminée, ou démo non requise. */
+export function canCheckoutPlan(plan: PlanKey, demoCompleted: boolean, multipleDeciders = true): boolean {
+  return demoCompleted || isSelfServePlan(plan) || !needsDemo(plan, multipleDeciders);
 }
 
 /**

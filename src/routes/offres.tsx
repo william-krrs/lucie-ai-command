@@ -18,7 +18,7 @@ import { PageHeader } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { StepNav } from "@/components/step-nav";
-import { useRecommendation } from "@/lib/lucie-store";
+import { useLucie, useRecommendation } from "@/lib/lucie-store";
 import { PLAN_LABELS, PLAN_TAGLINES, TIER_LABELS, PRIORITY_CTA } from "@/lib/recommendation";
 import { LockedPage } from "@/components/locked-page";
 import { AccountGate } from "@/components/account-gate";
@@ -157,6 +157,7 @@ function OffresContent() {
   const [checkoutPlan, setCheckoutPlan] = useState<PlanKey | null>(null);
   const [commitment, setCommitment] = useState(true);
   const createCheckout = useServerFn(createCheckoutSession);
+  const { state: lucieState } = useLucie();
 
   // Keep the highlighted card in sync when the diagnostic changes.
   useEffect(() => {
@@ -167,7 +168,7 @@ function OffresContent() {
     setSelected(plan);
     setCheckoutPlan(plan);
     try {
-      const { url } = await createCheckout({ data: { plan, commitment } });
+      const { url } = await createCheckout({ data: { plan, commitment, multipleDeciders: lucieState.hasPartner } });
       window.location.href = url;
     } catch (err) {
       console.error("[offres] checkout", err);
@@ -361,7 +362,7 @@ function OffresContent() {
                 ))}
               </ul>
 
-              {!(bypass || canCheckoutPlan(p.key, demoDone)) ? (
+              {!(bypass || canCheckoutPlan(p.key, demoDone, lucieState.hasPartner)) ? (
                 <Button asChild variant="outline" className="mt-7 h-11 rounded-xl">
                   <Link to="/recommandation" hash="rdv">
                     Réserver une démonstration

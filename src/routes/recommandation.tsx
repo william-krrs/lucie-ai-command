@@ -1,4 +1,4 @@
-import { isSelfServePlan } from "@/lib/self-serve";
+import { needsDemo } from "@/lib/self-serve";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -946,12 +946,12 @@ function RecommandationPage() {
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="min-w-0">
               <h2 className="text-base font-semibold tracking-tight text-foreground sm:text-lg">
-                {isSelfServePlan(rec.plan)
-                  ? `Pas besoin de rendez-vous pour la formule ${PLAN_LABELS[rec.plan!]}`
-                  : "Essentiel et Pro : pas besoin de rendez-vous"}
+                {!needsDemo(rec.plan, state.hasPartner) && rec.plan
+                  ? `Pas besoin de rendez-vous pour la formule ${PLAN_LABELS[rec.plan]}`
+                  : "Décision à plusieurs : réservez une démonstration avec toutes les personnes concernées"}
               </h2>
               <p className="mt-1 text-sm text-muted-foreground">
-                Les formules Essentiel et Pro se choisissent et se paient directement en ligne. Seule la formule Premium nécessite une démonstration, à réserver ci-dessous.
+                Essentiel et Pro se choisissent et se paient directement en ligne. Premium aussi si vous décidez seul(e) ; si la décision se prend à plusieurs (associé…), une démonstration avec toutes les personnes concernées est nécessaire.
               </p>
             </div>
             <Button asChild className="min-h-11 rounded-xl">
@@ -964,7 +964,7 @@ function RecommandationPage() {
       )}
 
       <div id="rdv" className="scroll-mt-24">
-        {isSelfServePlan(rec.plan) ? (
+        {!needsDemo(rec.plan, state.hasPartner) ? (
           <details className="rounded-3xl border border-border bg-card/40 p-5 sm:p-6">
             <summary className="min-h-11 cursor-pointer text-sm font-medium text-foreground">
               Vous préférez échanger avec nous avant ? Réserver un rendez-vous (facultatif)
