@@ -152,12 +152,12 @@ function OffresContent() {
   const rec = useRecommendation();
   const { canViewOffers: demoDone, bypass } = useJourneyAccess();
   const recommendedPlan: PlanKey = rec.plan ?? "pro";
-  const canViewOffers = bypass || canOpenOffers(rec.plan, demoDone);
   const [selected, setSelected] = useState<PlanKey>(recommendedPlan);
   const [checkoutPlan, setCheckoutPlan] = useState<PlanKey | null>(null);
   const [commitment, setCommitment] = useState(true);
   const createCheckout = useServerFn(createCheckoutSession);
   const { state: lucieState } = useLucie();
+  const canViewOffers = bypass || canOpenOffers(rec.plan, demoDone, lucieState.hasPartner);
 
   // Keep the highlighted card in sync when the diagnostic changes.
   useEffect(() => {
@@ -181,7 +181,7 @@ function OffresContent() {
       <LockedPage
         title="Offres verrouillées"
         step="Offres & pricing"
-        description="Votre diagnostic oriente vers la formule Premium : elle se choisit après une démonstration personnalisée."
+        description="Votre diagnostic oriente vers la formule Premium : et vous décidez à plusieurs : réservez d'abord le rendez-vous, puis validez la démonstration."
         waitingFor="step"
         waitingTitle="Démonstration à valider"
         waitingText="Rendez-vous sur la page Démonstration et validez « Continuer vers mes offres » pour débloquer cette étape."

@@ -24,9 +24,14 @@ export function canCheckoutPlan(plan: PlanKey, demoCompleted: boolean, multipleD
 }
 
 /**
- * Page Offres toujours ouverte : Essentiel et Pro s'achètent sans RDV, quelle
- * que soit la recommandation. Seul le paiement Premium exige la démo.
+ * Page Offres : ouverte pour Essentiel/Pro et Premium décideur seul.
+ * Premium à plusieurs décideurs : verrouillée jusqu'à la validation de la
+ * démonstration (elle-même ouverte seulement une fois le RDV pris).
  */
-export function canOpenOffers(_recommended: PlanKey | null, _demoCompleted: boolean): boolean {
-  return true;
+export function canOpenOffers(
+  recommended: PlanKey | null,
+  demoCompleted: boolean,
+  multipleDeciders = false,
+): boolean {
+  return demoCompleted || !needsDemo(recommended, multipleDeciders);
 }
