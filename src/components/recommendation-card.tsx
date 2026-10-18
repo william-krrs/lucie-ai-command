@@ -11,7 +11,8 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { formatEUR, useRecommendation } from "@/lib/lucie-store";
+import { formatEUR, useLucie, useRecommendation } from "@/lib/lucie-store";
+import { computeVolumes, PLAN_BADGES, INELIGIBLE_TITLE } from "@/lib/recommendation";
 import { INCLUDED_MINUTES, OVERAGE_LABEL } from "@/lib/offer-terms";
 import {
   PLAN_LABELS,
@@ -49,9 +50,9 @@ const TIER_STYLES: Record<
       "Lucie peut apporter de la valeur, mais l'impact dépendra fortement de vos objectifs à court terme.",
   },
   refuse: {
-    ring: "border-destructive/40 bg-destructive/[0.05]",
-    bar: "bg-destructive",
-    badge: "bg-destructive/10 text-destructive",
+    ring: "border-[oklch(0.75_0.15_60)]/50 bg-[oklch(0.75_0.15_60)]/[0.08]",
+    bar: "bg-[oklch(0.7_0.16_60)]",
+    badge: "bg-[oklch(0.75_0.15_60)]/15 text-[oklch(0.82_0.15_60)]",
     icon: XCircle,
     message:
       "Après analyse de votre situation actuelle, nous pensons que Lucie ne vous apporterait pas suffisamment de valeur. Nous préférons être transparents plutôt que de vendre une solution inadaptée. Lorsque votre activité évoluera, nous serons ravis de refaire un diagnostic.",
@@ -87,6 +88,8 @@ export function RecommendationCard({
   showCta?: boolean;
 }) {
   const rec = useRecommendation();
+  const { state: lucieState } = useLucie();
+  const volumes = computeVolumes(lucieState);
   const tier = TIER_STYLES[rec.tier];
   const priority = PRIORITY_STYLES[rec.priority];
   const TierIcon = tier.icon;
@@ -109,7 +112,7 @@ export function RecommendationCard({
             id="reco-title"
             className="mt-1 text-lg font-semibold tracking-tight text-foreground sm:text-xl"
           >
-            {TIER_LABELS[rec.tier]}
+            {rec.tier === "refuse" ? INELIGIBLE_TITLE : TIER_LABELS[rec.tier]}
           </h2>
         </div>
         <span
@@ -196,9 +199,14 @@ export function RecommendationCard({
             {rec.plan ? PLAN_LABELS[rec.plan] : "Aucune"}
           </div>
           {rec.plan && (
-            <p className="mt-2 text-xs text-muted-foreground">
-              {INCLUDED_MINUTES[rec.plan].toLocaleString("fr-FR")} min incluses / mois. {OVERAGE_LABEL}
-            </p>
+            <>
+              <span className="mt-2 inline-flex rounded-full bg-primary/15 px-2.5 py-0.5 text-[11px] font-medium text-primary">
+                {PLAN_BADGES[rec.plan]}
+              </span>
+              <p className="mt-2 text-xs text-muted-foreground">
+                Minutes nécessaires estimées : {volumes.minutesEstimeesDebordement.toLocaleString("fr-FR")} min · Minutes incluses : {INCLUDED_MINUTES[rec.plan].toLocaleString("fr-FR")} min / mois. {OVERAGE_LABEL}
+              </p>
+            </>
           )}
         </div>
         <div className="rounded-2xl border border-border bg-card p-4">

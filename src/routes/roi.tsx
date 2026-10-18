@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { formatEUR, useLucie, useMetrics } from "@/lib/lucie-store";
 import { StepNav } from "@/components/step-nav";
+import { computeVolumes } from "@/lib/recommendation";
 
 export const Route = createFileRoute("/roi")({
   head: () => ({
@@ -95,6 +96,18 @@ function Roi() {
             <RoiCard label="CA perdu estimé / mois" value={formatEUR(m.monthlyLostRevenue)} highlight />
             <RoiCard label="CA perdu estimé / an" value={formatEUR(m.yearlyLostRevenue)} />
           </div>
+
+          {!computeVolumes(state).isEligible && (
+            <div role="alert" className="rounded-3xl border border-[oklch(0.75_0.15_60)]/40 bg-[oklch(0.75_0.15_60)]/[0.08] p-5">
+              <div className="inline-flex items-center gap-2 rounded-full bg-[oklch(0.75_0.15_60)]/15 px-3 py-1 text-xs font-medium text-[oklch(0.82_0.15_60)]">
+                <AlertTriangle className="h-3.5 w-3.5" aria-hidden="true" />
+                Seuil de rentabilité non atteint
+              </div>
+              <p className="mt-3 text-sm text-foreground">
+                Vos pertes financières actuelles ({formatEUR(computeVolumes(state).pertesMensuelles)}/mois) sont trop faibles pour amortir efficacement un abonnement professionnel.
+              </p>
+            </div>
+          )}
 
           <div className="relative overflow-hidden rounded-3xl border border-primary/20 bg-gradient-to-br from-primary/[0.08] to-primary/[0.02] p-5 sm:p-8 shadow-[var(--shadow-elevated)]">
             <div className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-primary/10 blur-3xl" />

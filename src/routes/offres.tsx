@@ -368,6 +368,12 @@ function OffresContent() {
                     Réserver une démonstration
                   </Link>
                 </Button>
+              ) : isRefusal ? (
+              <Button asChild variant="outline" className="mt-7 h-11 rounded-xl">
+                <a href="mailto:contact@assistantvocalpro.fr?subject=Volume-Insuffisant%20%E2%80%94%20Rester%20inform%C3%A9">
+                  Rester informé / Revenir plus tard
+                </a>
+              </Button>
               ) : (
               <Button
                 className={cn(

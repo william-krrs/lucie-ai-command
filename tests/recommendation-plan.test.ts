@@ -1,35 +1,39 @@
 import { describe, expect, test } from "vitest";
-import { computeRecommendation } from "@/lib/recommendation";
+import { computeRecommendation, computeVolumes } from "@/lib/recommendation";
 import type { DiagnosticState } from "@/lib/lucie-store";
 
-const base = {
-  companyName: "X",
-  activity: "plombier",
-  employees: 2,
-  callsPerWeek: 30,
-  missedCalls: 15,
-  channels: ["google-ads", "bouche-a-oreille", "recommandation"],
-} as unknown as DiagnosticState;
+const s = (p: Partial<DiagnosticState>) =>
+  ({
+    employees: 2,
+    callsPerWeek: 50,
+    missedCalls: 15,
+    averageBasket: 180,
+    conversionRate: 30,
+    channels: ["google-ads"],
+    ...p,
+  }) as DiagnosticState;
 
-describe("plan recommendation", () => {
-  test("small artisan with 3 channels is not pushed to Premium", () => {
-    const r = computeRecommendation(base, 800);
-    expect(r.plan).not.toBe("premium");
+describe("plan recommendation (spec Spark Media)", () => {
+  test("2 appels manqués, panier 100 € : non éligible, aucune formule", () => {
+    const r = computeRecommendation(s({ callsPerWeek: 15, missedCalls: 2, averageBasket: 100 }), 0);
+    expect(r.tier).toBe("refuse");
+    expect(r.plan).toBeNull();
   });
-  test("small volume and low loss gives Essentiel", () => {
-    const r = computeRecommendation({ ...base, callsPerWeek: 40 } as DiagnosticState, 1400);
-    expect(["essential", null]).toContain(r.plan);
+  test("pertes < 300 €/mois : non éligible", () => {
+    expect(computeVolumes(s({ missedCalls: 5, averageBasket: 20 })).isEligible).toBe(false);
   });
-  test("60+ calls per week gives Pro", () => {
-    const r = computeRecommendation({ ...base, callsPerWeek: 80 } as DiagnosticState, 2000);
-    expect(r.plan).toBe("pro");
+  test("15 manqués, 2 collaborateurs : Essentiel", () => {
+    expect(computeRecommendation(s({}), 0).plan).toBe("essential");
   });
-  test("200+ calls per week gives Premium", () => {
-    const r = computeRecommendation({ ...base, callsPerWeek: 220 } as DiagnosticState, 4000);
-    expect(r.plan).toBe("premium");
+  test("55 manqués, 5 collaborateurs : 476 min et Pro", () => {
+    const st = s({ callsPerWeek: 200, missedCalls: 55, employees: 5 });
+    expect(computeVolumes(st).minutesEstimeesDebordement).toBe(476);
+    expect(computeRecommendation(st, 0).plan).toBe("pro");
   });
-  test("15+ employees gives Premium", () => {
-    const r = computeRecommendation({ ...base, employees: 15, callsPerWeek: 100 } as DiagnosticState, 3000);
-    expect(r.plan).toBe("premium");
+  test("120 manqués : Premium", () => {
+    expect(computeRecommendation(s({ callsPerWeek: 500, missedCalls: 120 }), 0).plan).toBe("premium");
+  });
+  test("15 collaborateurs : Premium", () => {
+    expect(computeRecommendation(s({ employees: 15 }), 0).plan).toBe("premium");
   });
 });
