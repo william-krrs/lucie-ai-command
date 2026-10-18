@@ -137,9 +137,10 @@ export function computeRecommendation(
     planReason =
       "Nous préférons ne pas vous proposer de formule tant que votre activité n'est pas prête à en tirer un vrai bénéfice.";
   } else if (
+    // Premium = vraie taille/complexité uniquement. Le nombre de canaux
+    // d'acquisition ne suffit pas (un artisan seul coche souvent 3 canaux).
     state.callsPerWeek >= 200 ||
-    state.employees >= 15 ||
-    state.channels.length >= 3
+    state.employees >= 15
   ) {
     plan = "premium";
     planReason =
