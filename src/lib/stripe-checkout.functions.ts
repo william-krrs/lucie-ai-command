@@ -143,4 +143,3 @@ export const getPaymentState = createServerFn({ method: "GET" })
       paidAt: data?.paid_at ?? null,
     };
   });
-    }
