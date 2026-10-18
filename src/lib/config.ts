@@ -19,7 +19,7 @@ export const AUDIT_MODE = false;
  * Le diagnostic, le ROI, la recommandation, le partage et les simulations
  * commerciales restent publics dans les deux cas.
  */
-export const REQUIRE_ACCOUNT = true;
+export const REQUIRE_ACCOUNT = false;
 
 /** Ouvre toutes les étapes du parcours à tous les visiteurs (aucun verrouillage). */
 export const UNLOCK_ALL_PAGES = false;
