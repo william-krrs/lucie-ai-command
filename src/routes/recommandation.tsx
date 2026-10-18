@@ -1,3 +1,4 @@
+import { isSelfServePlan } from "@/lib/self-serve";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -939,6 +940,26 @@ function RecommandationPage() {
 
         <RecommendationCard showCta={false} />
       </div>
+
+      {isSelfServePlan(rec.plan) && (
+        <section className="rounded-3xl border border-primary/25 bg-primary/[0.05] p-5 shadow-[var(--shadow-card)] sm:p-6">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="min-w-0">
+              <h2 className="text-base font-semibold tracking-tight text-foreground sm:text-lg">
+                Pas besoin de rendez-vous pour la formule {PLAN_LABELS[rec.plan!]}
+              </h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Vous pouvez choisir votre formule et payer directement en ligne. La démonstration ci-dessous reste disponible si vous préférez échanger avec nous avant.
+              </p>
+            </div>
+            <Button asChild className="min-h-11 rounded-xl">
+              <Link to="/offres">
+                Choisir ma formule <ArrowRight className="ml-1 h-4 w-4" />
+              </Link>
+            </Button>
+          </div>
+        </section>
+      )}
 
       <div id="rdv" className="scroll-mt-24">
         <AccountGate
