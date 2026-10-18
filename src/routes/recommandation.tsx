@@ -964,20 +964,18 @@ function RecommandationPage() {
       )}
 
       <div id="rdv" className="scroll-mt-24">
-        <AccountGate
-          step="Réservation de la démonstration"
-          title="Créez votre compte pour réserver"
-          description="Le rendez-vous de démonstration est rattaché à votre compte client. Créez-le ou connectez-vous : votre diagnostic et votre recommandation restent exactement en l'état."
-        >
-        <BookingEmbed
-          bookingType="r2_demo"
-          authoritativeBooking={{
-            statusNorm: journey.demoBookingStatusNorm,
-            meetingAt: journey.demoMeetingAt,
-            loading: journey.loading,
-          }}
-        />
-        </AccountGate>
+        {isSelfServePlan(rec.plan) ? (
+          <details className="rounded-3xl border border-border bg-card/40 p-5 sm:p-6">
+            <summary className="min-h-11 cursor-pointer text-sm font-medium text-foreground">
+              Vous préférez échanger avec nous avant ? Réserver un rendez-vous (facultatif)
+            </summary>
+            <div className="mt-4">
+              <RdvBlock journey={journey} />
+            </div>
+          </details>
+        ) : (
+          <RdvBlock journey={journey} />
+        )}
       </div>
 
       <RoiBreakdown />
@@ -1067,5 +1065,25 @@ function NextStep() {
         {PLAN_LABELS.premium}. {PLAN_TAGLINES.pro}
       </p>
     </section>
+  );
+}
+function RdvBlock({ journey }: { journey: ReturnType<typeof useJourneyAccess> }) {
+  return (
+    <>
+        <AccountGate
+          step="Réservation de la démonstration"
+          title="Créez votre compte pour réserver"
+          description="Le rendez-vous de démonstration est rattaché à votre compte client. Créez-le ou connectez-vous : votre diagnostic et votre recommandation restent exactement en l'état."
+        >
+        <BookingEmbed
+          bookingType="r2_demo"
+          authoritativeBooking={{
+            statusNorm: journey.demoBookingStatusNorm,
+            meetingAt: journey.demoMeetingAt,
+            loading: journey.loading,
+          }}
+        />
+        </AccountGate>
+    </>
   );
 }

@@ -1,3 +1,5 @@
+import { isSelfServePlan } from "@/lib/self-serve";
+import { useRecommendation } from "@/lib/lucie-store";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -60,6 +62,9 @@ function DemonstrationContent() {
     completeDemo,
   } = useJourneyAccess();
   const navigate = useNavigate();
+  const rec = useRecommendation();
+  // Essentiel / Pro : démonstration libre, sans rendez-vous (Premium seulement).
+  const selfServe = isSelfServePlan(rec.plan);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -67,7 +72,7 @@ function DemonstrationContent() {
     setPending(true);
     setError(null);
     try {
-      await completeDemo();
+      if (!selfServe) await completeDemo();
       await navigate({ to: "/offres" });
     } catch (e) {
       setError(e instanceof Error ? e.message : "Une erreur est survenue.");
@@ -76,7 +81,7 @@ function DemonstrationContent() {
     }
   };
 
-  if (!canViewDemonstration) {
+  if (!canViewDemonstration && !selfServe) {
     return (
       <LockedPage
         title="Démonstration verrouillée"
