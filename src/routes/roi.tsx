@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { formatEUR, useLucie, useMetrics } from "@/lib/lucie-store";
 import { StepNav } from "@/components/step-nav";
+import { computeVolumes } from "@/lib/recommendation";
 
 export const Route = createFileRoute("/roi")({
   head: () => ({
