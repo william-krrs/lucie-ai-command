@@ -1,3 +1,5 @@
+import { canOpenOffers } from "@/lib/self-serve";
+import { useRecommendation } from "@/lib/lucie-store";
 import { Link, useRouterState } from "@tanstack/react-router";
 import { AUDIT_MODE } from "@/lib/config";
 import {
@@ -54,9 +56,10 @@ export function AppShell({ children }: { children: ReactNode }) {
   useEffect(() => setMobileOpen(false), [pathname]);
   const { isPendingMeeting } = useBooking();
   const access = useJourneyAccess();
+  const rec = useRecommendation();
   const allows: Record<string, boolean> = {
     demonstration: access.canViewDemonstration,
-    offers: access.canViewOffers,
+    offers: access.bypass || canOpenOffers(rec.plan, access.canViewOffers),
     configure: access.canConfigure,
     installation: access.canViewInstallation,
     setupTest: access.canBookSetupTest,
