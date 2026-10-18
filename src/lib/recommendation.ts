@@ -108,6 +108,39 @@ export const PLAN_TAGLINES: Record<PlanKey, string> = {
   premium: `Pensée pour les structures complexes et multi-sites. 990 €/mois — 2 500 min incluses. ${OVERAGE_LABEL}`,
 };
 
+/** Durée moyenne retenue par appel qualifié (minutes). */
+export const MINUTES_PER_CALL = 2;
+
+/** Calculs dérivés du diagnostic (spécification Spark Media). */
+export function computeVolumes(state: DiagnosticState) {
+  const appelsRecusMois = Math.round(state.callsPerWeek * 4.33);
+  const appelsManquesMois = Math.round(state.missedCalls * 4.33);
+  const pertesMensuelles = Math.round(
+    appelsManquesMois * (state.conversionRate / 100) * state.averageBasket,
+  );
+  const minutesEstimeesDebordement = appelsManquesMois * MINUTES_PER_CALL;
+  const minutesEstimeesStandardTotal = appelsRecusMois * MINUTES_PER_CALL;
+  const isEligible = state.missedCalls >= 5 && pertesMensuelles >= 300;
+  return {
+    appelsRecusMois,
+    appelsManquesMois,
+    pertesMensuelles,
+    minutesEstimeesDebordement,
+    minutesEstimeesStandardTotal,
+    isEligible,
+  };
+}
+
+export const PLAN_BADGES: Record<PlanKey, string> = {
+  essential: "Recommandé pour votre profil",
+  pro: "Recommandé pour votre entreprise",
+  premium: "Recommandé Grand Volume",
+};
+
+export const INELIGIBLE_TITLE = "Lucie n'est pas recommandée pour votre volume actuel";
+export const INELIGIBLE_TEXT =
+  "Avec moins de 5 appels manqués par semaine, votre flux est insuffisant pour rentabiliser un forfait à 149 €/mois. Nous vous conseillons de conserver votre organisation actuelle et de revenir vers nous lorsque votre volume dépassera 15 à 20 appels par semaine.";
+
 export function computeRecommendation(
   state: DiagnosticState,
   monthlyLostRevenue: number,
@@ -121,38 +154,34 @@ export function computeRecommendation(
   const structure = clamp(state.employees, 0, 10);
 
   const score = Math.round(volume + pain + roi + investment + structure);
+  const v = computeVolumes(state);
 
-  // --- Tier ---
+  // --- Tier : l'éligibilité (volume/pertes) décide seule du refus ---
   let tier: Tier;
-  if (score >= 80) tier = "excellent";
+  if (!v.isEligible) tier = "refuse";
+  else if (score >= 80) tier = "excellent";
   else if (score >= 60) tier = "compatible";
-  else if (score >= 40) tier = "limited";
-  else tier = "refuse";
+  else tier = "limited";
 
-  // --- Plan ---
+  // --- Plan (matrice : Premium > Pro > Essentiel) ---
   let plan: PlanKey | null;
   let planReason: string;
+  const missed = state.missedCalls;
+  const team = state.employees;
   if (tier === "refuse") {
     plan = null;
-    planReason =
-      "Nous préférons ne pas vous proposer de formule tant que votre activité n'est pas prête à en tirer un vrai bénéfice.";
-  } else if (
-    // Premium = vraie taille/complexité uniquement. Le nombre de canaux
-    // d'acquisition ne suffit pas (un artisan seul coche souvent 3 canaux).
-    state.callsPerWeek >= 200 ||
-    state.employees >= 15
-  ) {
+    planReason = INELIGIBLE_TEXT;
+  } else if (missed > 90 || team > 10 || v.minutesEstimeesDebordement > 800) {
     plan = "premium";
     planReason =
-      "Votre volume d'appels et la complexité de votre organisation justifient une offre Premium (multi-sites, CRM, campagnes sortantes).";
-  } else if (state.callsPerWeek >= 60 || monthlyLostRevenue >= 1500) {
+      "Volume critique. Le forfait 2 500 min garantit la continuité 24/7 et le multi-lignes simultané pour l'ensemble de votre flotte de techniciens.";
+  } else if (missed >= 35 || team >= 4) {
     plan = "pro";
-    planReason =
-      "Votre volume d'appels et votre potentiel de récupération placent Lucie Pro comme le meilleur rapport investissement / résultat.";
+    planReason = `Vos ${v.minutesEstimeesDebordement.toLocaleString("fr-FR")} min estimées nécessitent le forfait 800 min pour absorber les pics de débordement en journée et sécuriser vos astreintes sans risque de hors-forfait.`;
   } else {
     plan = "essential";
     planReason =
-      "Votre activité peut démarrer sereinement avec Essential : réponse aux appels, qualification et prise de rendez-vous suffisent à couvrir vos besoins actuels.";
+      "Vos 300 minutes incluses couvrent largement vos besoins sur chantiers et soirs/week-ends.";
   }
 
   // --- Priority ---
