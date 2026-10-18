@@ -964,6 +964,20 @@ function RecommandationPage() {
       )}
 
       <div id="rdv" className="scroll-mt-24">
+        {isSelfServePlan(rec.plan) ? (
+          <details className="rounded-3xl border border-border bg-card/40 p-5 sm:p-6">
+            <summary className="min-h-11 cursor-pointer text-sm font-medium text-foreground">
+              Vous préférez échanger avec nous avant ? Réserver un rendez-vous (facultatif)
+            </summary>
+            <div className="mt-4">
+              <RdvBlock journey={journey} />
+            </div>
+          </details>
+        ) : (
+          <RdvBlock journey={journey} />
+        )}
+      </div>
+      <div className="hidden">
         <AccountGate
           step="Réservation de la démonstration"
           title="Créez votre compte pour réserver"
