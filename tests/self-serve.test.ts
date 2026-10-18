@@ -7,7 +7,8 @@ describe("paiement sans RDV démo", () => {
   it("Premium exige la démo", () => expect(canCheckoutPlan("premium", false)).toBe(false));
   it("Premium payable après démo", () => expect(canCheckoutPlan("premium", true)).toBe(true));
   it("Offres ouvertes si Pro recommandé", () => expect(canOpenOffers("pro", false)).toBe(true));
-  it("Offres fermées si Premium recommandé sans démo", () =>
-    expect(canOpenOffers("premium", false)).toBe(false));
-  it("Offres fermées si refus sans démo", () => expect(canOpenOffers(null, false)).toBe(false));
+  it("Offres ouvertes même si Premium recommandé, sans démo", () =>
+    expect(canOpenOffers("premium", false)).toBe(true));
+  it("Offres ouvertes même sans recommandation, sans démo", () =>
+    expect(canOpenOffers(null, false)).toBe(true));
 });

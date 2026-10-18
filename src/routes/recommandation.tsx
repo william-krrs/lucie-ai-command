@@ -941,15 +941,17 @@ function RecommandationPage() {
         <RecommendationCard showCta={false} />
       </div>
 
-      {isSelfServePlan(rec.plan) && (
+      {(
         <section className="rounded-3xl border border-primary/25 bg-primary/[0.05] p-5 shadow-[var(--shadow-card)] sm:p-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="min-w-0">
               <h2 className="text-base font-semibold tracking-tight text-foreground sm:text-lg">
-                Pas besoin de rendez-vous pour la formule {PLAN_LABELS[rec.plan!]}
+                {isSelfServePlan(rec.plan)
+                  ? `Pas besoin de rendez-vous pour la formule ${PLAN_LABELS[rec.plan!]}`
+                  : "Essentiel et Pro : pas besoin de rendez-vous"}
               </h2>
               <p className="mt-1 text-sm text-muted-foreground">
-                Vous pouvez choisir votre formule et payer directement en ligne. La démonstration ci-dessous reste disponible si vous préférez échanger avec nous avant.
+                Les formules Essentiel et Pro se choisissent et se paient directement en ligne. Seule la formule Premium nécessite une démonstration, à réserver ci-dessous.
               </p>
             </div>
             <Button asChild className="min-h-11 rounded-xl">
