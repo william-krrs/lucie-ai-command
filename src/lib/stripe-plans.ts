@@ -25,9 +25,17 @@ export const STRIPE_PLANS: Record<
   premium: { name: "Lucie Premium", unitAmount: 99000, label: "Premium" },
 };
 
-/** Total facturé au premier paiement (abonnement + setup). */
-export function firstPaymentAmount(plan: PlanKey): number {
-  return STRIPE_PLANS[plan].unitAmount + SETUP_FEE_AMOUNT;
+/** Durée minimale d'engagement qui rend la mise en place gratuite. */
+export const COMMITMENT_MONTHS = 3;
+
+/** Frais de mise en place : offerts avec engagement, 490 € sans engagement. */
+export function setupFeeAmount(commitment: boolean): number {
+  return commitment ? 0 : SETUP_FEE_AMOUNT;
+}
+
+/** Total facturé au premier paiement (abonnement + setup éventuel). */
+export function firstPaymentAmount(plan: PlanKey, commitment = false): number {
+  return STRIPE_PLANS[plan].unitAmount + setupFeeAmount(commitment);
 }
 
 
