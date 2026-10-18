@@ -55,7 +55,7 @@ export const Route = createFileRoute("/preparation")({
 
 function Preparation() {
   return (
-    <AccountGate step="Configuration personnalisée">
+    <AccountGate afterPayment step="Configuration personnalisée">
       <PreparationContent />
     </AccountGate>
   );

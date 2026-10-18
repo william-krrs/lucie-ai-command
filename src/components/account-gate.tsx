@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
 import { ArrowRight, ShieldCheck, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { REQUIRE_ACCOUNT } from "@/lib/config";
+import { ACCOUNT_AFTER_PAYMENT, REQUIRE_ACCOUNT } from "@/lib/config";
 import { loginHref, useAccount } from "@/lib/auth-account";
 
 /**
@@ -18,18 +18,22 @@ export function AccountGate({
   step,
   title = "Créez votre compte pour continuer",
   description,
+  afterPayment = false,
 }: {
   children: ReactNode;
   step?: string;
   title?: string;
   description?: string;
+  /** Étape post-paiement : compte requis quand ACCOUNT_AFTER_PAYMENT est actif. */
+  afterPayment?: boolean;
 }) {
   const { status } = useAccount();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const search = useRouterState({ select: (s) => s.location.searchStr });
   const next = `${pathname}${search ? (search.startsWith("?") ? search : `?${search}`) : ""}`;
 
-  if (!REQUIRE_ACCOUNT) return <>{children}</>;
+  const enforced = REQUIRE_ACCOUNT || (afterPayment && ACCOUNT_AFTER_PAYMENT);
+  if (!enforced) return <>{children}</>;
   if (status === "account") return <>{children}</>;
 
   if (status === "loading") {
@@ -67,13 +71,15 @@ export function AccountGate({
       </h1>
       <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
         {description ??
-          "Votre parcours personnel (rendez-vous, paiement, configuration, installation) est rattaché à votre compte. Créez-le en une minute : votre diagnostic déjà rempli est conservé."}
+          (afterPayment
+            ? "Votre paiement est enregistré. Créez maintenant votre compte pour suivre la configuration et l'installation de Lucie : votre paiement et votre diagnostic sont conservés."
+            : "Votre parcours personnel (rendez-vous, paiement, configuration, installation) est rattaché à votre compte. Créez-le en une minute : votre diagnostic déjà rempli est conservé.")}
       </p>
 
       {status === "anonymous" && (
         <p className="mx-auto mt-4 max-w-md rounded-2xl border border-dashed border-border bg-muted/40 p-3 text-xs text-muted-foreground">
-          Une session temporaire est active sur ce navigateur. Elle ne constitue
-          pas un compte client : créez ou connectez votre compte pour poursuivre.
+          Créez votre compte depuis ce navigateur : il sera automatiquement
+          rattaché à votre paiement.
         </p>
       )}
 

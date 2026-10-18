@@ -46,7 +46,7 @@ const STEPS = [
 
 function Installation() {
   return (
-    <AccountGate step="Installation">
+    <AccountGate afterPayment step="Installation">
       <InstallationContent />
     </AccountGate>
   );

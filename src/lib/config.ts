@@ -21,6 +21,14 @@ export const AUDIT_MODE = false;
  */
 export const REQUIRE_ACCOUNT = false;
 
+/**
+ * Compte créé APRÈS le paiement : avant le paiement tout le parcours est
+ * accessible sans compte (session anonyme). Les étapes post-paiement
+ * (configuration, installation, RDV test) exigent un compte email ; la
+ * création convertit la session anonyme (même user_id, paiement conservé).
+ */
+export const ACCOUNT_AFTER_PAYMENT = true;
+
 /** Ouvre toutes les étapes du parcours à tous les visiteurs (aucun verrouillage). */
 export const UNLOCK_ALL_PAGES = false;
 
