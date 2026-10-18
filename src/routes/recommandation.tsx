@@ -977,22 +977,6 @@ function RecommandationPage() {
           <RdvBlock journey={journey} />
         )}
       </div>
-      <div className="hidden">
-        <AccountGate
-          step="Réservation de la démonstration"
-          title="Créez votre compte pour réserver"
-          description="Le rendez-vous de démonstration est rattaché à votre compte client. Créez-le ou connectez-vous : votre diagnostic et votre recommandation restent exactement en l'état."
-        >
-        <BookingEmbed
-          bookingType="r2_demo"
-          authoritativeBooking={{
-            statusNorm: journey.demoBookingStatusNorm,
-            meetingAt: journey.demoMeetingAt,
-            loading: journey.loading,
-          }}
-        />
-        </AccountGate>
-      </div>
 
       <RoiBreakdown />
 
@@ -1081,5 +1065,25 @@ function NextStep() {
         {PLAN_LABELS.premium}. {PLAN_TAGLINES.pro}
       </p>
     </section>
+  );
+}
+function RdvBlock({ journey }: { journey: ReturnType<typeof useJourneyAccess> }) {
+  return (
+    <>
+        <AccountGate
+          step="Réservation de la démonstration"
+          title="Créez votre compte pour réserver"
+          description="Le rendez-vous de démonstration est rattaché à votre compte client. Créez-le ou connectez-vous : votre diagnostic et votre recommandation restent exactement en l'état."
+        >
+        <BookingEmbed
+          bookingType="r2_demo"
+          authoritativeBooking={{
+            statusNorm: journey.demoBookingStatusNorm,
+            meetingAt: journey.demoMeetingAt,
+            loading: journey.loading,
+          }}
+        />
+        </AccountGate>
+    </>
   );
 }
