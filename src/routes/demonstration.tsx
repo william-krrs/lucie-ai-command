@@ -1,5 +1,5 @@
-import { isSelfServePlan } from "@/lib/self-serve";
-import { useRecommendation } from "@/lib/lucie-store";
+import { needsDemo } from "@/lib/self-serve";
+import { useLucie, useRecommendation } from "@/lib/lucie-store";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -63,8 +63,9 @@ function DemonstrationContent() {
   } = useJourneyAccess();
   const navigate = useNavigate();
   const rec = useRecommendation();
+  const { state: lucieState } = useLucie();
   // Essentiel / Pro : démonstration libre, sans rendez-vous (Premium seulement).
-  const selfServe = isSelfServePlan(rec.plan);
+  const selfServe = !needsDemo(rec.plan, lucieState.hasPartner);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 

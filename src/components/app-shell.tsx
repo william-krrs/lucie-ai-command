@@ -1,6 +1,6 @@
-import { isSelfServePlan } from "@/lib/self-serve";
+import { needsDemo } from "@/lib/self-serve";
 import { canOpenOffers } from "@/lib/self-serve";
-import { useRecommendation } from "@/lib/lucie-store";
+import { useLucie, useRecommendation } from "@/lib/lucie-store";
 import { Link, useRouterState } from "@tanstack/react-router";
 import { AUDIT_MODE } from "@/lib/config";
 import {
@@ -58,8 +58,9 @@ export function AppShell({ children }: { children: ReactNode }) {
   const { isPendingMeeting } = useBooking();
   const access = useJourneyAccess();
   const rec = useRecommendation();
+  const { state: lucieState } = useLucie();
   const allows: Record<string, boolean> = {
-    demonstration: access.canViewDemonstration || isSelfServePlan(rec.plan),
+    demonstration: access.canViewDemonstration || !needsDemo(rec.plan, lucieState.hasPartner),
     offers: access.bypass || canOpenOffers(rec.plan, access.canViewOffers),
     configure: access.canConfigure,
     installation: access.canViewInstallation,
