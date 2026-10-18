@@ -61,7 +61,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const { state: lucieState } = useLucie();
   const allows: Record<string, boolean> = {
     demonstration: access.canViewDemonstration || !needsDemo(rec.plan, lucieState.hasPartner),
-    offers: access.bypass || canOpenOffers(rec.plan, access.canViewOffers),
+    offers: access.bypass || canOpenOffers(rec.plan, access.canViewOffers, lucieState.hasPartner),
     configure: access.canConfigure,
     installation: access.canViewInstallation,
     setupTest: access.canBookSetupTest,

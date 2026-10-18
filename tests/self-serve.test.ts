@@ -21,3 +21,9 @@ describe("Premium et décideurs", () => {
   it("Premium à plusieurs non payable sans démo", () => expect(canCheckoutPlan("premium", false, true)).toBe(false));
   it("Pro à plusieurs : pas de RDV", () => expect(needsDemo("pro", true)).toBe(false));
 });
+
+describe("Premium à plusieurs : déblocage étape par étape", () => {
+  it("Offres bloquées avant la démo", () => expect(canOpenOffers("premium", false, true)).toBe(false));
+  it("Offres ouvertes après validation de la démo", () => expect(canOpenOffers("premium", true, true)).toBe(true));
+  it("Premium seul : offres ouvertes", () => expect(canOpenOffers("premium", false, false)).toBe(true));
+});
