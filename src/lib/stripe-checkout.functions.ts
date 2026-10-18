@@ -6,6 +6,7 @@ import {
   STRIPE_PLANS,
   COMMITMENT_MONTHS,
   setupFeeAmount,
+  isLaunchOfferAvailable,
   SETUP_FEE_NAME,
   type PlanKey,
 } from "@/lib/stripe-plans";
@@ -76,7 +77,15 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
     params.set("line_items[0][price_data][product_data][name]", cfg.name);
     // Ligne 1 : frais de mise en place, uniquement SANS engagement (offerts avec
     // un engagement de 3 mois). One-shot : jamais sur les renouvellements.
-    const setupFee = setupFeeAmount(data.commitment);
+    // Offre de lancement : les 5 premiers clients payants n'ont pas de mise en place.
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { count: paidCount, error: countErr } = await supabaseAdmin
+      .from("journey_state")
+      .select("id", { count: "exact", head: true })
+      .eq("payment_status", "paid");
+    if (countErr) console.error("[createCheckoutSession] paid count", countErr);
+    const launchOffer = !countErr && isLaunchOfferAvailable(paidCount ?? 0);
+    const setupFee = setupFeeAmount(data.commitment, launchOffer);
     if (setupFee > 0) {
       params.set("line_items[1][quantity]", "1");
       params.set("line_items[1][price_data][currency]", "eur");
@@ -90,6 +99,7 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
     params.set("subscription_data[metadata][plan]", plan);
     const commitment = data.commitment ? `${COMMITMENT_MONTHS}_months` : "none";
     params.set("metadata[commitment]", commitment);
+    params.set("metadata[launch_offer]", launchOffer ? "yes" : "no");
     params.set("subscription_data[metadata][commitment]", commitment);
 
     params.set(

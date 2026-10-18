@@ -32,3 +32,13 @@ describe("tarification Stripe", () => {
     expect(STRIPE_PLANS[plan].unitAmount).toBe(monthly);
   });
 });
+
+import { isLaunchOfferAvailable, setupFeeAmount as fee } from "@/lib/stripe-plans";
+import { test as t2, expect as e2 } from "vitest";
+t2("launch offer: first 5 paying clients get free setup without commitment", () => {
+  e2(isLaunchOfferAvailable(0)).toBe(true);
+  e2(isLaunchOfferAvailable(4)).toBe(true);
+  e2(isLaunchOfferAvailable(5)).toBe(false);
+  e2(fee(false, true)).toBe(0);
+  e2(fee(false, false)).toBe(49000);
+});
