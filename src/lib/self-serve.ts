@@ -15,7 +15,10 @@ export function canCheckoutPlan(plan: PlanKey, demoCompleted: boolean): boolean 
   return demoCompleted || isSelfServePlan(plan);
 }
 
-/** Page Offres ouverte : démo terminée, ou formule recommandée en libre-service. */
-export function canOpenOffers(recommended: PlanKey | null, demoCompleted: boolean): boolean {
-  return demoCompleted || isSelfServePlan(recommended);
+/**
+ * Page Offres toujours ouverte : Essentiel et Pro s'achètent sans RDV, quelle
+ * que soit la recommandation. Seul le paiement Premium exige la démo.
+ */
+export function canOpenOffers(_recommended: PlanKey | null, _demoCompleted: boolean): boolean {
+  return true;
 }
