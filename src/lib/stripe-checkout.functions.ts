@@ -1,3 +1,4 @@
+import { canCheckoutPlan, isSelfServePlan } from "@/lib/self-serve";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
@@ -49,6 +50,17 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
     const { userId } = context;
     const plan = data.plan as PlanKey;
     const cfg = STRIPE_PLANS[plan];
+    // Premium : paiement uniquement après la démonstration (R2).
+    if (!isSelfServePlan(plan)) {
+      const { data: js } = await context.supabase
+        .from("journey_state")
+        .select("demo_completed_at")
+        .eq("user_id", userId)
+        .maybeSingle();
+      if (!canCheckoutPlan(plan, !!js?.demo_completed_at)) {
+        throw new Error("La formule Premium nécessite d'abord une démonstration.");
+      }
+    }
     const key = process.env["STRIPE_SECRET_KEY"];
     if (!key) throw new Error("Paiement indisponible : configuration Stripe manquante.");
 

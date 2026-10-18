@@ -23,6 +23,7 @@ import { PLAN_LABELS, PLAN_TAGLINES, TIER_LABELS, PRIORITY_CTA } from "@/lib/rec
 import { LockedPage } from "@/components/locked-page";
 import { AccountGate } from "@/components/account-gate";
 import { useJourneyAccess } from "@/lib/journey-access";
+import { canCheckoutPlan, canOpenOffers } from "@/lib/self-serve";
 import { BOOKING_URL_SETUP } from "@/lib/config";
 import { useUniqueModule, MODULE_IDS } from "@/lib/module-registry";
 import { createCheckoutSession } from "@/lib/stripe-checkout.functions";
@@ -149,8 +150,9 @@ function Offres() {
 function OffresContent() {
   useUniqueModule(MODULE_IDS.paymentPlans);
   const rec = useRecommendation();
-  const { canViewOffers } = useJourneyAccess();
+  const { canViewOffers: demoDone, bypass } = useJourneyAccess();
   const recommendedPlan: PlanKey = rec.plan ?? "pro";
+  const canViewOffers = bypass || canOpenOffers(rec.plan, demoDone);
   const [selected, setSelected] = useState<PlanKey>(recommendedPlan);
   const [checkoutPlan, setCheckoutPlan] = useState<PlanKey | null>(null);
   const createCheckout = useServerFn(createCheckoutSession);
@@ -177,7 +179,7 @@ function OffresContent() {
       <LockedPage
         title="Offres verrouillées"
         step="Offres & pricing"
-        description="Les offres se débloquent une fois votre démonstration terminée."
+        description="Votre diagnostic oriente vers la formule Premium : elle se choisit après une démonstration personnalisée."
         waitingFor="step"
         waitingTitle="Démonstration à valider"
         waitingText="Rendez-vous sur la page Démonstration et validez « Continuer vers mes offres » pour débloquer cette étape."
@@ -328,6 +330,13 @@ function OffresContent() {
                 ))}
               </ul>
 
+              {!(bypass || canCheckoutPlan(p.key, demoDone)) ? (
+                <Button asChild variant="outline" className="mt-7 h-11 rounded-xl">
+                  <Link to="/recommandation" hash="rdv">
+                    Réserver une démonstration
+                  </Link>
+                </Button>
+              ) : (
               <Button
                 className={cn(
                   "mt-7 h-11 rounded-xl transition-all",
@@ -348,6 +357,7 @@ function OffresContent() {
                   p.cta
                 )}
               </Button>
+              )}
             </div>
           );
         })}
