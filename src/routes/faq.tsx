@@ -7,7 +7,8 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { StepNav } from "@/components/step-nav";
-import { LAUNCH_OFFER, OVERAGE_LABEL, SETUP_FEE_RULE } from "@/lib/offer-terms";
+import { launchOfferText, OVERAGE_LABEL, SETUP_FEE_RULE } from "@/lib/offer-terms";
+import { useLaunchOffer } from "@/lib/use-launch-offer";
 
 export const Route = createFileRoute("/faq")({
   head: () => ({
@@ -34,8 +35,8 @@ const QUESTIONS = [
     a: `Essentiel : 149 €/mois TTC avec 300 min incluses. Pro : 299 €/mois TTC avec 800 min incluses. Premium : 990 €/mois TTC avec 2 500 min incluses. ${OVERAGE_LABEL}`,
   },
   {
-    q: "Que couvre l'offre de lancement ?",
-    a: `${SETUP_FEE_RULE} ${LAUNCH_OFFER} Cette offre concerne uniquement les frais de mise en place : l'abonnement mensuel reste payant.`,
+    q: "Quels sont les frais de mise en place ?",
+    a: SETUP_FEE_RULE,
   },
   {
     q: "Comment fonctionne Lucie ?",
@@ -64,6 +65,18 @@ const QUESTIONS = [
 ];
 
 function Faq() {
+  const launch = useLaunchOffer();
+  const launchText = launchOfferText(launch.remaining, launch.slots);
+  const questions = launchText
+    ? [
+        QUESTIONS[0],
+        {
+          q: "Que couvre l'offre de lancement ?",
+          a: `${SETUP_FEE_RULE} ${launchText} Cette offre concerne uniquement les frais de mise en place : l'abonnement mensuel reste payant.`,
+        },
+        ...QUESTIONS.slice(2),
+      ]
+    : QUESTIONS;
   return (
     <div className="space-y-10">
       <PageHeader
@@ -78,7 +91,7 @@ function Faq() {
         className="rounded-3xl border border-border bg-card p-4 md:p-6 shadow-[var(--shadow-card)]"
       >
         <Accordion type="single" collapsible className="w-full">
-          {QUESTIONS.map((item, i) => (
+          {questions.map((item, i) => (
             <AccordionItem key={item.q} value={`q-${i}`} className="border-border">
               <AccordionTrigger
                 aria-label={`Question ${i + 1} : ${item.q}`}

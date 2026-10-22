@@ -25,7 +25,8 @@ import { CrmExport } from "@/components/crm-export";
 import { cn } from "@/lib/utils";
 import { CONTACT_EMAIL } from "@/lib/config";
 import { getPaymentState } from "@/lib/stripe-checkout.functions";
-import { INCLUDED_MINUTES, LAUNCH_OFFER, OVERAGE_LABEL, SETUP_FEE_RULE } from "@/lib/offer-terms";
+import { INCLUDED_MINUTES, launchOfferText, OVERAGE_LABEL, SETUP_FEE_RULE } from "@/lib/offer-terms";
+import { useLaunchOffer } from "@/lib/use-launch-offer";
 
 const planSearchSchema = z.object({
   plan: z.enum(["essential", "pro", "premium"]).optional(),
@@ -179,6 +180,7 @@ function Merci() {
 
 function MerciContent() {
   const { plan } = Route.useSearch();
+  const launch = useLaunchOffer();
   const fetchPaymentState = useServerFn(getPaymentState);
 
   // Polling serveur : on interroge journey_state.payment_status jusqu'à "paid"
@@ -363,7 +365,7 @@ function MerciContent() {
                 <div className="mt-1 text-lg font-semibold text-foreground">Offerte avec engagement 3 mois</div>
                 <p className="mt-1 text-xs text-muted-foreground">
                   Paramétrage, connexion et mise en production. {SETUP_FEE_RULE}{" "}
-                  {LAUNCH_OFFER}
+                  {launchOfferText(launch.remaining, launch.slots)}
                 </p>
               </div>
             </div>

@@ -1,8 +1,12 @@
 /** Règle des frais de mise en place (appliquée au paiement). */
 export const SETUP_FEE_RULE = "Mise en place offerte avec un engagement de 3 mois minimum. Sans engagement : 490 € une seule fois, ajoutés au premier paiement.";
 
-/** Shared commercial terms; these do not apply discounts or metered billing. */
-export const LAUNCH_OFFER = "Offre de lancement : mise en place offerte pour les 5 premiers artisans (sans engagement). Ensuite : mise en place 490 €, offerte avec un engagement de 3 mois.";
+/** Texte de l'offre de lancement ; null quand toutes les places sont prises (offre masquée). */
+export function launchOfferText(remaining: number, slots = 5): string | null {
+  if (remaining <= 0) return null;
+  const places = remaining > 1 ? `${remaining} places restantes` : "1 place restante";
+  return `Offre de lancement : mise en place offerte pour les ${slots} premiers clients, même sans engagement (${places} sur ${slots}). Ensuite : mise en place 490 €, offerte avec un engagement de 3 mois.`;
+}
 
 export const INCLUDED_MINUTES = {
   essential: 300,

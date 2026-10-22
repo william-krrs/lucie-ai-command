@@ -4,10 +4,12 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import {
   COMMITMENT_MONTHS,
+  isLaunchOfferAvailable,
   setupFeeAmount,
   STRIPE_PRICE_IDS,
   type PlanKey,
 } from "@/lib/stripe-plans";
+import { countPaidCustomers } from "@/lib/launch-offer.server";
 
 /** Domaine de production réel du projet (repli si l'origine n'est pas autorisée). */
 const PRODUCTION_ORIGIN = "https://diagnostic.lucieassistant.fr";
@@ -91,13 +93,20 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
     if (!key) throw new Error("Paiement indisponible : configuration Stripe manquante.");
 
     const origin = await publicOrigin();
+    // Offre de lancement recalculée côté serveur (jamais fournie par le client).
+    let launchOffer = false;
+    try {
+      launchOffer = isLaunchOfferAvailable(await countPaidCustomers());
+    } catch (err) {
+      console.error("[createCheckoutSession] comptage offre de lancement", err);
+    }
     const params = new URLSearchParams();
     params.set("mode", "subscription");
     // Ligne 0 : abonnement mensuel récurrent.
     params.set("line_items[0][price]", STRIPE_PRICE_IDS[plan]);
     params.set("line_items[0][quantity]", "1");
-    // Sans engagement : mise en place 490 € (prix unique, première facture seulement).
-    if (setupFeeAmount(data.commitment) > 0) {
+    // Sans engagement et hors offre : mise en place 490 € (première facture seulement).
+    if (setupFeeAmount(data.commitment, launchOffer) > 0) {
       params.set("line_items[1][price]", STRIPE_PRICE_IDS.setup);
       params.set("line_items[1][quantity]", "1");
     }
@@ -109,6 +118,8 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
     const commitment = data.commitment ? `${COMMITMENT_MONTHS}_months` : "none";
     params.set("metadata[commitment]", commitment);
     params.set("subscription_data[metadata][commitment]", commitment);
+    params.set("metadata[launch_offer]", launchOffer ? "yes" : "no");
+    params.set("subscription_data[metadata][launch_offer]", launchOffer ? "yes" : "no");
 
     params.set(
       "success_url",
