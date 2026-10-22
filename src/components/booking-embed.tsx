@@ -232,6 +232,9 @@ export function BookingEmbed({
    */
   const baseBookingUrl = url ?? BOOKING_URL;
   const [bookingUrl, setBookingUrl] = useState(baseBookingUrl);
+  // L'agenda n'est monté qu'une fois la tentative d'émission du token signée
+  // terminée (succès, échec journalisé, ou délai de garde de 6 s).
+  const [urlReady, setUrlReady] = useState(false);
 
   // Construit l'URL iClosed avec un token de corrélation signé (utm_booking_token).
   // Le token est renouvelé tant que la page est ouverte : à chaque variation du
@@ -276,8 +279,16 @@ export function BookingEmbed({
         next.searchParams.set("utm_source", "lucie-command-center");
         next.searchParams.set("utm_medium", bookingType);
         setBookingUrl(next.toString());
+        setUrlReady(true);
       } catch (error) {
         if (cancelled) return;
+        const reason = error instanceof Error ? error.message : "unknown";
+        if (reason === "no-session") {
+          // Session visiteur pas encore créée : on attend onAuthStateChange
+          // (retente automatiquement) ; le délai de garde montera l'agenda.
+          console.warn("[booking-token] waiting for visitor session before issuing token", { bookingType });
+          return;
+        }
         // Session présente mais émission échouée : ce n'est PAS un cas nominal.
         // On journalise une raison technique non sensible (pas de token, pas
         // d'identifiant) pour que le repli reste détectable en production.
@@ -286,6 +297,9 @@ export function BookingEmbed({
             "[booking-token] emission failed with an active session",
             { bookingType, reason: error instanceof Error ? error.name : "unknown" },
           );
+          toast.error("Le lien de réservation n'a pas pu être sécurisé. Votre RDV sera rattaché via votre e-mail.");
+        } else {
+          console.warn("[booking-token] no token issued", { bookingType, reason });
         }
         // Repli : sans token, on garde utm_client_ref pour la corrélation legacy.
         try {
@@ -297,10 +311,18 @@ export function BookingEmbed({
         } catch {
           setBookingUrl(baseBookingUrl);
         }
+        setUrlReady(true);
       }
     }
 
     void buildUrl();
+    const guard = window.setTimeout(() => {
+      if (cancelled) return;
+      setUrlReady((ready) => {
+        if (!ready) console.error("[booking-token] no visitor session after 6 s — calendar shown without signed token", { bookingType });
+        return true;
+      });
+    }, 6000);
     // Dès qu'une session apparaît (bootstrap anonyme / connexion), on retente
     // l'émission du token signé.
     const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -308,6 +330,7 @@ export function BookingEmbed({
     });
     return () => {
       cancelled = true;
+      window.clearTimeout(guard);
       sub.subscription.unsubscribe();
     };
   }, [baseBookingUrl, bookingType, issueBookingTokenFn]);
@@ -362,7 +385,7 @@ export function BookingEmbed({
   // pour éviter que React n'écrase le DOM manipulé par le widget.
   useEffect(() => {
     const container = widgetContainerRef.current;
-    if (!container) return;
+    if (!container || !urlReady) return;
     setScriptError(false);
     container.innerHTML = "";
 
@@ -404,7 +427,7 @@ export function BookingEmbed({
       container.innerHTML = "";
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [bookingUrl, title, widgetKey]);
+  }, [bookingUrl, title, widgetKey, urlReady]);
 
   // Écoute la redirection de confirmation publiée par iClosed. Le widget ne
   // publie pas un événement « booked » dédié : il envoie `openInParentTab`
