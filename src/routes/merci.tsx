@@ -180,6 +180,7 @@ function Merci() {
 
 function MerciContent() {
   const { plan } = Route.useSearch();
+  const launch = useLaunchOffer();
   const fetchPaymentState = useServerFn(getPaymentState);
 
   // Polling serveur : on interroge journey_state.payment_status jusqu'à "paid"
