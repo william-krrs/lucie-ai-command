@@ -14,6 +14,72 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_audit_log: {
+        Row: {
+          action: string
+          admin_id: string
+          created_at: string
+          id: string
+          payload: Json | null
+          target_user_id: string | null
+        }
+        Insert: {
+          action: string
+          admin_id: string
+          created_at?: string
+          id?: string
+          payload?: Json | null
+          target_user_id?: string | null
+        }
+        Update: {
+          action?: string
+          admin_id?: string
+          created_at?: string
+          id?: string
+          payload?: Json | null
+          target_user_id?: string | null
+        }
+        Relationships: []
+      }
+      admin_clients: {
+        Row: {
+          company: string | null
+          created_at: string
+          created_by: string
+          email: string | null
+          id: string
+          name: string | null
+          phone: string | null
+          trade: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          company?: string | null
+          created_at?: string
+          created_by: string
+          email?: string | null
+          id?: string
+          name?: string | null
+          phone?: string | null
+          trade?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          company?: string | null
+          created_at?: string
+          created_by?: string
+          email?: string | null
+          id?: string
+          name?: string | null
+          phone?: string | null
+          trade?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       audit_log: {
         Row: {
           actor_email: string | null
@@ -164,6 +230,30 @@ export type Database = {
         }
         Relationships: []
       }
+      client_notes: {
+        Row: {
+          author_id: string
+          body: string
+          client_key: string
+          created_at: string
+          id: string
+        }
+        Insert: {
+          author_id: string
+          body: string
+          client_key: string
+          created_at?: string
+          id?: string
+        }
+        Update: {
+          author_id?: string
+          body?: string
+          client_key?: string
+          created_at?: string
+          id?: string
+        }
+        Relationships: []
+      }
       diagnostic_snapshots: {
         Row: {
           created_at: string
@@ -190,6 +280,33 @@ export type Database = {
           metrics?: Json | null
           recommendation?: Json | null
           updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      journey_overrides: {
+        Row: {
+          at: string
+          by_admin: string
+          id: string
+          page: string
+          unlocked: boolean
+          user_id: string
+        }
+        Insert: {
+          at?: string
+          by_admin: string
+          id?: string
+          page: string
+          unlocked?: boolean
+          user_id: string
+        }
+        Update: {
+          at?: string
+          by_admin?: string
+          id?: string
+          page?: string
+          unlocked?: boolean
           user_id?: string
         }
         Relationships: []

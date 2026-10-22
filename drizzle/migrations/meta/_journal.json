@@ -8,6 +8,13 @@
       "when": 1792705375780,
       "tag": "0000_booking_email_attach",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1792711561863,
+      "tag": "0001_admin_mode_tables",
+      "breakpoints": true
     }
   ]
 }
