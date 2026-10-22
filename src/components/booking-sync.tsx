@@ -23,6 +23,7 @@ import {
   type ServerBooking,
 } from "@/lib/bookings.functions";
 import { DEFAULT_BOOKING_TYPE } from "@/lib/booking-types";
+import { claimOrphanBookings } from "@/lib/claim-bookings.functions";
 
 /**
  * Réconcilie la progression locale (localStorage) avec la progression
@@ -41,6 +42,7 @@ import { DEFAULT_BOOKING_TYPE } from "@/lib/booking-types";
  */
 export function BookingSync() {
   const { booking, setBooking, clearBooking } = useBooking();
+  const claimFn = useServerFn(claimOrphanBookings);
   const getServer = useServerFn(getBookingByRef);
   const upsert = useServerFn(upsertBooking);
 
@@ -126,8 +128,21 @@ export function BookingSync() {
     };
 
     void syncBooking();
-    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
+    const claimedFor = new Set<string>();
+    const tryClaim = async (session: { user: { id: string; email?: string | null; is_anonymous?: boolean } } | null) => {
+      if (!session?.user?.email || session.user.is_anonymous || claimedFor.has(session.user.id)) return;
+      claimedFor.add(session.user.id);
+      try {
+        const { claimed } = await claimFn();
+        if (claimed > 0) void syncBooking();
+      } catch (e) {
+        console.warn("[booking-sync] claim failed", e);
+      }
+    };
+    void supabase.auth.getSession().then(({ data }) => tryClaim(data.session));
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
       if (session) void syncBooking();
+      if (event === "SIGNED_IN" || event === "USER_UPDATED") void tryClaim(session);
     });
 
     return () => {
