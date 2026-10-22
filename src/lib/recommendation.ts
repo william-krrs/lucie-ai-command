@@ -105,7 +105,7 @@ export const PLAN_LABELS: Record<PlanKey, string> = {
 export const PLAN_TAGLINES: Record<PlanKey, string> = {
   essential: `Idéale pour un faible volume d'appels. 149 €/mois — 300 min incluses. ${OVERAGE_LABEL}`,
   pro: `Conçue pour les entreprises en croissance. 299 €/mois — 800 min incluses. ${OVERAGE_LABEL}`,
-  premium: `Pensée pour les structures complexes et multi-sites. 960 €/mois — 2 500 min incluses. ${OVERAGE_LABEL}`,
+  premium: `Pensée pour les structures complexes et multi-sites. 990 €/mois — 2 500 min incluses. ${OVERAGE_LABEL}`,
 };
 
 /** Durée moyenne retenue par appel qualifié (minutes). */

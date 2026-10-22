@@ -31,7 +31,7 @@ export const Route = createFileRoute("/faq")({
 const QUESTIONS = [
   {
     q: "Quels sont les tarifs et les minutes incluses ?",
-    a: `Essentiel : 149 €/mois TTC avec 300 min incluses. Pro : 299 €/mois TTC avec 800 min incluses. Premium : 960 €/mois TTC avec 2 500 min incluses. ${OVERAGE_LABEL}`,
+    a: `Essentiel : 149 €/mois TTC avec 300 min incluses. Pro : 299 €/mois TTC avec 800 min incluses. Premium : 990 €/mois TTC avec 2 500 min incluses. ${OVERAGE_LABEL}`,
   },
   {
     q: "Que couvre l'offre de lancement ?",

@@ -22,28 +22,28 @@ export const STRIPE_PLANS: Record<
 > = {
   essential: { name: "Lucie Essential", unitAmount: 14900, label: "Essential" },
   pro: { name: "Lucie Pro", unitAmount: 29900, label: "Pro" },
-  premium: { name: "Lucie Premium", unitAmount: 96000, label: "Premium" },
+  premium: { name: "Lucie Premium", unitAmount: 99000, label: "Premium" },
 };
 
 /** Durée minimale d'engagement qui rend la mise en place gratuite. */
 export const COMMITMENT_MONTHS = 3;
 
-/** Offre de lancement : mise en place offerte aux N premiers clients payants. */
-export const LAUNCH_OFFER_SLOTS = 5;
+/** Identifiants de prix Stripe (mode LIVE, non secrets). */
+export const STRIPE_PRICE_IDS: Record<PlanKey | "setup", string> = {
+  essential: "price_1UTU6XHbLVmKfVFQGxOOjfHu",
+  pro: "price_1UTU6XHbLVmKfVFQ2qkRS3ib",
+  premium: "price_1UTU6YHbLVmKfVFQMvETWGhv",
+  setup: "price_1UTU6YHbLVmKfVFQNbv6Gw6g",
+};
 
-/** Vrai tant que moins de N clients ont payé. */
-export function isLaunchOfferAvailable(paidCount: number): boolean {
-  return paidCount < LAUNCH_OFFER_SLOTS;
-}
-
-/** Frais de mise en place : offerts avec engagement ou offre de lancement, sinon 490 €. */
-export function setupFeeAmount(commitment: boolean, launchOffer = false): number {
-  return commitment || launchOffer ? 0 : SETUP_FEE_AMOUNT;
+/** Frais de mise en place : offerts avec engagement 3 mois, sinon 490 €. */
+export function setupFeeAmount(commitment: boolean): number {
+  return commitment ? 0 : SETUP_FEE_AMOUNT;
 }
 
 /** Total facturé au premier paiement (abonnement + setup éventuel). */
-export function firstPaymentAmount(plan: PlanKey, commitment = false, launchOffer = false): number {
-  return STRIPE_PLANS[plan].unitAmount + setupFeeAmount(commitment, launchOffer);
+export function firstPaymentAmount(plan: PlanKey, commitment = false): number {
+  return STRIPE_PLANS[plan].unitAmount + setupFeeAmount(commitment);
 }
 
 

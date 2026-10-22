@@ -298,7 +298,7 @@ Cette carte doit être légèrement plus grande que les autres.
 
 PREMIUM
 
-960 €/mois TTC
+990 €/mois TTC
 
 Badge noir
 

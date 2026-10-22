@@ -104,7 +104,7 @@ const PLANS: {
   {
     key: "premium",
     name: "Premium",
-    price: "960 €",
+    price: "990 €",
     badge: "Grandes entreprises",
     badgeTone: "dark",
     icon: Crown,
