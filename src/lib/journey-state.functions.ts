@@ -23,7 +23,11 @@ export type JourneyStateDTO = {
   setupBookingStatusNorm: "pending" | "confirmed" | "cancelled" | "rescheduled" | "completed" | "no_show" | null;
   /** meeting_at (ISO) du RDV setup_test confirmé, sinon null. */
   setupMeetingAt: string | null;
+  /** Pages débloquées manuellement par l'admin (journey_overrides, unlocked=true). */
+  overrides: JourneyOverridePage[];
 };
+
+export type JourneyOverridePage = "demonstration" | "offers" | "configuration" | "installation" | "setup_test";
 
 /** Fenêtre d'ouverture avant le rendez-vous (ms). */
 export const DEMO_UNLOCK_LEAD_MS = 15 * 60 * 1000;
@@ -39,6 +43,7 @@ const EMPTY: JourneyStateDTO = {
   configurationSubmitted: false,
   setupBookingStatusNorm: null,
   setupMeetingAt: null,
+  overrides: [],
 };
 
 
@@ -51,7 +56,7 @@ export const getJourneyState = createServerFn({ method: "GET" })
   .handler(async ({ context }): Promise<JourneyStateDTO> => {
     const { supabase, userId } = context;
 
-    const [stateRes, confirmedBookingRes, latestBookingRes, prepRes, setupBookingRes] = await Promise.all([
+    const [stateRes, confirmedBookingRes, latestBookingRes, prepRes, setupBookingRes, overridesRes] = await Promise.all([
       supabase
         .from("journey_state")
         .select("demo_completed_at, payment_status, installation_status")
@@ -80,6 +85,7 @@ export const getJourneyState = createServerFn({ method: "GET" })
         .eq("booking_type", "setup_test")
         .order("meeting_at", { ascending: false })
         .limit(5),
+      supabase.from("journey_overrides").select("page").eq("user_id", userId).eq("unlocked", true),
     ]);
 
     if (stateRes.error) console.error("[getJourneyState] state", stateRes.error);
@@ -117,6 +123,9 @@ export const getJourneyState = createServerFn({ method: "GET" })
         ? "confirmed"
         : (setupRows[0]?.status_norm as JourneyStateDTO["setupBookingStatusNorm"]) ?? null,
       setupMeetingAt: setupConfirmed?.meeting_at ?? null,
+      overrides: ((overridesRes.data ?? []) as { page: string }[]).map(
+        (r) => r.page as JourneyOverridePage,
+      ),
     };
 
   });
@@ -147,7 +156,15 @@ export const completeDemo = createServerFn({ method: "POST" })
       throw new Error("Impossible de vérifier votre rendez-vous de démonstration.");
     }
     if (!booking || booking.length === 0) {
-      throw new Error("Aucune démonstration confirmée n'est associée à votre compte.");
+      // Déblocage manuel de la démonstration par l'admin (lu côté serveur).
+      const { data: ov } = await supabase
+        .from("journey_overrides")
+        .select("id")
+        .eq("user_id", userId)
+        .eq("page", "demonstration")
+        .eq("unlocked", true)
+        .limit(1);
+      if (!ov || ov.length === 0) throw new Error("Aucune démonstration confirmée n'est associée à votre compte.");
     }
 
     const now = new Date().toISOString();
