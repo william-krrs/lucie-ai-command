@@ -3,11 +3,9 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import {
-  STRIPE_PLANS,
   COMMITMENT_MONTHS,
   setupFeeAmount,
-  isLaunchOfferAvailable,
-  SETUP_FEE_NAME,
+  STRIPE_PRICE_IDS,
   type PlanKey,
 } from "@/lib/stripe-plans";
 
@@ -74,7 +72,7 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
   .handler(async ({ data, context }): Promise<{ url: string }> => {
     const { userId } = context;
     const plan = data.plan as PlanKey;
-    const cfg = STRIPE_PLANS[plan];
+    
     // Premium : paiement uniquement après la démonstration (R2).
     if (!canCheckoutPlan(plan, false, data.multipleDeciders)) {
       const { data: js } = await context.supabase
@@ -96,27 +94,12 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
     const params = new URLSearchParams();
     params.set("mode", "subscription");
     // Ligne 0 : abonnement mensuel récurrent.
+    params.set("line_items[0][price]", STRIPE_PRICE_IDS[plan]);
     params.set("line_items[0][quantity]", "1");
-    params.set("line_items[0][price_data][currency]", "eur");
-    params.set("line_items[0][price_data][unit_amount]", String(cfg.unitAmount));
-    params.set("line_items[0][price_data][recurring][interval]", "month");
-    params.set("line_items[0][price_data][product_data][name]", cfg.name);
-    // Ligne 1 : frais de mise en place, uniquement SANS engagement (offerts avec
-    // un engagement de 3 mois). One-shot : jamais sur les renouvellements.
-    // Offre de lancement : les 5 premiers clients payants n'ont pas de mise en place.
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { count: paidCount, error: countErr } = await supabaseAdmin
-      .from("journey_state")
-      .select("id", { count: "exact", head: true })
-      .eq("payment_status", "paid");
-    if (countErr) console.error("[createCheckoutSession] paid count", countErr);
-    const launchOffer = !countErr && isLaunchOfferAvailable(paidCount ?? 0);
-    const setupFee = setupFeeAmount(data.commitment, launchOffer);
-    if (setupFee > 0) {
+    // Sans engagement : mise en place 490 € (prix unique, première facture seulement).
+    if (setupFeeAmount(data.commitment) > 0) {
+      params.set("line_items[1][price]", STRIPE_PRICE_IDS.setup);
       params.set("line_items[1][quantity]", "1");
-      params.set("line_items[1][price_data][currency]", "eur");
-      params.set("line_items[1][price_data][unit_amount]", String(setupFee));
-      params.set("line_items[1][price_data][product_data][name]", SETUP_FEE_NAME);
     }
     params.set("client_reference_id", userId);
     params.set("metadata[user_id]", userId);
@@ -125,7 +108,6 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
     params.set("subscription_data[metadata][plan]", plan);
     const commitment = data.commitment ? `${COMMITMENT_MONTHS}_months` : "none";
     params.set("metadata[commitment]", commitment);
-    params.set("metadata[launch_offer]", launchOffer ? "yes" : "no");
     params.set("subscription_data[metadata][commitment]", commitment);
 
     params.set(
