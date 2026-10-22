@@ -155,9 +155,8 @@ export const Route = createFileRoute("/api/public/hooks/send-reminders")({
             headers: { "Content-Type": "application/json" },
           });
         } catch (err) {
-          const message = err instanceof Error ? err.message : String(err);
           console.error("[send-reminders] failed", err);
-          return new Response(JSON.stringify({ ok: false, error: message }), {
+          return new Response(JSON.stringify({ ok: false, error: "internal_error" }), {
             status: 500,
             headers: { "Content-Type": "application/json" },
           });

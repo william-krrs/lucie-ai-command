@@ -30,7 +30,11 @@ export const Route = createFileRoute("/api/public/hooks/stripe")({
         }
 
         const signature = request.headers.get("stripe-signature") ?? "";
+        if (Number(request.headers.get("content-length") ?? "0") > 256 * 1024) {
+          return new Response("Payload too large", { status: 413 });
+        }
         const rawBody = await request.text();
+        if (rawBody.length > 256 * 1024) return new Response("Payload too large", { status: 413 });
 
         // Vérification de signature Stripe (t=...,v1=...).
         const verified = verifyStripeSignature(rawBody, signature, secret);
