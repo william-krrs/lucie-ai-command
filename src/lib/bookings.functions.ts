@@ -1,3 +1,4 @@
+import { z } from "zod";
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import {
@@ -21,26 +22,22 @@ export type UpsertBookingInput = {
   meetingLocation?: string;
 };
 
+const upsertSchema = z.object({
+  clientRef: z.string().uuid(),
+  email: z.string().trim().toLowerCase().email().max(255),
+  name: z.string().trim().max(200).optional(),
+  phone: z.string().trim().max(50).optional(),
+  meetingDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  meetingTime: z.string().regex(/^\d{2}:\d{2}$/).optional(),
+  meetingAt: z.string().max(40).refine((v) => !Number.isNaN(Date.parse(v))),
+  timezone: z.string().regex(/^[A-Za-z_+\-/0-9]{1,64}$/).default("Europe/Paris"),
+  bookingType: z.enum(["r1_discovery", "r2_demo", "setup_test"]).default(DEFAULT_BOOKING_TYPE),
+  iclosedEventId: z.string().max(200).optional(),
+  meetingLocation: z.string().max(500).optional(),
+});
+
 function validate(input: unknown): UpsertBookingInput {
-  if (!input || typeof input !== "object") throw new Error("invalid input");
-  const i = input as Record<string, unknown>;
-  if (typeof i.clientRef !== "string" || i.clientRef.length < 10) throw new Error("clientRef required");
-  if (typeof i.email !== "string" || !i.email.includes("@")) throw new Error("email required");
-  if (typeof i.meetingDate !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(i.meetingDate)) throw new Error("meetingDate required");
-  if (typeof i.meetingAt !== "string" || Number.isNaN(Date.parse(i.meetingAt))) throw new Error("meetingAt required");
-  return {
-    clientRef: i.clientRef,
-    email: i.email.trim().toLowerCase(),
-    name: typeof i.name === "string" ? i.name : undefined,
-    phone: typeof i.phone === "string" ? i.phone : undefined,
-    meetingDate: i.meetingDate,
-    meetingTime: typeof i.meetingTime === "string" ? i.meetingTime : undefined,
-    meetingAt: i.meetingAt,
-    timezone: typeof i.timezone === "string" ? i.timezone : "Europe/Paris",
-    bookingType: isBookingType(i.bookingType) ? i.bookingType : DEFAULT_BOOKING_TYPE,
-    iclosedEventId: typeof i.iclosedEventId === "string" ? i.iclosedEventId : undefined,
-    meetingLocation: typeof i.meetingLocation === "string" ? i.meetingLocation : undefined,
-  };
+  return upsertSchema.parse(input) as UpsertBookingInput;
 }
 
 export const upsertBooking = createServerFn({ method: "POST" })
@@ -124,14 +121,13 @@ export const upsertBooking = createServerFn({ method: "POST" })
   });
 
 
+const refSchema = z.object({
+  clientRef: z.string().uuid(),
+  bookingType: z.enum(["r1_discovery", "r2_demo", "setup_test"]).default(DEFAULT_BOOKING_TYPE),
+});
+
 function validateRef(input: unknown): { clientRef: string; bookingType: BookingType } {
-  if (!input || typeof input !== "object") throw new Error("invalid input");
-  const i = input as Record<string, unknown>;
-  if (typeof i.clientRef !== "string" || i.clientRef.length < 10) throw new Error("clientRef required");
-  return {
-    clientRef: i.clientRef,
-    bookingType: isBookingType(i.bookingType) ? i.bookingType : DEFAULT_BOOKING_TYPE,
-  };
+  return refSchema.parse(input);
 }
 
 

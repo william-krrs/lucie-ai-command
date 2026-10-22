@@ -1,12 +1,24 @@
 import { createServerFn } from "@tanstack/react-start";
+import { z } from "zod";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+
+const TABLES = ["bookings", "preparation_submissions", "shared_diagnostics"] as const;
 
 /**
- * Server-only: log a read/consultation of a sensitive row (bookings,
- * preparation_submissions, shared_diagnostics). Call from server functions
- * that expose data to the client.
+ * Journalise la consultation d'une ligne sensible. Réservé aux utilisateurs
+ * authentifiés (évite le remplissage anonyme du journal d'audit).
  */
 export const logRead = createServerFn({ method: "POST" })
-  .inputValidator((input: { table: string; rowId?: string; context?: Record<string, unknown> }) => input)
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input) =>
+    z
+      .object({
+        table: z.enum(TABLES),
+        rowId: z.string().uuid().optional(),
+        context: z.record(z.string().max(64), z.union([z.string().max(500), z.number(), z.boolean()])).optional(),
+      })
+      .parse(input),
+  )
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     await supabaseAdmin.rpc("log_table_read", {
@@ -18,13 +30,24 @@ export const logRead = createServerFn({ method: "POST" })
   });
 
 /**
- * Admin-only fetch. Reads the audit log via service role. Guard the caller
- * upstream (e.g. via a shared admin token) before invoking.
+ * Lecture du journal d'audit, protégée par un jeton admin comparé en temps constant.
  */
 export const listAuditLog = createServerFn({ method: "POST" })
-  .inputValidator((input: { adminToken: string; table?: string; limit?: number }) => input)
+  .inputValidator((input) =>
+    z
+      .object({
+        adminToken: z.string().min(1).max(512),
+        table: z.string().max(64).optional(),
+        limit: z.number().int().min(1).max(500).optional(),
+      })
+      .parse(input),
+  )
   .handler(async ({ data }) => {
-    if (!process.env.AUDIT_ADMIN_TOKEN || data.adminToken !== process.env.AUDIT_ADMIN_TOKEN) {
+    const expected = process.env.AUDIT_ADMIN_TOKEN;
+    const { timingSafeEqual } = await import("crypto");
+    const a = Buffer.from(data.adminToken);
+    const b = Buffer.from(expected ?? "");
+    if (!expected || a.length !== b.length || !timingSafeEqual(a, b)) {
       throw new Error("Forbidden");
     }
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -32,9 +55,9 @@ export const listAuditLog = createServerFn({ method: "POST" })
       .from("audit_log")
       .select("id, occurred_at, table_name, operation, row_id, actor_user_id, actor_email, request_ip, context")
       .order("occurred_at", { ascending: false })
-      .limit(Math.min(data.limit ?? 100, 500));
+      .limit(data.limit ?? 100);
     if (data.table) q = q.eq("table_name", data.table);
     const { data: rows, error } = await q;
-    if (error) throw error;
+    if (error) throw new Error("Lecture impossible");
     return rows ?? [];
   });
