@@ -22,7 +22,7 @@ export const STRIPE_PLANS: Record<
 > = {
   essential: { name: "Lucie Essential", unitAmount: 14900, label: "Essential" },
   pro: { name: "Lucie Pro", unitAmount: 29900, label: "Pro" },
-  premium: { name: "Lucie Premium", unitAmount: 99000, label: "Premium" },
+  premium: { name: "Lucie Premium", unitAmount: 96000, label: "Premium" },
 };
 
 /** Durée minimale d'engagement qui rend la mise en place gratuite. */
