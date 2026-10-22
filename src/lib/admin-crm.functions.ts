@@ -90,9 +90,9 @@ export type CrmRow = {
 export type CrmDetail = {
   row: CrmRow;
   bookings: CrmBooking[];
-  diagnostic: Record<string, unknown> | null;
+  diagnostic: Record<string, string | number | boolean> | null;
   notes: { id: string; body: string; createdAt: string }[];
-  history: { action: string; payload: unknown; createdAt: string }[];
+  history: { action: string; createdAt: string }[];
 };
 
 const s = (v: unknown) => (typeof v === "string" && v.trim() ? v.trim() : null);
@@ -222,6 +222,15 @@ async function loadRows(): Promise<{ rows: CrmRow[]; bookings: any[]; snapshots:
   return { rows, bookings, snapshots };
 }
 
+function flatDiag(d: unknown): Record<string, string | number | boolean> | null {
+  if (!d || typeof d !== "object") return null;
+  const out: Record<string, string | number | boolean> = {};
+  for (const [k, v] of Object.entries(d as Record<string, unknown>)) {
+    if (typeof v === "string" || typeof v === "number" || typeof v === "boolean") out[k] = v;
+  }
+  return out;
+}
+
 const keySchema = z.string().regex(/^(u|m):[0-9a-f-]{36}$/i);
 const uuid = z.string().uuid();
 
@@ -253,9 +262,9 @@ export const adminCrmGet = createServerFn({ method: "GET" })
     return {
       row,
       bookings: mine.map(toBooking),
-      diagnostic: row.userId ? snapshots.find((x) => x.user_id === row.userId)?.diagnostic ?? null : null,
+      diagnostic: flatDiag(row.userId ? snapshots.find((x) => x.user_id === row.userId)?.diagnostic : null),
       notes: ((notesR.data ?? []) as any[]).map((n) => ({ id: n.id, body: n.body, createdAt: n.created_at })),
-      history: ((histR.data ?? []) as any[]).map((h) => ({ action: h.action, payload: h.payload, createdAt: h.created_at })),
+      history: ((histR.data ?? []) as any[]).map((h) => ({ action: h.action, createdAt: h.created_at })),
     };
   });
 
