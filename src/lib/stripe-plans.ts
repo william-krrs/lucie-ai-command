@@ -36,14 +36,27 @@ export const STRIPE_PRICE_IDS: Record<PlanKey | "setup", string> = {
   setup: "price_1UTU6YHbLVmKfVFQNbv6Gw6g",
 };
 
-/** Frais de mise en place : offerts avec engagement 3 mois, sinon 490 €. */
-export function setupFeeAmount(commitment: boolean): number {
-  return commitment ? 0 : SETUP_FEE_AMOUNT;
+/** Offre de lancement : nombre de premiers clients payants sans frais de mise en place. */
+export const LAUNCH_OFFER_SLOTS = 5;
+
+/** Places restantes de l'offre de lancement selon le nombre de clients payés. */
+export function launchOfferRemaining(paidCount: number): number {
+  const n = Number.isFinite(paidCount) ? Math.max(0, Math.floor(paidCount)) : LAUNCH_OFFER_SLOTS;
+  return Math.max(0, LAUNCH_OFFER_SLOTS - n);
+}
+
+export function isLaunchOfferAvailable(paidCount: number): boolean {
+  return launchOfferRemaining(paidCount) > 0;
+}
+
+/** Mise en place : offerte avec engagement 3 mois ou offre de lancement, sinon 490 €. */
+export function setupFeeAmount(commitment: boolean, launchOffer = false): number {
+  return commitment || launchOffer ? 0 : SETUP_FEE_AMOUNT;
 }
 
 /** Total facturé au premier paiement (abonnement + setup éventuel). */
-export function firstPaymentAmount(plan: PlanKey, commitment = false): number {
-  return STRIPE_PLANS[plan].unitAmount + setupFeeAmount(commitment);
+export function firstPaymentAmount(plan: PlanKey, commitment = false, launchOffer = false): number {
+  return STRIPE_PLANS[plan].unitAmount + setupFeeAmount(commitment, launchOffer);
 }
 
 
