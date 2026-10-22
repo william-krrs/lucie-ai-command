@@ -1,8 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createHmac, timingSafeEqual } from "crypto";
+import { z } from "zod";
 import {
-  bookingTypeFromIclosedSlug,
   isBookingType,
+  resolveIclosedBookingType,
   type BookingType,
 } from "@/lib/booking-types";
 import { verifyBookingToken } from "@/lib/booking-token.server";
@@ -252,7 +253,11 @@ async function handle(request: Request): Promise<Response> {
     return new Response("Webhook not configured", { status: 503 });
   }
 
+  const MAX_BODY = 64 * 1024;
+  const declared = Number(request.headers.get("content-length") ?? "0");
+  if (declared > MAX_BODY) return new Response("Payload too large", { status: 413 });
   const rawBody = await request.text();
+  if (rawBody.length > MAX_BODY) return new Response("Payload too large", { status: 413 });
 
   // Authentification : token dans l'URL (?token=...) OU signature HMAC valide.
   // Le token URL est suffisant ; la signature reste supportée en complément.
@@ -284,31 +289,69 @@ async function handle(request: Request): Promise<Response> {
   const action = actionFrom(payload);
   if (!action) return Response.json({ ok: true, ignored: true });
 
-  const eventId = str(flat, ["event_id", "eventid", "call_id", "callid", "uuid", "id"]);
-  const clientRef = str(flat, ["utm_client_ref", "client_ref", "clientref"]);
-  const email = str(flat, ["email", "invitee_email", "inviteeemail"])?.toLowerCase();
-  const name = str(flat, ["name", "invitee_name", "invitee_full_name", "fullname"]);
-  const phone = str(flat, ["phone", "invitee_phone", "phone_number"]);
-  const location = str(flat, ["location", "meeting_location", "meeting_url", "join_url"]);
-  const timezone = str(flat, ["timezone", "time_zone"]) ?? "Europe/Paris";
-  const slug = str(flat, ["event_type_slug", "eventtypeslug", "slug", "event_slug"]);
+  // Validation stricte des champs extraits (longueurs, formats).
+  const clip = (v: string | undefined, max: number) => (v && v.length <= max ? v : undefined);
+  const eventId = clip(str(flat, ["event_id", "eventid", "call_id", "callid", "uuid", "id"]), 200);
+  const rawClientRef = str(flat, ["utm_client_ref", "client_ref", "clientref"]);
+  const clientRef = rawClientRef && z.string().uuid().safeParse(rawClientRef).success ? rawClientRef : undefined;
+  const rawEmail = str(flat, ["email", "invitee_email", "inviteeemail"])?.toLowerCase();
+  const email = rawEmail && z.string().email().max(255).safeParse(rawEmail).success ? rawEmail : undefined;
+  const name = clip(str(flat, ["name", "invitee_name", "invitee_full_name", "fullname"]), 200);
+  const phone = clip(str(flat, ["phone", "invitee_phone", "phone_number"]), 50);
+  const location = clip(str(flat, ["location", "meeting_location", "meeting_url", "join_url"]), 500);
+  const rawTz = str(flat, ["timezone", "time_zone"]);
+  const timezone = rawTz && /^[A-Za-z_+\-/0-9]{1,64}$/.test(rawTz) ? rawTz : "Europe/Paris";
+  const slug = clip(str(flat, ["event_type_slug", "eventtypeslug", "slug", "event_slug"]), 200);
+  let eventName: string | undefined;
+  for (const path of [
+    "event_type_name", "event_name", "eventTypeName", "eventName", "event_title",
+    "data.event_type_name", "data.event_name", "data.eventTypeName", "data.eventName",
+    "event_type.name", "eventType.name", "data.event_type.name", "data.eventType.name",
+    "call.event_type_name", "call.eventTypeName", "call.title", "meeting.title", "title",
+  ]) {
+    const v = valueAtPath(payload, path);
+    if (typeof v === "string" && v.trim() && v.length <= 200) { eventName = v.trim(); break; }
+  }
+  eventName ??= clip(str(flat, ["event_type_name", "eventtypename", "event_name", "eventname", "event_title", "title"]), 200);
   const explicitType = str(flat, ["booking_type", "utm_medium"]);
-  const bookingType: BookingType = isBookingType(explicitType)
-    ? explicitType
-    : bookingTypeFromIclosedSlug(slug);
-  const start = str(flat, ["start_time", "starttime", "event_start_time", "scheduled_at", "starts_at"]);
-  const oldStart = str(flat, ["old_start_time", "previous_start_time", "former_start_time"]);
+  const start = clip(str(flat, ["start_time", "starttime", "event_start_time", "scheduled_at", "starts_at"]), 64);
+  const oldStart = clip(str(flat, ["old_start_time", "previous_start_time", "former_start_time"]), 64);
 
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
   // --- Résolution prioritaire : token signé utm_booking_token ---
-  // Source de vérité pour le user_id propriétaire du RDV. Ne fait jamais
-  // confiance à un user_id venant du payload. Les valeurs du token (client_ref,
-  // booking_type) priment sur celles du payload car elles sont signées serveur.
+  // Ne fait jamais confiance à un user_id venant du payload.
   const correlation = await resolveFromBookingToken(payload, url, supabaseAdmin);
-  const userId = correlation?.userId ?? null;
+  let userId = correlation?.userId ?? null;
+  let userFromEmail = false;
   const effectiveClientRef = correlation?.clientRef ?? clientRef;
-  const effectiveBookingType = correlation?.bookingType ?? bookingType;
+  // Type métier : nom d'événement iClosed > slug > token > utm, sinon R1.
+  // Un type inconnu n'est JAMAIS compté comme démo.
+  const resolvedType = resolveIclosedBookingType({
+    name: eventName,
+    slug,
+    tokenType: correlation?.bookingType ?? null,
+    explicitType,
+  });
+  if (!resolvedType.known) {
+    console.warn("[iclosed webhook] unknown event type, stored as r1_discovery", {
+      hasName: !!eventName,
+      hasSlug: !!slug,
+    });
+  }
+  const effectiveBookingType: BookingType = resolvedType.type;
+
+  // --- Rattachement par e-mail (serveur uniquement) ---
+  if (!userId && email) {
+    const { data: found, error: findErr } = await supabaseAdmin.rpc("find_user_id_by_email", {
+      _email: email,
+    });
+    if (findErr) console.error("[iclosed webhook] email lookup failed", findErr.message);
+    else if (found) {
+      userId = found as string;
+      userFromEmail = true;
+    }
+  }
 
   // --- Corrélation : event_id -> utm_client_ref -> email ---
   let rowId: string | null = null;
@@ -387,8 +430,12 @@ async function handle(request: Request): Promise<Response> {
     // (user_id inconnu), on laisse la colonne user_id intacte.
     const { error } = await supabaseAdmin
       .from("bookings")
-      .update(userId ? { ...common, user_id: userId } : common)
+      .update(userId && !userFromEmail ? { ...common, user_id: userId } : common)
       .eq("id", rowId);
+    if (!error && userId && userFromEmail) {
+      // Rattachement par e-mail : seulement si aucun propriétaire n'est déjà fixé.
+      await supabaseAdmin.from("bookings").update({ user_id: userId }).eq("id", rowId).is("user_id", null);
+    }
 
     if (error) {
       console.error("[iclosed webhook] update failed", error.message);

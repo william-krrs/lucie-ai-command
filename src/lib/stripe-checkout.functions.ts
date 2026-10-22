@@ -11,26 +11,49 @@ import {
   type PlanKey,
 } from "@/lib/stripe-plans";
 
-import { SITE_DOMAIN } from "@/lib/config";
+/** Domaine de production réel du projet (repli si l'origine n'est pas autorisée). */
+const PRODUCTION_ORIGIN = "https://diagnostic.lucieassistant.fr";
+
+/** Liste blanche des hôtes acceptés pour success_url / cancel_url. */
+function isAllowedHost(host: string): boolean {
+  const h = host.toLowerCase();
+  return (
+    h === "diagnostic.lucieassistant.fr" ||
+    h === "lucieassistant.fr" ||
+    h === "assistantvocalpro.fr" ||
+    h === "www.assistantvocalpro.fr" ||
+    /^[a-z0-9-]+\.lovable\.app$/.test(h) ||
+    /^localhost(:\d{1,5})?$/.test(h) ||
+    /^127\.0\.0\.1(:\d{1,5})?$/.test(h)
+  );
+}
 
 /**
- * Origine publique déduite des en-têtes de la requête (proxy Lovable).
- * Import dynamique de getRequest depuis @tanstack/start-server-core à
- * l'intérieur du handler pour ne pas embarquer d'utilitaires serveur dans
- * le bundle client (les imports de module-scope des .functions.ts y vont).
+ * Origine publique validée : l'en-tête Origin / Referer / x-forwarded-host
+ * n'est utilisé que s'il figure sur la liste blanche ; sinon on retombe sur
+ * le domaine de production. Jamais d'en-tête brut non vérifié.
  */
 async function publicOrigin(): Promise<string> {
   const { getRequest } = await import("@tanstack/start-server-core");
   const req = getRequest();
-  const proto =
-    req.headers.get("x-forwarded-proto")?.split(",")[0] ||
-    req.headers.get("referer")?.split("://")[0] ||
-    "https";
-  const host =
-    req.headers.get("x-forwarded-host")?.split(",")[0] ||
-    req.headers.get("host") ||
-    SITE_DOMAIN;
-  return `${proto}://${host}`;
+  const candidates = [
+    req.headers.get("origin"),
+    req.headers.get("referer"),
+    req.headers.get("x-forwarded-host") ? `https://${req.headers.get("x-forwarded-host")!.split(",")[0].trim()}` : null,
+  ];
+  for (const c of candidates) {
+    if (!c) continue;
+    try {
+      const u = new URL(c);
+      if (!isAllowedHost(u.host)) continue;
+      const local = /^(localhost|127\.0\.0\.1)/.test(u.hostname);
+      if (u.protocol !== "https:" && !local) continue;
+      return `${u.protocol}//${u.host}`;
+    } catch {
+      /* ignore */
+    }
+  }
+  return PRODUCTION_ORIGIN;
 }
 
 /**
@@ -64,6 +87,9 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
       }
     }
     const key = process.env["STRIPE_SECRET_KEY"];
+    if (!key) {
+      console.error("[createCheckoutSession] STRIPE_SECRET_KEY manquant");
+    }
     if (!key) throw new Error("Paiement indisponible : configuration Stripe manquante.");
 
     const origin = await publicOrigin();
@@ -117,10 +143,22 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
       body: params,
     });
 
-    const json = (await resp.json()) as { url?: string; error?: { message?: string } };
-    if (!resp.ok || !json.url) {
-      console.error("[createCheckoutSession] stripe error", json);
-      throw new Error("Impossible de créer la session de paiement Stripe.");
+    let json: { url?: string; error?: { message?: string; type?: string; code?: string } } = {};
+    try {
+      json = await resp.json();
+    } catch {
+      /* corps non JSON */
+    }
+    if (!resp.ok || typeof json.url !== "string" || !json.url.startsWith("https://checkout.stripe.com/")) {
+      // Erreur Stripe réelle journalisée (message/type/code uniquement, aucun secret).
+      console.error("[createCheckoutSession] stripe error", {
+        status: resp.status,
+        type: json.error?.type,
+        code: json.error?.code,
+        message: json.error?.message,
+        hasUrl: typeof json.url === "string",
+      });
+      throw new Error("Impossible de créer la session de paiement. Réessayez dans un instant.");
     }
     return { url: json.url };
   });

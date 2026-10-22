@@ -139,7 +139,10 @@ export const Route = createFileRoute("/api/public/hooks/send-reminders")({
           request.headers.get("x-cron-secret") ??
           request.headers.get("authorization")?.replace(/^Bearer\s+/i, "") ??
           "";
-        if (!expected || provided !== expected) {
+        const { timingSafeEqual } = await import("crypto");
+        const pa = Buffer.from(provided);
+        const pb = Buffer.from(expected ?? "");
+        if (!expected || pa.length !== pb.length || !timingSafeEqual(pa, pb)) {
           return new Response(JSON.stringify({ ok: false, error: "unauthorized" }), {
             status: 401,
             headers: { "Content-Type": "application/json" },
@@ -152,9 +155,8 @@ export const Route = createFileRoute("/api/public/hooks/send-reminders")({
             headers: { "Content-Type": "application/json" },
           });
         } catch (err) {
-          const message = err instanceof Error ? err.message : String(err);
           console.error("[send-reminders] failed", err);
-          return new Response(JSON.stringify({ ok: false, error: message }), {
+          return new Response(JSON.stringify({ ok: false, error: "internal_error" }), {
             status: 500,
             headers: { "Content-Type": "application/json" },
           });

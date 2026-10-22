@@ -1,3 +1,4 @@
+import { toast } from "sonner";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
@@ -103,7 +104,7 @@ const PLANS: {
   {
     key: "premium",
     name: "Premium",
-    price: "990 €",
+    price: "960 €",
     badge: "Grandes entreprises",
     badgeTone: "dark",
     icon: Crown,
@@ -168,10 +169,22 @@ function OffresContent() {
     setSelected(plan);
     setCheckoutPlan(plan);
     try {
-      const { url } = await createCheckout({ data: { plan, commitment, multipleDeciders: lucieState.hasPartner } });
-      window.location.href = url;
+      const res = await createCheckout({ data: { plan, commitment, multipleDeciders: lucieState.hasPartner } });
+      if (!res || typeof res.url !== "string" || !res.url.startsWith("https://")) {
+        throw new Error("Lien de paiement manquant.");
+      }
+      window.location.href = res.url;
     } catch (err) {
       console.error("[offres] checkout", err);
+      const raw = err instanceof Error ? err.message : "";
+      const authIssue = /unauthor|401|session|jwt/i.test(raw);
+      toast.error(
+        authIssue
+          ? "Votre session a expiré. Rechargez la page puis relancez le paiement."
+          : raw && raw.length < 160 && !/stripe_|sk_|secret/i.test(raw)
+            ? raw
+            : "Impossible d'ouvrir le paiement. Réessayez dans un instant ou contactez-nous.",
+      );
       setCheckoutPlan(null);
     }
   };
