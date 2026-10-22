@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { getClientRef } from "@/lib/booking-store";
 import { JOURNEY_QUERY_KEY } from "@/lib/journey-access";
+import { AdminCrm } from "@/components/admin-crm";
 import {
   adminCleanupTestBookings,
   adminGetOverview,
@@ -281,6 +282,7 @@ function AdminPage() {
       </Card>
 
 
+      <AdminCrm />
       <ClientsPanel />
     </div>
   );
