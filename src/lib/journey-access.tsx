@@ -7,6 +7,7 @@ import { REQUIRE_ACCOUNT, UNLOCK_ALL_PAGES } from "@/lib/config";
 import {
   completeDemo as completeDemoFn,
   getJourneyState,
+  type JourneyOverridePage,
   type JourneyStateDTO,
 } from "@/lib/journey-state.functions";
 
@@ -51,6 +52,7 @@ const FALLBACK: JourneyStateDTO = {
   configurationSubmitted: false,
   setupBookingStatusNorm: null,
   setupMeetingAt: null,
+  overrides: [],
 };
 
 const JourneyCtx = createContext<JourneyAccess | null>(null);
@@ -146,20 +148,23 @@ export function JourneyAccessProvider({ children }: { children: ReactNode }) {
   const value = useMemo<JourneyAccess>(() => {
     const s = data ?? null;
     const effective = s ?? FALLBACK;
+    // Déblocages manuels de l'admin, lus côté serveur (journey_overrides).
+    const ov = (page: JourneyOverridePage) => effective.overrides?.includes(page) ?? false;
     return {
       state: s,
       loading: authed && isLoading,
       canViewDemonstration:
         bypass ||
+        ov("demonstration") ||
         effective.demoBookingConfirmed ||
         (effective.demoUnlockAt !== null && new Date(effective.demoUnlockAt).getTime() <= now),
       demoMeetingAt: effective.demoMeetingAt,
       demoBookingStatusNorm: effective.demoBookingStatusNorm,
       demoUnlockAt: effective.demoUnlockAt,
-      canViewOffers: bypass || effective.demoCompletedAt !== null,
-      canConfigure: bypass || effective.paymentStatus === "paid",
-      canViewInstallation: bypass || effective.configurationSubmitted,
-      canBookSetupTest: bypass || effective.installationStatus === "ready_for_test",
+      canViewOffers: bypass || ov("offers") || effective.demoCompletedAt !== null,
+      canConfigure: bypass || ov("configuration") || effective.paymentStatus === "paid",
+      canViewInstallation: bypass || ov("installation") || effective.configurationSubmitted,
+      canBookSetupTest: bypass || ov("setup_test") || effective.installationStatus === "ready_for_test",
       setupBookingStatusNorm: effective.setupBookingStatusNorm,
       setupMeetingAt: effective.setupMeetingAt,
       bypass,
