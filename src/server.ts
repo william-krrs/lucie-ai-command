@@ -44,12 +44,41 @@ function isH3SwallowedErrorBody(body: string): boolean {
   }
 }
 
+const SECURITY_HEADERS: Record<string, string> = {
+  "X-Content-Type-Options": "nosniff",
+  "Referrer-Policy": "strict-origin-when-cross-origin",
+  "Permissions-Policy": "camera=(), geolocation=(), payment=(self \"https://checkout.stripe.com\")",
+  // CSP volontairement ciblée : pas de script-src strict (widgets iClosed /
+  // Stripe et hydratation inline), mais iframes limitées, pas de <object>,
+  // base-uri et form-action verrouillés.
+  "Content-Security-Policy": [
+    "frame-ancestors 'self' https://*.lovable.app https://*.lovable.dev https://lovable.dev https://*.lovableproject.com",
+    "base-uri 'self'",
+    "object-src 'none'",
+    "form-action 'self' https://checkout.stripe.com",
+  ].join("; "),
+};
+
+function withSecurityHeaders(response: Response): Response {
+  try {
+    for (const [k, v] of Object.entries(SECURITY_HEADERS)) {
+      if (!response.headers.has(k)) response.headers.set(k, v);
+    }
+    return response;
+  } catch {
+    // En-têtes immuables : on recopie la réponse.
+    const headers = new Headers(response.headers);
+    for (const [k, v] of Object.entries(SECURITY_HEADERS)) if (!headers.has(k)) headers.set(k, v);
+    return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
+  }
+}
+
 export default {
   async fetch(request: Request, env: unknown, ctx: unknown) {
     try {
       const handler = await getServerEntry();
       const response = await handler.fetch(request, env, ctx);
-      return await normalizeCatastrophicSsrResponse(response);
+      return withSecurityHeaders(await normalizeCatastrophicSsrResponse(response));
     } catch (error) {
       console.error(error);
       return new Response(renderErrorPage(), {
