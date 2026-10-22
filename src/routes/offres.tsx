@@ -28,7 +28,17 @@ import { canCheckoutPlan, canOpenOffers } from "@/lib/self-serve";
 import { BOOKING_URL_SETUP } from "@/lib/config";
 import { useUniqueModule, MODULE_IDS } from "@/lib/module-registry";
 import { createCheckoutSession } from "@/lib/stripe-checkout.functions";
-import { INCLUDED_MINUTES, LAUNCH_OFFER, OVERAGE_LABEL, SETUP_FEE_RULE } from "@/lib/offer-terms";
+import { INCLUDED_MINUTES, launchOfferText, OVERAGE_LABEL, SETUP_FEE_RULE } from "@/lib/offer-terms";
+import { useLaunchOffer } from "@/lib/use-launch-offer";
+import {
+  firstPaymentAmount,
+  SETUP_FEE_AMOUNT,
+  setupFeeAmount,
+  STRIPE_PLANS,
+} from "@/lib/stripe-plans";
+
+const euros = (cents: number) =>
+  `${(cents / 100).toLocaleString("fr-FR", { maximumFractionDigits: 2 })} €`;
 
 export const Route = createFileRoute("/offres")({
   head: () => ({
@@ -157,6 +167,8 @@ function OffresContent() {
   const [checkoutPlan, setCheckoutPlan] = useState<PlanKey | null>(null);
   const [commitment, setCommitment] = useState(true);
   const createCheckout = useServerFn(createCheckoutSession);
+  const launch = useLaunchOffer();
+  const launchText = launchOfferText(launch.remaining, launch.slots);
   const { state: lucieState } = useLucie();
   const canViewOffers = bypass || canOpenOffers(rec.plan, demoDone, lucieState.hasPartner);
 
@@ -265,7 +277,13 @@ function OffresContent() {
         <div className="mt-2 grid gap-3 sm:grid-cols-2">
           {[
             { value: true, title: "Engagement 3 mois", text: "Mise en place offerte (0 €)." },
-            { value: false, title: "Sans engagement", text: "Mise en place 490 € une seule fois." },
+            {
+              value: false,
+              title: "Sans engagement",
+              text: launch.active
+                ? "Mise en place offerte grâce à l'offre de lancement."
+                : "Mise en place 490 € une seule fois.",
+            },
           ].map((o) => (
             <label
               key={String(o.value)}
@@ -375,6 +393,24 @@ function OffresContent() {
                 ))}
               </ul>
 
+              {!isRefusal && (
+                <div className="mt-7 rounded-xl border border-border bg-muted/40 p-3 text-sm" aria-live="polite">
+                  <div className="text-xs text-muted-foreground">Première facture</div>
+                  <div className="font-semibold text-foreground">
+                    {setupFeeAmount(commitment, launch.active) > 0
+                      ? `${euros(STRIPE_PLANS[p.key].unitAmount)} + ${euros(SETUP_FEE_AMOUNT)} = ${euros(firstPaymentAmount(p.key, commitment, launch.active))} TTC`
+                      : `${euros(firstPaymentAmount(p.key, commitment, launch.active))} TTC`}
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    {commitment
+                      ? "Mise en place offerte (engagement 3 mois)."
+                      : launch.active
+                        ? "Mise en place offerte (offre de lancement)."
+                        : "Abonnement + mise en place 490 € une seule fois."}{" "}
+                    Puis {euros(STRIPE_PLANS[p.key].unitAmount)}/mois.
+                  </div>
+                </div>
+              )}
               {!(bypass || canCheckoutPlan(p.key, demoDone, lucieState.hasPartner)) ? (
                 <Button asChild variant="outline" className="mt-7 h-11 rounded-xl">
                   <Link to="/recommandation" hash="rdv">
@@ -436,9 +472,9 @@ function OffresContent() {
               <p className="mt-1.5 max-w-xl text-sm text-muted-foreground">
                 Le paramétrage complet de Lucie, la connexion à vos outils et la mise en production. {SETUP_FEE_RULE} Les renouvellements mensuels ne comprennent que votre abonnement. Mise en place en 96 h.
               </p>
-              <p className="mt-3 max-w-xl text-sm font-medium text-foreground">
-                {LAUNCH_OFFER}
-              </p>
+              {launchText && (
+                <p className="mt-3 max-w-xl text-sm font-medium text-foreground">{launchText}</p>
+              )}
               <div className="mt-3 flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
                 <span className="inline-flex items-center gap-1.5">
                   <Clock className="h-3.5 w-3.5" aria-hidden="true" />
