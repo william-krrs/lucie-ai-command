@@ -156,7 +156,15 @@ export const completeDemo = createServerFn({ method: "POST" })
       throw new Error("Impossible de vérifier votre rendez-vous de démonstration.");
     }
     if (!booking || booking.length === 0) {
-      throw new Error("Aucune démonstration confirmée n'est associée à votre compte.");
+      // Déblocage manuel de la démonstration par l'admin (lu côté serveur).
+      const { data: ov } = await supabase
+        .from("journey_overrides")
+        .select("id")
+        .eq("user_id", userId)
+        .eq("page", "demonstration")
+        .eq("unlocked", true)
+        .limit(1);
+      if (!ov || ov.length === 0) throw new Error("Aucune démonstration confirmée n'est associée à votre compte.");
     }
 
     const now = new Date().toISOString();
