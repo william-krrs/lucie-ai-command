@@ -967,7 +967,7 @@ function RecommandationPage() {
         {!needsDemo(rec.plan, state.hasPartner) ? (
           <details className="rounded-3xl border border-border bg-card/40 p-5 sm:p-6">
             <summary className="min-h-11 cursor-pointer text-sm font-medium text-foreground">
-              Tu préfères échanger avec nous avant ? Réserver un rendez-vous (facultatif)
+              Tu préfères échanger avec nous avant ? Réserver mon diagnostic gratuit (30 min) — facultatif
             </summary>
             <div className="mt-4">
               <RdvBlock journey={journey} />
