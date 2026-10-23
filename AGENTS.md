@@ -12,3 +12,4 @@
 - Keep launch-offer wording and included-minute allowances in the shared offer-terms module so offer descriptions remain consistent without altering payment automation.
 
 - Admin manual unlocks live in `journey_overrides` and are merged into `getJourneyState`/`useJourneyAccess`; every admin server fn checks `has_role` server-side and writes `admin_audit_log` — keeps unlocks real and traceable.
+- Visitor nav shows 4 grouped steps (src/lib/journey-groups.ts) over the existing sub-pages; gates stay per sub-page — keeps locks intact while simplifying the UI.
