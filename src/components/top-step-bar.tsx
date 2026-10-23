@@ -1,6 +1,7 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { JOURNEY_GROUPS, groupIndexForPath } from "@/lib/journey-groups";
 
 const STEPS = [
   { to: "/", label: "Accueil" },
@@ -45,7 +46,7 @@ export function TopStepBar({ className }: { className?: string }) {
         className="hidden md:inline-flex items-center rounded-md bg-muted px-2 py-1 text-[10px] font-mono uppercase tracking-widest text-muted-foreground tabular-nums"
         aria-hidden="true"
       >
-        {String(idx + 1).padStart(2, "0")} / {String(STEPS.length).padStart(2, "0")}
+        Étape {Math.max(1, groupIndexForPath(pathname) + 1)} / {JOURNEY_GROUPS.length}
       </span>
 
       {next ? (
