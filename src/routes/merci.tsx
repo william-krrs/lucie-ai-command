@@ -211,7 +211,7 @@ function MerciContent() {
   return (
     <div className="space-y-10">
       <PageHeader
-        eyebrow="Étape 07 · Paiement"
+        eyebrow="Étape 4 · Mise en place"
         title={isPaid ? "Merci — bienvenue chez Lucie" : "Confirmation de paiement"}
         description={
           isPaid

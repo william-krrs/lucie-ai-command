@@ -80,7 +80,7 @@ function Faq() {
   return (
     <div className="space-y-10">
       <PageHeader
-        eyebrow="Étape 11 · FAQ"
+        eyebrow="Questions fréquentes"
         title="Questions fréquentes"
         description="Les réponses sur le fonctionnement, les formules et la mise en place de Lucie."
       />

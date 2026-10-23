@@ -72,7 +72,7 @@ function InstallationContent() {
   return (
     <div className="space-y-10">
       <PageHeader
-        eyebrow="Étape 09 · Déploiement"
+        eyebrow="Étape 4 · Mise en place"
         title="Timeline d'installation"
         description="Mise en place en 96 h : de l’analyse à la mise en production, puis optimisation continue."
       />

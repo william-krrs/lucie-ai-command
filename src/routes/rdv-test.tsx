@@ -69,7 +69,7 @@ function RdvTestContent() {
   return (
     <div className="space-y-10">
       <PageHeader
-        eyebrow="Étape 10 · Test & paramétrage"
+        eyebrow="Étape 4 · Mise en place"
         title={
           confirmed
             ? "RDV de mise en service confirmé ✅"

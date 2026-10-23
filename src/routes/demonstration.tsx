@@ -102,7 +102,7 @@ function DemonstrationContent() {
   return (
     <div className="space-y-10">
       <PageHeader
-        eyebrow="Étape 05 · Démonstration"
+        eyebrow="Étape 3 · Démonstration & offre"
         title="Avant / après Lucie"
         description="Exemple de fonctionnement avant / après Lucie, sans résultat garanti."
       />

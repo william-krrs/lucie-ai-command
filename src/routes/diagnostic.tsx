@@ -64,7 +64,7 @@ function Diagnostic() {
   return (
     <div className="space-y-10">
       <PageHeader
-        eyebrow="Étape 02 · Analyse"
+        eyebrow="Étape 1 · Diagnostic"
         title="Diagnostic commercial"
         description="Répondez aux questions à gauche — les indicateurs à droite se recalculent en temps réel."
         actions={

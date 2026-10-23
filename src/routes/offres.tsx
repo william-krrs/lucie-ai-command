@@ -223,7 +223,7 @@ function OffresContent() {
   return (
     <div className="space-y-14">
       <PageHeader
-        eyebrow="Étape 06 · Offres"
+        eyebrow="Étape 3 · Démonstration & offre"
         title="Notre recommandation"
         description="Trois formules, une même exigence. La formule mise en avant est déterminée automatiquement par votre diagnostic."
       />
