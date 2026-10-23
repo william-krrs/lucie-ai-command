@@ -42,12 +42,12 @@ export function TopStepBar({ className }: { className?: string }) {
         <span aria-hidden="true" className="hidden sm:inline-block h-9 w-9" />
       )}
 
-      <span
+      {groupIndexForPath(pathname) >= 0 && <span
         className="hidden md:inline-flex items-center rounded-md bg-muted px-2 py-1 text-[10px] font-mono uppercase tracking-widest text-muted-foreground tabular-nums"
         aria-hidden="true"
       >
-        Étape {Math.max(1, groupIndexForPath(pathname) + 1)} / {JOURNEY_GROUPS.length}
-      </span>
+        Étape {groupIndexForPath(pathname) + 1} / {JOURNEY_GROUPS.length}
+      </span>}
 
       {next ? (
         <Link

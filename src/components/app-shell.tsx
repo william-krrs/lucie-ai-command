@@ -38,17 +38,26 @@ import { useIsAdmin } from "@/lib/use-is-admin";
 import { ShieldCheck } from "lucide-react";
 
 const NAV = [
-  { to: "/", label: "Accueil", icon: Home },
-  { to: "/diagnostic", label: "Diagnostic", icon: ClipboardList },
-  { to: "/roi", label: "ROI", icon: TrendingUp },
-  { to: "/recommandation", label: "Recommandation", icon: Gauge },
-  { to: "/demonstration", label: "Démonstration", icon: PlayCircle, gate: "demonstration" },
-  { to: "/offres", label: "Offres", icon: Package, gate: "offers" },
-  { to: "/merci", label: "Paiement", icon: CheckCircle2 },
-  { to: "/preparation", label: "Configuration", icon: FileText, gate: "configure" },
-  { to: "/installation", label: "Installation", icon: Rocket, gate: "installation" },
-  { to: "/rdv-test", label: "RDV Test & paramétrage", icon: CalendarClock, gate: "setupTest" },
-  { to: "/faq", label: "Questions fréquentes", icon: HelpCircle },
+  { key: "diagnostic", label: "1. Diagnostic", icon: ClipboardList, subs: [{ to: "/" }, { to: "/diagnostic" }] },
+  { key: "resultats", label: "2. Résultats", icon: TrendingUp, subs: [{ to: "/roi" }, { to: "/recommandation" }] },
+  {
+    key: "demo-offre",
+    label: "3. Démonstration & offre",
+    icon: PlayCircle,
+    subs: [{ to: "/demonstration", gate: "demonstration" }, { to: "/offres", gate: "offers" }],
+  },
+  {
+    key: "mise-en-place",
+    label: "4. Mise en place",
+    icon: Rocket,
+    subs: [
+      { to: "/merci" },
+      { to: "/preparation", gate: "configure" },
+      { to: "/installation", gate: "installation" },
+      { to: "/rdv-test", gate: "setupTest" },
+    ],
+  },
+  { key: "faq", label: "Questions fréquentes", icon: HelpCircle, subs: [{ to: "/faq" }] },
 ] as const;
 
 export function AppShell({ children }: { children: ReactNode }) {
@@ -91,22 +100,26 @@ export function AppShell({ children }: { children: ReactNode }) {
       onKeyDown={onNavKeyDown}
       aria-keyshortcuts="ArrowUp ArrowDown Home End"
     >
-      {NAV.map((item, i) => {
-        const active = pathname === item.to;
+      {NAV.map((item) => {
+        const subs = item.subs as readonly { to: string; gate?: string }[];
+        const isOpen = (sub: { gate?: string }) => (sub.gate ? !!allows[sub.gate] : true);
+        const active = subs.some((sub) => sub.to === pathname);
         const Icon = item.icon;
-        const locked =
-          AUDIT_MODE || ("gate" in item && item.gate ? !allows[item.gate] : false);
+        // Groupe verrouillé seulement si toutes ses sous-étapes le sont.
+        const locked = AUDIT_MODE || !subs.some(isOpen);
+        const target = (active ? subs.find((sub) => sub.to === pathname) : null) ??
+          [...subs].reverse().find(isOpen) ?? subs[0];
         return (
-          <li key={item.to}>
+          <li key={item.key}>
             <Link
-              to={item.to}
+              to={target.to}
               aria-current={active ? "page" : undefined}
               aria-disabled={locked ? true : undefined}
               title={
                 locked
                   ? isPendingMeeting
-                    ? "Débloqué le jour de votre rendez-vous"
-                    : "Prenez d'abord rendez-vous depuis la recommandation"
+                    ? "Débloqué le jour de ton rendez-vous"
+                    : "Prends d'abord rendez-vous depuis la recommandation"
                   : undefined
               }
               className={cn(
@@ -132,17 +145,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                     aria-hidden="true"
                   />
                 )
-              ) : (
-                <span
-                  aria-hidden="true"
-                  className={cn(
-                    "ml-auto text-[10px] font-mono tabular-nums",
-                    active ? "text-primary-foreground/70" : "text-muted-foreground/50",
-                  )}
-                >
-                  {String(i + 1).padStart(2, "0")}
-                </span>
-              )}
+              ) : null}
             </Link>
           </li>
         );
@@ -209,7 +212,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           <div className="min-w-0">
             <div className="text-sm font-semibold leading-tight tracking-tight">Lucie</div>
             <div className="text-[11px] uppercase tracking-widest text-muted-foreground">
-              Command Center
+              Ton diagnostic Lucie
             </div>
           </div>
         </div>
@@ -217,7 +220,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         <nav className="flex-1 px-3" aria-label="Étapes du parcours">
           <div id="primary-nav" tabIndex={-1} className="focus:outline-none">
           <div className="px-3 pb-2 pt-4 text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
-            Navigation
+            Ton parcours
           </div>
           {navList}
           </div>
@@ -269,7 +272,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           </Link>
           <div className="flex items-center gap-2">
             <AccountMenu compact />
-            <ProspectSwitcherGate />
+            {isAdmin && <ProspectSwitcherGate />}
             <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
             <SheetTrigger
               aria-label={mobileOpen ? "Fermer le menu de navigation" : "Ouvrir le menu de navigation"}
@@ -288,7 +291,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             >
               <SheetTitle className="sr-only">Menu de navigation</SheetTitle>
               <SheetDescription className="sr-only">
-                Accédez aux différentes étapes du parcours Lucie Command Center.
+                Accède aux étapes de ton diagnostic Lucie.
               </SheetDescription>
               <div className="flex items-center gap-3 px-6 pt-8 pb-6">
                 <div aria-hidden="true" className="grid h-10 w-10 place-items-center rounded-xl bg-primary text-primary-foreground">
@@ -297,13 +300,13 @@ export function AppShell({ children }: { children: ReactNode }) {
                 <div className="min-w-0">
                   <div className="text-sm font-semibold tracking-tight">Lucie</div>
                   <div className="text-[11px] uppercase tracking-widest text-muted-foreground">
-                    Command Center
+                    Ton diagnostic Lucie
                   </div>
                 </div>
               </div>
               <nav className="px-3 pb-6" aria-label="Étapes du parcours (mobile)">
                 <div className="px-3 pb-2 pt-2 text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
-                  Navigation
+                  Ton parcours
                 </div>
                 {navList}
               </nav>
@@ -320,7 +323,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
         <div className="sticky top-0 z-30 hidden items-center justify-end gap-3 border-b border-border bg-background/85 px-6 py-3 backdrop-blur lg:flex">
           <TopStepBar className="mr-auto" />
-          <Link
+          {isAdmin && <Link
             to="/demo"
             aria-label="Ouvrir le mode Démo plein écran"
             title="Mode Démo — présentation plein écran pour rendez-vous commercial"
@@ -328,8 +331,8 @@ export function AppShell({ children }: { children: ReactNode }) {
           >
             <Presentation className="h-3.5 w-3.5" aria-hidden="true" />
             Mode Démo
-          </Link>
-          <ProspectSwitcherGate />
+          </Link>}
+          {isAdmin && <ProspectSwitcherGate />}
         </div>
         <div
           id="main-content"
