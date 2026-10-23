@@ -360,7 +360,7 @@ function Home() {
                   <Zap className="h-3.5 w-3.5 text-primary" />
                   Rendez-vous enregistré — demain 8 h 30
                 </div>
-                Ajouté à l'agenda · fiche envoyée par SMS : marque, code panne, adresse
+                Ajouté à l'agenda · compte rendu envoyé par e-mail : marque, code panne, adresse
               </div>
             </div>
           </div>
