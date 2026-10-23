@@ -347,18 +347,18 @@ function Home() {
                 <div className="h-2 w-2 rounded-full bg-[oklch(0.65_0.17_155)]" />
                 <span className="text-xs font-medium text-foreground">Exemple d'appel entrant · Chauffage</span>
               </div>
-              <span className="text-[11px] text-muted-foreground">02 · 41 s</span>
+              <span className="text-[11px] whitespace-nowrap text-muted-foreground">02 · 41 s</span>
             </div>
             <div className="mt-4 space-y-3 text-sm">
               <Bubble side="left">Bonjour, ici Lucie, l'assistante de {entreprise}. Je vous écoute.</Bubble>
               <Bubble side="right">Ma chaudière s'est mise en sécurité, plus d'eau chaude depuis ce matin.</Bubble>
-              <Bubble side="left">D'accord. Quelle marque, et quel code s'affiche à l'écran ?</Bubble>
+              <Bubble side="left">D'accord. Quelle marque, et quel code s'affiche à l'écran ?</Bubble>
               <Bubble side="right">Saunier Duval, code F28.</Bubble>
-              <Bubble side="left">Merci. Je peux faire passer un technicien demain à 8 h 30. Ça vous va ?</Bubble>
+              <Bubble side="left">Merci. Je peux faire passer un technicien demain à 8 h 30. Ça vous va ?</Bubble>
               <div className="rounded-xl border border-dashed border-border bg-card p-3 text-[11px] text-muted-foreground">
                 <div className="flex items-center gap-2 text-foreground">
                   <Zap className="h-3.5 w-3.5 text-primary" />
-                  Rendez-vous enregistré — demain 8 h 30
+                  Rendez-vous enregistré — demain 8 h 30
                 </div>
                 Ajouté à l'agenda · fiche envoyée par SMS : marque, code panne, adresse
               </div>
