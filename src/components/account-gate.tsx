@@ -16,7 +16,7 @@ import { loginHref, useAccount } from "@/lib/auth-account";
 export function AccountGate({
   children,
   step,
-  title = "Créez votre compte pour continuer",
+  title = "Crée ton compte pour continuer",
   description,
   afterPayment = false,
 }: {
@@ -40,7 +40,7 @@ export function AccountGate({
     return (
       <div
         role="status"
-        aria-label="Vérification de votre compte"
+        aria-label="Vérification de ton compte"
         className="mx-auto h-48 max-w-2xl animate-pulse rounded-3xl border border-border bg-card/60"
       />
     );
@@ -72,14 +72,14 @@ export function AccountGate({
       <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
         {description ??
           (afterPayment
-            ? "Votre paiement est enregistré. Créez maintenant votre compte pour suivre la configuration et l'installation de Lucie : votre paiement et votre diagnostic sont conservés."
-            : "Votre parcours personnel (rendez-vous, paiement, configuration, installation) est rattaché à votre compte. Créez-le en une minute : votre diagnostic déjà rempli est conservé.")}
+            ? "Ton paiement est enregistré. Crée maintenant ton compte pour suivre la configuration et l'installation de Lucie : ton paiement et ton diagnostic sont conservés."
+            : "Ton parcours personnel (rendez-vous, paiement, configuration, installation) est rattaché à ton compte. Crée-le en une minute : ton diagnostic déjà rempli est conservé.")}
       </p>
 
       {status === "anonymous" && (
         <p className="mx-auto mt-4 max-w-md rounded-2xl border border-dashed border-border bg-muted/40 p-3 text-xs text-muted-foreground">
-          Créez votre compte depuis ce navigateur : il sera automatiquement
-          rattaché à votre paiement.
+          Crée ton compte depuis ce navigateur : il sera automatiquement
+          rattaché à ton paiement.
         </p>
       )}
 

@@ -110,20 +110,20 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         name: "description",
         content:
-          "L'assistante IA qui répond à vos appels, qualifie vos prospects et vous aide à générer plus de chiffre d'affaires.",
+          "L'assistante IA qui répond à tes appels, qualifie tes prospects et t’aide à générer plus de chiffre d'affaires.",
       },
       { name: "author", content: "Spark Media Marketing" },
       { property: "og:title", content: "Accueil — Lucie" },
       {
         property: "og:description",
-        content: "L'assistante IA qui répond à vos appels, qualifie vos prospects et vous aide à générer plus de chiffre d'affaires.",
+        content: "L'assistante IA qui répond à tes appels, qualifie tes prospects et t’aide à générer plus de chiffre d'affaires.",
       },
       { property: "og:type", content: "website" },
-      { property: "og:site_name", content: "Lucie Command Center" },
+      { property: "og:site_name", content: "Ton diagnostic Lucie" },
       { property: "og:url", content: "https://lucie-ai-command.lovable.app/" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:title", content: "Accueil — Lucie" },
-      { name: "twitter:description", content: "L'assistante IA qui répond à vos appels, qualifie vos prospects et vous aide à générer plus de chiffre d'affaires." },
+      { name: "twitter:description", content: "L'assistante IA qui répond à tes appels, qualifie tes prospects et t’aide à générer plus de chiffre d'affaires." },
     ],
     links: [
       {

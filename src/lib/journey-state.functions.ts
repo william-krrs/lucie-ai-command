@@ -153,7 +153,7 @@ export const completeDemo = createServerFn({ method: "POST" })
       .limit(1);
     if (bookingError) {
       console.error("[completeDemo] booking lookup", bookingError);
-      throw new Error("Impossible de vérifier votre rendez-vous de démonstration.");
+      throw new Error("Impossible de vérifier ton rendez-vous de démonstration.");
     }
     if (!booking || booking.length === 0) {
       // Déblocage manuel de la démonstration par l'admin (lu côté serveur).
@@ -164,7 +164,7 @@ export const completeDemo = createServerFn({ method: "POST" })
         .eq("page", "demonstration")
         .eq("unlocked", true)
         .limit(1);
-      if (!ov || ov.length === 0) throw new Error("Aucune démonstration confirmée n'est associée à votre compte.");
+      if (!ov || ov.length === 0) throw new Error("Aucune démonstration confirmée n'est associée à ton compte.");
     }
 
     const now = new Date().toISOString();
@@ -177,7 +177,7 @@ export const completeDemo = createServerFn({ method: "POST" })
       .maybeSingle();
     if (existingError) {
       console.error("[completeDemo] state lookup", existingError);
-      throw new Error("Impossible de lire votre parcours.");
+      throw new Error("Impossible de lire ton parcours.");
     }
 
     if (!existing) {

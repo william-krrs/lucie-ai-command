@@ -16,10 +16,10 @@ export const Route = createFileRoute("/demonstration")({
     meta: [
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { title: "Démonstration — Lucie Command Center" },
+      { title: "Démonstration — Ton diagnostic Lucie" },
       {
         name: "description",
-        content: "Comparez concrètement votre quotidien avant et après le déploiement de Lucie.",
+        content: "Compare concrètement ton quotidien avant et après le déploiement de Lucie.",
       },
       { property: "og:title", content: "Démonstration — Lucie" },
       { property: "og:description", content: "Avant / après Lucie : la différence en une image." },
@@ -90,11 +90,11 @@ function DemonstrationContent() {
         meetingAt={demoMeetingAt}
         unlockAt={demoUnlockAt}
         bookingStatus={demoBookingStatusNorm}
-        unlockNote="Votre démonstration sera accessible 15 minutes avant notre rendez-vous."
+        unlockNote="Ta démonstration sera accessible 15 minutes avant notre rendez-vous."
         description={
           demoMeetingAt
-            ? "Votre démonstration sera accessible 15 minutes avant notre rendez-vous."
-            : "Prenez d'abord votre créneau de démonstration depuis la recommandation."
+            ? "Ta démonstration sera accessible 15 minutes avant notre rendez-vous."
+            : "Prends d'abord ton créneau de démonstration depuis la recommandation."
         }
       />
     );
@@ -102,7 +102,7 @@ function DemonstrationContent() {
   return (
     <div className="space-y-10">
       <PageHeader
-        eyebrow="Étape 05 · Démonstration"
+        eyebrow="Étape 3 · Démonstration & offre"
         title="Avant / après Lucie"
         description="Exemple de fonctionnement avant / après Lucie, sans résultat garanti."
       />
@@ -161,7 +161,7 @@ function DemonstrationContent() {
           Démonstration terminée ?
         </h2>
         <p className="mx-auto mt-1 max-w-md text-sm text-muted-foreground">
-          Validez la fin de la démonstration pour débloquer vos offres et vos tarifs
+          Valide la fin de la démonstration pour débloquer tes offres et tes tarifs
           personnalisés.
         </p>
         <Button

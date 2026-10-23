@@ -11,17 +11,17 @@ export const Route = createFileRoute("/")({
     meta: [
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { title: "Votre diagnostic — Lucie" },
+      { title: "Ton diagnostic Lucie" },
       {
         name: "description",
         content:
-          "En 20 minutes, on mesure ensemble les appels que vous perdez et ce que Lucie peut récupérer.",
+          "Combien d'appels tu perds, et ce que Lucie récupère.",
       },
-      { property: "og:title", content: "Votre diagnostic — Lucie" },
+      { property: "og:title", content: "Ton diagnostic Lucie" },
       {
         property: "og:description",
         content:
-          "En 20 minutes, on mesure ensemble les appels que vous perdez et ce que Lucie peut récupérer.",
+          "Combien d'appels tu perds, et ce que Lucie récupère.",
       },
       { property: "og:url", content: "https://diagnostic.lucieassistant.fr/" },
     ],
@@ -49,13 +49,12 @@ function capitalizeWords(value: string): string {
 function Home() {
   const { state } = useLucie();
   const rawCompany = state.companyName.trim();
-  const entreprise = rawCompany ? capitalizeWords(rawCompany) : "votre entreprise";
+  const entreprise = rawCompany && rawCompany !== rawCompany.toLowerCase() ? capitalizeWords(rawCompany) : "Thermo Services";
   return (
     <div className="space-y-14">
       <PageHeader
-        eyebrow="Étape 01 · Accueil"
-        title="Votre diagnostic Lucie"
-        description="En 20 minutes, on mesure ensemble les appels que vous perdez et ce que Lucie peut récupérer."
+        title="Ton diagnostic Lucie"
+        description="Combien d'appels tu perds, et ce que Lucie récupère."
       />
 
       <section className="relative overflow-hidden rounded-3xl border border-border bg-card p-8 md:p-12 shadow-[var(--shadow-card)]">
@@ -65,21 +64,18 @@ function Home() {
         <div className="relative grid gap-10 md:grid-cols-[1.15fr_1fr] md:items-center">
           <div className="min-w-0">
             <h2 className="text-4xl md:text-5xl font-semibold leading-[1.05] tracking-tight text-foreground">
-              Vos appels ne restent plus <br />
+              Tes appels ne restent plus <br />
               sans réponse.
             </h2>
             <p className="mt-5 max-w-xl text-[15px] leading-relaxed text-muted-foreground">
-              Lucie décroche 24h/24, qualifie la demande et pose le rendez-vous dans votre agenda.
+              Lucie décroche 24h/24, qualifie la demande et pose le rendez-vous dans ton agenda.
             </p>
             <div className="mt-8 flex flex-wrap items-center gap-3">
               <Button asChild size="lg" className="group h-12 rounded-xl px-6 shadow-[var(--shadow-elevated)]">
                 <Link to="/diagnostic">
-                  Commencer le diagnostic
+                  Commencer mon diagnostic
                   <ArrowRight className="ml-1 h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </Link>
-              </Button>
-              <Button asChild variant="ghost" size="lg" className="h-12 rounded-xl">
-                <Link to="/demonstration">Voir la démonstration</Link>
               </Button>
             </div>
           </div>
@@ -93,7 +89,7 @@ function Home() {
               <span className="text-[11px] whitespace-nowrap text-muted-foreground">02 · 41 s</span>
             </div>
             <div className="mt-4 space-y-3 text-sm">
-              <Bubble side="left">Bonjour, ici Lucie, l'assistante de {entreprise}. Je vous écoute.</Bubble>
+              <Bubble side="left">Bonjour, ici Lucie, l'assistante de {entreprise}. Je t'écoute.</Bubble>
               <Bubble side="right">Ma chaudière s'est mise en sécurité, plus d'eau chaude depuis ce matin.</Bubble>
               <Bubble side="left">D'accord. Quelle marque, et quel code s'affiche à l'écran ?</Bubble>
               <Bubble side="right">Saunier Duval, code F28.</Bubble>
