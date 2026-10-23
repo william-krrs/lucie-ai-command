@@ -377,7 +377,7 @@ function MerciContent() {
             {
               icon: Mail,
               title: "Reçu par email",
-              text: "Vérifie ton boîte de réception (et tes spams).",
+              text: "Vérifie ta boîte de réception (et tes spams).",
             },
             {
               icon: Calendar,
