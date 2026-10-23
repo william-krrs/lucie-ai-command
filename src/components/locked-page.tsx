@@ -190,7 +190,7 @@ export function LockedPage({
               }
             >
               <CalendarCheck2 className="mr-1.5 h-4 w-4" aria-hidden="true" />
-              {hasMeeting ? "Reprogrammer mon rendez-vous" : "Réserver un créneau dans l’agenda"}
+              {hasMeeting ? "Reprogrammer mon rendez-vous" : "Réserver mon diagnostic gratuit (30 min)"}
               <ArrowRight className="ml-1 h-4 w-4" aria-hidden="true" />
             </Link>
           </Button>

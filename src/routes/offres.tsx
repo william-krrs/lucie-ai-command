@@ -414,7 +414,7 @@ function OffresContent() {
               {!(bypass || canCheckoutPlan(p.key, demoDone, lucieState.hasPartner)) ? (
                 <Button asChild variant="outline" className="mt-7 h-11 rounded-xl">
                   <Link to="/recommandation" hash="rdv">
-                    Réserver une démonstration
+                    Réserver mon diagnostic gratuit (30 min)
                   </Link>
                 </Button>
               ) : isRefusal ? (
@@ -522,9 +522,9 @@ function OffresContent() {
               href={BOOKING_URL_SETUP}
               target="_blank"
               rel="noopener noreferrer"
-              aria-label="Prendre rendez-vous test avec Lucie (ouvre un nouvel onglet)"
+              aria-label="Réserver mon diagnostic gratuit (30 min) (ouvre un nouvel onglet)"
             >
-              Prendre un RDV test
+              Réserver mon diagnostic gratuit (30 min)
               <ExternalLink className="ml-2 h-4 w-4" aria-hidden="true" />
             </a>
           </Button>
