@@ -407,7 +407,7 @@ function SharedDiagnosticPage() {
               </h2>
               <p className="mt-1 text-xs text-muted-foreground">
                 Envoie le lien privé à un associé, un décideur ou en test à
-                vous-même. Le lien reste valable jusqu'au {expires}.
+                toi-même. Le lien reste valable jusqu'au {expires}.
               </p>
             </div>
           </div>

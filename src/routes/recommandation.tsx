@@ -178,7 +178,7 @@ function RecommandationPage() {
     if (!state.hasPartner) return null;
     const n = state.partnerCount;
     if (!Number.isFinite(n) || !Number.isInteger(n)) return "Entre un nombre entier.";
-    if (n < 2) return "Tu dois être au moins 2.";
+    if (n < 2) return "Vous devez être au moins 2, toi compris.";
     if (n > 20) return "Maximum 20 décideurs.";
     return null;
   }, [state.hasPartner, state.partnerCount]);

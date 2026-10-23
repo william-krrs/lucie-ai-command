@@ -164,7 +164,7 @@ export function RoiBreakdown() {
           </li>
           <li>
             <strong className="text-foreground">Panier moyen</strong> déclaré par
-            vous — utilisé tel quel, sans marge de sécurité.
+            toi — utilisé tel quel, sans marge de sécurité.
           </li>
           <li>
             <strong className="text-foreground">Périmètre de l’estimation</strong> :

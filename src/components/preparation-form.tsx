@@ -1448,7 +1448,7 @@ function SubmittedConfirmation({
 
   // Personnalisation de l'email envoyé au prospect
   const defaultProspectSubject = "Ton récapitulatif Lucie";
-  const defaultProspectMessage = `Bonjour ${form.contactName?.trim() || "{prénom}"},\n\nMerci pour ta confiance ! Tu trouveras ci-dessous le récapitulatif de ta configuration Lucie ainsi que le PDF détaillé.\n\nNotre équipe revient vers vous très vite pour lancer l'installation.\n\nÀ très vite,\nL'équipe Lucie`;
+  const defaultProspectMessage = `Bonjour ${form.contactName?.trim() || "{prénom}"},\n\nMerci pour ta confiance ! Tu trouveras ci-dessous le récapitulatif de ta configuration Lucie ainsi que le PDF détaillé.\n\nNotre équipe revient vers toi très vite pour lancer l'installation.\n\nÀ très vite,\nL'équipe Lucie`;
   const [prospectSubject, setProspectSubject] = useState<string>(defaultProspectSubject);
   const [prospectMessage, setProspectMessage] = useState<string>(defaultProspectMessage);
   const [prospectCustomOpen, setProspectCustomOpen] = useState(false);

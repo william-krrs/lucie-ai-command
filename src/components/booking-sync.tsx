@@ -221,7 +221,7 @@ export function BookingSync() {
           </div>
           <DialogTitle>Conflit de rendez-vous détecté</DialogTitle>
           <DialogDescription>
-            Cet appareil et notre serveur n'ont pas la même information sur votre
+            Cet appareil et notre serveur n'ont pas la même information sur ton
             rendez-vous. Choisis la version à conserver.
           </DialogDescription>
         </DialogHeader>

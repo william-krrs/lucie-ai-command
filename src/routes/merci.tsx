@@ -280,7 +280,7 @@ function MerciContent() {
                 Paiement bien reçu — formule non détectée automatiquement
               </p>
               <p className="text-muted-foreground">
-                Si tu viens de régler mais que la page n'a pas retenu votre
+                Si tu viens de régler mais que la page n'a pas retenu ta
                 formule (redirection Stripe incomplète, retour arrière du
                 navigateur, lien ouvert dans un autre onglet), aucun souci :
                 ton paiement est enregistré côté Stripe. Sélectionne
@@ -325,7 +325,7 @@ function MerciContent() {
             Paiement validé ✅
           </h2>
           <p className="mt-3 max-w-xl text-sm text-muted-foreground sm:text-base">
-            Un reçu vient de t’être envoyé par Stripe. Notre équipe vous
+            Un reçu vient de t’être envoyé par Stripe. Notre équipe te
             contacte sous 24 heures ouvrées pour planifier ton installation.
           </p>
         </div>
