@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, PhoneCall, Sparkles, Zap, Clock, Users, LineChart, Info, MapPin, Building2, ExternalLink } from "lucide-react";
+import { ArrowRight, PhoneCall, Sparkles, Zap, Clock, Users, PhoneForwarded, Info, MapPin, Building2, ExternalLink } from "lucide-react";
 import * as React from "react";
 import type { KeyboardEvent } from "react";
 import { PageHeader } from "@/components/app-shell";
@@ -8,6 +8,7 @@ import { StepNav } from "@/components/step-nav";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { getLogoStatus, setLogoStatus, logoCacheKey } from "@/lib/logo-cache";
+import { useLucie } from "@/lib/lucie-store";
 
 type LogoStatus = "loading" | "loaded" | "error";
 
@@ -111,10 +112,10 @@ export const Route = createFileRoute("/")({
 });
 
 const STATS = [
-  { icon: PhoneCall, label: "Appels traités", value: "12 480", trend: "Donnée fictive" },
-  { icon: Clock, label: "Disponibilité prévue", value: "24h/24", trend: "Réponse immédiate" },
-  { icon: Users, label: "Prospects qualifiés", value: "3 210", trend: "Donnée fictive" },
-  { icon: LineChart, label: "Taux de conversion", value: "42%", trend: "Exemple fictif" },
+  { icon: PhoneCall, label: "Appels décrochés", value: "186", trend: "100 % des appels, même sur chantier" },
+  { icon: Clock, label: "Appels hors horaires", value: "41 %", trend: "soirs, week-ends, pause déjeuner" },
+  { icon: Users, label: "Rendez-vous posés", value: "58", trend: "directement dans l'agenda" },
+  { icon: PhoneForwarded, label: "Urgences transférées", value: "12", trend: "pannes chauffage en plein hiver" },
 ];
 
 type Company = {
@@ -205,6 +206,8 @@ const COMPANIES: Company[] = [
 ];
 
 function Home() {
+  const { state } = useLucie();
+  const entreprise = state.companyName.trim() || "votre entreprise";
   const [selected, setSelected] = React.useState<Company | null>(null);
   return (
     <div className="space-y-14">
@@ -342,28 +345,30 @@ function Home() {
             <div className="flex items-center justify-between border-b border-border pb-3">
               <div className="flex items-center gap-2">
                 <div className="h-2 w-2 rounded-full bg-[oklch(0.65_0.17_155)]" />
-                <span className="text-xs font-medium text-foreground">Exemple d’appel entrant · N°23</span>
+                <span className="text-xs font-medium text-foreground">Exemple d'appel entrant · Chauffage</span>
               </div>
-              <span className="text-[11px] text-muted-foreground">01 · 12 s</span>
+              <span className="text-[11px] text-muted-foreground">02 · 41 s</span>
             </div>
             <div className="mt-4 space-y-3 text-sm">
-              <Bubble side="left">Bonjour, je m'appelle Lucie, l'assistante IA de Spark Media. Comment puis-je vous aider ?</Bubble>
-              <Bubble side="right">Je cherche un devis pour une prestation SEO.</Bubble>
-              <Bubble side="left">Parfait, je note. Vous êtes plutôt B2B ou B2C, et sur quel budget mensuel ?</Bubble>
+              <Bubble side="left">Bonjour, ici Lucie, l'assistante de {entreprise}. Je vous écoute.</Bubble>
+              <Bubble side="right">Ma chaudière s'est mise en sécurité, plus d'eau chaude depuis ce matin.</Bubble>
+              <Bubble side="left">D'accord. Quelle marque, et quel code s'affiche à l'écran ?</Bubble>
+              <Bubble side="right">Saunier Duval, code F28.</Bubble>
+              <Bubble side="left">Merci. Je peux faire passer un technicien demain à 8 h 30. Ça vous va ?</Bubble>
               <div className="rounded-xl border border-dashed border-border bg-card p-3 text-[11px] text-muted-foreground">
                 <div className="flex items-center gap-2 text-foreground">
                   <Zap className="h-3.5 w-3.5 text-primary" />
-                  Rendez-vous proposé — Mardi 14h30
+                  Rendez-vous enregistré — demain 8 h 30
                 </div>
-                Envoyé sur l'agenda commercial · SMS de confirmation
+                Ajouté à l'agenda · fiche envoyée par SMS : marque, code panne, adresse
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      <section aria-label="Exemple de tableau de bord — données de démonstration">
-        <p className="mb-4 text-sm font-medium text-muted-foreground">Exemple de tableau de bord — données de démonstration</p>
+      <section aria-label="Exemple : une entreprise CVC de 3 techniciens, sur 1 mois — données d'illustration">
+        <p className="mb-4 text-sm font-medium text-muted-foreground">Exemple : une entreprise CVC de 3 techniciens, sur 1 mois</p>
         <div data-vr="kpi-grid" className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {STATS.map((s) => {
           const Icon = s.icon;
@@ -463,7 +468,7 @@ function Bubble({ side, children }: { side: "left" | "right"; children: React.Re
   return (
     <div className={`flex ${side === "right" ? "justify-end" : "justify-start"}`}>
       <div
-        className={`max-w-[85%] rounded-2xl px-3.5 py-2 text-[13px] leading-relaxed ${
+        className={`max-w-[85%] break-words rounded-2xl px-3.5 py-2 text-[13px] leading-relaxed ${
           side === "right"
             ? "bg-primary text-primary-foreground rounded-br-sm"
             : "bg-muted text-foreground rounded-bl-sm"
