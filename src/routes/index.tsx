@@ -354,7 +354,7 @@ function Home() {
               <Bubble side="right">Ma chaudière s'est mise en sécurité, plus d'eau chaude depuis ce matin.</Bubble>
               <Bubble side="left">D'accord. Quelle marque, et quel code s'affiche à l'écran ?</Bubble>
               <Bubble side="right">Saunier Duval, code F28.</Bubble>
-              <Bubble side="left">Merci. Je peux faire passer un technicien demain à 8 h 30. Ça vous va ?</Bubble>
+              <Bubble side="left">Merci. Quelle est l’adresse ? Je peux faire passer un technicien demain à 8 h 30.</Bubble>
               <div className="rounded-xl border border-dashed border-border bg-card p-3 text-[11px] text-muted-foreground">
                 <div className="flex items-center gap-2 text-foreground">
                   <Zap className="h-3.5 w-3.5 text-primary" />
