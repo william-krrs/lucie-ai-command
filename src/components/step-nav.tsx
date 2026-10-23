@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { JOURNEY_GROUPS, groupIndexForPath } from "@/lib/journey-groups";
 
 const STEPS = [
   { to: "/", label: "Accueil" },
@@ -20,6 +21,7 @@ type StepPath = (typeof STEPS)[number]["to"];
 
 export function StepNav({ current }: { current: StepPath }) {
   const idx = STEPS.findIndex((s) => s.to === current);
+  const gIdx = groupIndexForPath(current);
   const prev = idx > 0 ? STEPS[idx - 1] : null;
   const next = idx >= 0 && idx < STEPS.length - 1 ? STEPS[idx + 1] : null;
 
@@ -28,28 +30,30 @@ export function StepNav({ current }: { current: StepPath }) {
       aria-label="Navigation entre les étapes"
       className="cv-auto mt-12 border-t border-border pt-6"
     >
-      <div className="mb-4 flex items-center justify-between text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
-        <span>
-          Étape {String(idx + 1).padStart(2, "0")} / {String(STEPS.length).padStart(2, "0")}
-        </span>
-        <span className="hidden sm:inline">{STEPS[idx]?.label}</span>
-      </div>
+      {gIdx >= 0 && (
+        <>
+          <div className="mb-4 flex items-center justify-between text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
+            <span>
+              Étape {gIdx + 1} / {JOURNEY_GROUPS.length}
+            </span>
+            <span className="hidden sm:inline">{JOURNEY_GROUPS[gIdx]?.label}</span>
+          </div>
 
-      <div className="mb-6 flex gap-1.5">
-        {STEPS.map((s, i) => (
-          <Link
-            key={s.to}
-            to={s.to}
-            aria-label={`Aller à ${s.label}`}
-            className={cn(
-              "relative flex h-11 flex-1 items-center rounded-none bg-transparent after:h-1.5 after:w-full after:rounded-full after:bg-current transition-colors",
-              i < idx && "text-primary/50",
-              i === idx && "text-primary",
-              i > idx && "text-border hover:text-muted-foreground/40",
-            )}
-          />
-        ))}
-      </div>
+          <div className="mb-6 flex gap-1.5" aria-hidden="true">
+            {JOURNEY_GROUPS.map((g, i) => (
+              <span
+                key={g.key}
+                className={cn(
+                  "relative flex h-3 flex-1 items-center after:h-1.5 after:w-full after:rounded-full after:bg-current",
+                  i < gIdx && "text-primary/50",
+                  i === gIdx && "text-primary",
+                  i > gIdx && "text-border",
+                )}
+              />
+            ))}
+          </div>
+        </>
+      )}
 
       <div className="grid gap-3 sm:grid-cols-2">
         {prev ? (
