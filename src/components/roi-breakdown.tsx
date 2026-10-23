@@ -32,7 +32,7 @@ export function RoiBreakdown() {
             D'où vient le ROI estimé
           </h2>
           <p className="mt-1 max-w-xl text-sm text-muted-foreground">
-            Ajustez les hypothèses ci-dessous : les calculs et l'impact projeté
+            Ajuste les hypothèses ci-dessous : les calculs et l'impact projeté
             se recalculent en direct.
           </p>
         </div>
@@ -132,7 +132,7 @@ export function RoiBreakdown() {
           icon={Clock}
           label="Temps équipe économisé estimé"
           value={`${m.timeSavedHours} h / mois`}
-          hint="Appels traités sans mobiliser vos collaborateurs."
+          hint="Appels traités sans mobiliser tes collaborateurs."
         />
       </div>
 
@@ -143,7 +143,7 @@ export function RoiBreakdown() {
         <Projection label="Sur 12 mois" value={formatEUR(recovered * 12)} highlight />
       </div>
 
-      <p className="mt-3 text-xs text-muted-foreground">Estimation basée sur vos réponses, non garantie</p>
+      <p className="mt-3 text-xs text-muted-foreground">Estimation basée sur tes réponses, non garantie</p>
       <p className="mt-1 text-xs text-muted-foreground">Chiffre d'affaires récupérable estimé, avant abonnement, frais de mise en place et éventuels dépassements de minutes.</p>
 
       {/* Hypothèses détaillées */}

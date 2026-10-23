@@ -133,7 +133,7 @@ export function ProspectSwitcher({ className }: { className?: string }) {
             <li className="rounded-lg px-3 py-6 text-center text-xs text-muted-foreground">
               Aucune simulation enregistrée pour le moment.
               <br />
-              Remplissez le diagnostic puis cliquez sur « Enregistrer l'actuel ».
+              Remplis le diagnostic puis clique sur « Enregistrer l'actuel ».
             </li>
           ) : (
             prospects.map((p) => {

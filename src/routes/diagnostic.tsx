@@ -36,10 +36,10 @@ export const Route = createFileRoute("/diagnostic")({
     meta: [
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { title: "Diagnostic — Lucie Command Center" },
+      { title: "Diagnostic — Ton diagnostic Lucie" },
       {
         name: "description",
-        content: "Diagnostic interactif : évaluez le chiffre d'affaires que vous laissez sur la table chaque mois.",
+        content: "Diagnostic interactif : évalue le chiffre d'affaires que tu laisses sur la table chaque mois.",
       },
       { property: "og:title", content: "Diagnostic — Lucie" },
       { property: "og:description", content: "Le diagnostic commercial en direct de Lucie." },
@@ -66,7 +66,7 @@ function Diagnostic() {
       <PageHeader
         eyebrow="Étape 1 · Diagnostic"
         title="Diagnostic commercial"
-        description="Répondez aux questions à gauche — les indicateurs à droite se recalculent en temps réel."
+        description="Réponds aux questions à gauche — les indicateurs à droite se recalculent en temps réel."
         actions={
           <Button asChild variant="outline" className="rounded-xl">
             <Link to="/roi">
@@ -79,7 +79,7 @@ function Diagnostic() {
       <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)]">
         {/* FORM */}
         <div className="rounded-3xl border border-border bg-card p-6 md:p-8 shadow-[var(--shadow-card)]">
-          <SectionTitle step="A" title="Votre entreprise" />
+          <SectionTitle step="A" title="Ton entreprise" />
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Nom de l'entreprise">
               <Input
@@ -136,7 +136,7 @@ function Diagnostic() {
             </Field>
           </div>
 
-          <SectionTitle step="D" title="Comment trouvez-vous vos clients ?" className="mt-8" />
+          <SectionTitle step="D" title="Comment trouves-tu tes clients ?" className="mt-8" />
           <div className="flex flex-wrap gap-2">
             {CHANNEL_OPTIONS.map((c) => {
               const active = state.channels.includes(c.value);
@@ -163,7 +163,7 @@ function Diagnostic() {
           <div className="flex items-center justify-between">
             <div>
               <div className="text-[11px] uppercase tracking-widest text-muted-foreground">
-                Simulation de votre activité
+                Simulation de ton activité
               </div>
               <div className="text-lg font-semibold tracking-tight text-foreground">
                 Estimations recalculées en temps réel
@@ -218,7 +218,7 @@ function Diagnostic() {
           <div className="rounded-3xl border border-primary/20 bg-primary/[0.04] p-5 shadow-[var(--shadow-card)]">
             <div className="text-[11px] uppercase tracking-widest text-primary">Résumé exécutif</div>
             <p className="mt-2 text-[15px] leading-relaxed text-foreground">
-              À votre volume d'appels actuel, vous laissez potentiellement{" "}
+              À ton volume d'appels actuel, tu laisses potentiellement{" "}
               <span className="font-semibold text-primary">
                 {formatEUR(m.monthlyLostRevenue)}
               </span>{" "}
@@ -228,7 +228,7 @@ function Diagnostic() {
               </span>{" "}
               par an.
             </p>
-            <p className="mt-3 text-xs text-muted-foreground">Estimation basée sur vos réponses, non garantie</p>
+            <p className="mt-3 text-xs text-muted-foreground">Estimation basée sur tes réponses, non garantie</p>
           </div>
 
             <RecommendationCard />

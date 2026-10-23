@@ -61,18 +61,18 @@ const JOURNEY_STEPS = [
 
 function JourneyProgress({ activeIndex }: { activeIndex: number }) {
   return (
-    <nav aria-label="Progression de votre onboarding" className="w-full">
+    <nav aria-label="Progression de ton onboarding" className="w-full">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <div className="text-[11px] font-medium uppercase tracking-widest text-primary">
-            Votre parcours
+            Ton parcours
           </div>
           <h2 className="mt-0.5 text-lg font-semibold tracking-tight text-foreground">
-            Où en êtes-vous ?
+            Où en es-tu ?
           </h2>
         </div>
         <p className="max-w-sm text-sm text-muted-foreground">
-          Terminez la configuration ci-dessous pour lancer la mise en production de Lucie.
+          Termine la configuration ci-dessous pour lancer la mise en production de Lucie.
         </p>
       </div>
 
@@ -156,7 +156,7 @@ export const Route = createFileRoute("/merci")({
       {
         name: "description",
         content:
-          "Votre paiement a bien été confirmé. Prochaine étape : la mise en place de Lucie en 96 h.",
+          "Ton paiement a bien été confirmé. Prochaine étape : la mise en place de Lucie en 96 h.",
       },
       { property: "og:title", content: "Merci — Paiement confirmé | Lucie" },
       { property: "og:description", content: "Paiement reçu. On lance l'installation de Lucie." },
@@ -205,7 +205,7 @@ function MerciContent() {
   const effectivePlan = candidatePlan === "essential" || candidatePlan === "pro" || candidatePlan === "premium"
     ? candidatePlan
     : null;
-  const planLabel = effectivePlan ? PLAN_LABELS[effectivePlan] : "votre formule Lucie";
+  const planLabel = effectivePlan ? PLAN_LABELS[effectivePlan] : "ta formule Lucie";
   const planMissing = !effectivePlan;
 
   return (
@@ -215,7 +215,7 @@ function MerciContent() {
         title={isPaid ? "Merci — bienvenue chez Lucie" : "Confirmation de paiement"}
         description={
           isPaid
-            ? "Votre paiement a bien été reçu. Notre équipe prend le relais pour lancer votre installation."
+            ? "Ton paiement a bien été reçu. Notre équipe prend le relais pour lancer ton installation."
             : "Nous attendons la confirmation de paiement de la part de Stripe. Cela peut prendre quelques secondes."
         }
       />
@@ -237,8 +237,8 @@ function MerciContent() {
                 Confirmation en cours…
               </p>
               <p className="text-muted-foreground">
-                Votre paiement est en cours de validation côté Stripe. Cette
-                page se met à jour automatiquement, vous n'avez rien à faire.
+                Ton paiement est en cours de validation côté Stripe. Cette
+                page se met à jour automatiquement, tu n'as rien à faire.
               </p>
             </div>
           </div>
@@ -255,7 +255,7 @@ function MerciContent() {
             <div className="space-y-1 text-sm">
               <p className="font-semibold text-foreground">Paiement remboursé</p>
               <p className="text-muted-foreground">
-                Si cela est inattendu, écrivez-nous à{" "}
+                Si cela est inattendu, écris-nous à{" "}
                 <a href={`mailto:${CONTACT_EMAIL}?subject=Paiement%20remboursé`} className="font-medium text-primary underline underline-offset-2">
                   {CONTACT_EMAIL}
                 </a>.
@@ -280,19 +280,19 @@ function MerciContent() {
                 Paiement bien reçu — formule non détectée automatiquement
               </p>
               <p className="text-muted-foreground">
-                Si vous venez de régler mais que la page n'a pas retenu votre
+                Si tu viens de régler mais que la page n'a pas retenu votre
                 formule (redirection Stripe incomplète, retour arrière du
                 navigateur, lien ouvert dans un autre onglet), aucun souci :
-                votre paiement est enregistré côté Stripe. Sélectionnez
+                ton paiement est enregistré côté Stripe. Sélectionne
                 ci-dessous la formule payée pour retrouver le bon récapitulatif,
-                ou écrivez-nous à{" "}
+                ou écris-nous à{" "}
                 <a
                   href={`mailto:${CONTACT_EMAIL}?subject=Confirmation%20paiement%20Lucie`}
                   className="font-medium text-primary underline underline-offset-2"
                 >
                   {CONTACT_EMAIL}
                 </a>
-                {" "}avec votre reçu Stripe, on prend le relais sous 24 h.
+                {" "}avec ton reçu Stripe, on prend le relais sous 24 h.
               </p>
               <div className="flex flex-wrap gap-2 pt-1">
                 {(["essential", "pro", "premium"] as const).map((p) => (
@@ -325,8 +325,8 @@ function MerciContent() {
             Paiement validé ✅
           </h2>
           <p className="mt-3 max-w-xl text-sm text-muted-foreground sm:text-base">
-            Un reçu vient de vous être envoyé par Stripe. Notre équipe vous
-            contacte sous 24 heures ouvrées pour planifier votre installation.
+            Un reçu vient de t’être envoyé par Stripe. Notre équipe vous
+            contacte sous 24 heures ouvrées pour planifier ton installation.
           </p>
         </div>
 
@@ -377,7 +377,7 @@ function MerciContent() {
             {
               icon: Mail,
               title: "Reçu par email",
-              text: "Vérifiez votre boîte de réception (et vos spams).",
+              text: "Vérifie ton boîte de réception (et tes spams).",
             },
             {
               icon: Calendar,
@@ -424,12 +424,12 @@ function MerciContent() {
                 id="rdv-test-merci-title"
                 className="mt-1 text-lg font-semibold tracking-tight text-foreground sm:text-xl"
               >
-                Complétez votre configuration personnalisée
+                Complète ta configuration personnalisée
               </h2>
               <p className="mt-1.5 max-w-xl text-sm text-muted-foreground">
-                Votre paiement est confirmé. Envoyez votre configuration pour lancer
+                Ton paiement est confirmé. Envoie ta configuration pour lancer
                 l'installation. Le rendez-vous de test &amp; paramétrage se débloquera
-                automatiquement dès que votre installation sera prête.
+                automatiquement dès que ton installation sera prête.
               </p>
             </div>
           </div>
@@ -460,10 +460,10 @@ function MerciContent() {
               Étape 3 — Timeline d'exploitation
             </div>
             <h3 className="mt-1 text-lg font-semibold tracking-tight text-foreground">
-              Suivez le déploiement en temps réel
+              Suis le déploiement en temps réel
             </h3>
             <p className="mt-1 max-w-xl text-sm text-muted-foreground">
-              Dès la configuration envoyée, retrouvez ici le cadrage, la mise
+              Dès la configuration envoyée, retrouve ici le cadrage, la mise
               en production et la phase de test.
             </p>
           </div>

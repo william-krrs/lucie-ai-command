@@ -26,7 +26,7 @@ export const Route = createFileRoute("/preparation")({
       {
         name: "description",
         content:
-          "Formulaire de configuration personnalisée après paiement : renseignez vos informations pour lancer l'installation de Lucie en 96 h.",
+          "Formulaire de configuration personnalisée après paiement : renseigne tes informations pour lancer l'installation de Lucie en 96 h.",
       },
       {
         property: "og:title",
@@ -35,7 +35,7 @@ export const Route = createFileRoute("/preparation")({
       {
         property: "og:description",
         content:
-          "Renseignez votre entreprise et vos préférences pour accélérer le lancement.",
+          "Renseigne ton entreprise et tes préférences pour accélérer le lancement.",
       },
       {
         property: "og:url",
@@ -71,10 +71,10 @@ function PreparationContent() {
       <LockedPage
         title="Configuration verrouillée"
         step="Configuration personnalisée"
-        description="La configuration personnalisée se débloque dès que votre paiement est confirmé par notre système."
+        description="La configuration personnalisée se débloque dès que ton paiement est confirmé par notre système."
         waitingFor="step"
         waitingTitle="Paiement en attente de confirmation"
-        waitingText="Dès que votre paiement est confirmé, le formulaire de configuration s'ouvre automatiquement sur cette page."
+        waitingText="Dès que ton paiement est confirmé, le formulaire de configuration s'ouvre automatiquement sur cette page."
         backTo="/offres"
         backLabel="Revoir les offres"
       />
@@ -87,7 +87,7 @@ function PreparationContent() {
       <PageHeader
         eyebrow={`Étape 4 · Mise en place — Formule ${planLabel}`}
         title="Configuration personnalisée"
-        description="Un formulaire sur mesure pour tout centraliser. Une fois validé, votre assistante sera prête pour une phase de test en 96 h."
+        description="Un formulaire sur mesure pour tout centraliser. Une fois validé, ton assistante sera prête pour une phase de test en 96 h."
       />
       <PreparationForm plan={plan} />
     </div>

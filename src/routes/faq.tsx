@@ -13,7 +13,7 @@ import { useLaunchOffer } from "@/lib/use-launch-offer";
 export const Route = createFileRoute("/faq")({
   head: () => ({
     meta: [
-      { title: "Questions fréquentes — Lucie Command Center" },
+      { title: "Questions fréquentes — Ton diagnostic Lucie" },
       {
         name: "description",
         content: "Toutes les réponses sur le fonctionnement, la sécurité et la mise en place de Lucie.",
@@ -40,23 +40,23 @@ const QUESTIONS = [
   },
   {
     q: "Comment fonctionne Lucie ?",
-    a: "Lucie est une assistante IA vocale connectée à votre ligne téléphonique. Elle se présente toujours comme une assistante IA, comprend la demande, qualifie le prospect, prend un rendez-vous dans votre agenda et vous envoie un résumé structuré.",
+    a: "Lucie est une assistante IA vocale connectée à ta ligne téléphonique. Elle se présente toujours comme une assistante IA, comprend la demande, qualifie le prospect, prend un rendez-vous dans ton agenda et t’envoie un résumé structuré.",
   },
   {
     q: "Puis-je garder mon numéro ?",
-    a: "Oui. Nous mettons en place soit un renvoi d'appel depuis votre numéro actuel, soit un portage complet. Aucun changement pour vos clients.",
+    a: "Oui. Nous mettons en place soit un renvoi d'appel depuis ton numéro actuel, soit un portage complet. Aucun changement pour tes clients.",
   },
   {
     q: "Puis-je changer de formule ?",
-    a: "Oui, vous pouvez passer d'Essential à Pro ou Premium à tout moment. Le changement est effectif immédiatement, sans coupure de service.",
+    a: "Oui, tu peux passer d'Essential à Pro ou Premium à tout moment. Le changement est effectif immédiatement, sans coupure de service.",
   },
   {
     q: "Combien de temps pour l'installation ?",
-    a: "La mise en place de Lucie est prévue en 96 h. Vous recevez un planning précis dès la signature.",
+    a: "La mise en place de Lucie est prévue en 96 h. Tu reçois un planning précis dès la signature.",
   },
   {
     q: "Comment sont protégées les données ?",
-    a: "Les modalités de protection, d'hébergement, de conservation et d'accès aux données sont à confirmer avec notre équipe avant la mise en place, selon votre configuration et les services utilisés.",
+    a: "Les modalités de protection, d'hébergement, de conservation et d'accès aux données sont à confirmer avec notre équipe avant la mise en place, selon ta configuration et les services utilisés.",
   },
   {
     q: "Lucie parle-t-elle plusieurs langues ?",

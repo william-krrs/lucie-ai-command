@@ -67,7 +67,7 @@ export function ActivityCombobox({ value, onChange, placeholder = "Choisir une a
             <CommandInput
               value={query}
               onValueChange={setQuery}
-              placeholder="Tapez pour filtrer (ex. p…)"
+              placeholder="Tape pour filtrer (ex. p…)"
               className="h-10"
             />
           </div>

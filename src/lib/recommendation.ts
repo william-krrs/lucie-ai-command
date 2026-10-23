@@ -70,27 +70,27 @@ export const PRIORITY_CTA: Record<Priority, PriorityCta> = {
   high: {
     emoji: "🔥",
     eyebrow: "Priorité élevée · À traiter cette semaine",
-    title: "Réservez votre créneau de démarrage prioritaire",
+    title: "Réserve ton créneau de démarrage prioritaire",
     description:
-      "Votre profil présente un potentiel de récupération estimé. Notre équipe vous rappelle sous 24 h pour préparer la mise en place en 96 h.",
+      "Ton profil présente un potentiel de récupération estimé. Notre équipe te rappelle sous 24 h pour préparer la mise en place en 96 h.",
     primaryLabel: "Démarrer maintenant",
     secondaryLabel: "Voir la démonstration",
   },
   medium: {
     emoji: "🟡",
     eyebrow: "Priorité moyenne · À planifier",
-    title: "Poursuivez vers la démonstration et la formule adaptée",
+    title: "Poursuis vers la démonstration et la formule adaptée",
     description:
-      "Lucie peut vous apporter de la valeur. Regardez la démonstration puis validez la formule recommandée pour cadrer le déploiement à votre rythme.",
+      "Lucie peut t’apporter de la valeur. Regarde la démonstration puis valide la formule recommandée pour cadrer le déploiement à ton rythme.",
     primaryLabel: "Voir la formule recommandée",
     secondaryLabel: "Voir la démonstration",
   },
   low: {
     emoji: "⚪",
     eyebrow: "Priorité faible · Explorer sans engagement",
-    title: "Explorez Lucie à votre rythme",
+    title: "Explore Lucie à ton rythme",
     description:
-      "L'impact immédiat serait limité aujourd'hui. Découvrez la démonstration et gardez notre contact : nous referons un point dès que votre activité évoluera.",
+      "L'impact immédiat serait limité aujourd'hui. Découvre la démonstration et garde notre contact : nous referons un point dès que ton activité évoluera.",
     primaryLabel: "Voir la démonstration",
     secondaryLabel: "Consulter les offres",
   },
@@ -132,14 +132,14 @@ export function computeVolumes(state: DiagnosticState) {
 }
 
 export const PLAN_BADGES: Record<PlanKey, string> = {
-  essential: "Recommandé pour votre profil",
-  pro: "Recommandé pour votre entreprise",
+  essential: "Recommandé pour ton profil",
+  pro: "Recommandé pour ton entreprise",
   premium: "Recommandé Grand Volume",
 };
 
-export const INELIGIBLE_TITLE = "Lucie n'est pas recommandée pour votre volume actuel";
+export const INELIGIBLE_TITLE = "Lucie n'est pas recommandée pour ton volume actuel";
 export const INELIGIBLE_TEXT =
-  "Avec moins de 5 appels manqués par semaine, votre flux est insuffisant pour rentabiliser un forfait à 149 €/mois. Nous vous conseillons de conserver votre organisation actuelle et de revenir vers nous lorsque votre volume dépassera 15 à 20 appels par semaine.";
+  "Avec moins de 5 appels manqués par semaine, ton flux est insuffisant pour rentabiliser un forfait à 149 €/mois. Nous te conseillons de conserver ton organisation actuelle et de revenir vers nous lorsque ton volume dépassera 15 à 20 appels par semaine.";
 
 export function computeRecommendation(
   state: DiagnosticState,
@@ -174,14 +174,14 @@ export function computeRecommendation(
   } else if (missed > 90 || team > 10 || v.minutesEstimeesDebordement > 800) {
     plan = "premium";
     planReason =
-      "Volume critique. Le forfait 2 500 min garantit la continuité 24/7 et le multi-lignes simultané pour l'ensemble de votre flotte de techniciens.";
+      "Volume critique. Le forfait 2 500 min garantit la continuité 24/7 et le multi-lignes simultané pour l'ensemble de ta flotte de techniciens.";
   } else if (missed >= 35 || team >= 4) {
     plan = "pro";
-    planReason = `Vos ${v.minutesEstimeesDebordement.toLocaleString("fr-FR")} min estimées nécessitent le forfait 800 min pour absorber les pics de débordement en journée et sécuriser vos astreintes sans risque de hors-forfait.`;
+    planReason = `Tes ${v.minutesEstimeesDebordement.toLocaleString("fr-FR")} min estimées nécessitent le forfait 800 min pour absorber les pics de débordement en journée et sécuriser tes astreintes sans risque de hors-forfait.`;
   } else {
     plan = "essential";
     planReason =
-      "Vos 300 minutes incluses couvrent largement vos besoins sur chantiers et soirs/week-ends.";
+      "Tes 300 minutes incluses couvrent largement tes besoins sur chantiers et soirs/week-ends.";
   }
 
   // --- Priority ---
@@ -197,7 +197,7 @@ export function computeRecommendation(
 
   if (state.missedCalls >= 10)
     justifications.push(
-      `Vous perdez ${state.missedCalls} appels par semaine — un manque à gagner récurrent.`,
+      `Tu perds ${state.missedCalls} appels par semaine — un manque à gagner récurrent.`,
     );
   else if (state.missedCalls > 0)
     concerns.push(
@@ -206,22 +206,22 @@ export function computeRecommendation(
 
   if (state.callsPerWeek >= 60)
     justifications.push(
-      "Votre activité dépend fortement du téléphone comme point de contact.",
+      "Ton activité dépend fortement du téléphone comme point de contact.",
     );
-  else concerns.push("Votre volume d'appels est encore modeste.");
+  else concerns.push("Ton volume d'appels est encore modeste.");
 
   if (hasPaidChannel)
     justifications.push(
-      "Vous investissez déjà dans votre acquisition — Lucie sécurise ces investissements.",
+      "Tu investis déjà dans ton acquisition — Lucie sécurise ces investissements.",
     );
   else
     concerns.push(
-      "Vous n'investissez pas encore en acquisition payante : le ROI est plus long à matérialiser.",
+      "Tu n'investis pas encore en acquisition payante : le ROI est plus long à matérialiser.",
     );
 
   if (state.employees >= 3)
     justifications.push(
-      "Votre entreprise est suffisamment structurée pour intégrer Lucie sans friction.",
+      "Ton entreprise est suffisamment structurée pour intégrer Lucie sans friction.",
     );
   else
     concerns.push(

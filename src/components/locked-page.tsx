@@ -120,9 +120,9 @@ export function LockedPage({
       <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
         {description ??
           (hasMeeting
-            ? "Cette page se débloquera automatiquement le jour de votre rendez-vous avec l'équipe Lucie."
+            ? "Cette page se débloquera automatiquement le jour de ton rendez-vous avec l'équipe Lucie."
             : isR2
-              ? "Réservez d'abord un créneau avec l'équipe Lucie pour débloquer cette étape."
+              ? "Réserve d'abord un créneau avec l'équipe Lucie pour débloquer cette étape."
               : "Cette étape se débloquera automatiquement dès que l'étape précédente du parcours sera validée.")}
       </p>
 
@@ -149,8 +149,8 @@ export function LockedPage({
           <p className="mt-1 text-xs text-muted-foreground">
             {unlockNote ??
               (step
-                ? `Revenez ce jour-là pour débloquer "${step}" et poursuivre le parcours.`
-                : "Revenez ce jour-là pour débloquer la suite du parcours.")}
+                ? `Reviens ce jour-là pour débloquer "${step}" et poursuivre le parcours.`
+                : "Reviens ce jour-là pour débloquer la suite du parcours.")}
           </p>
         </div>
       ) : isR2 ? (
@@ -160,7 +160,7 @@ export function LockedPage({
             Aucun rendez-vous détecté
           </div>
           <p className="mt-1 text-xs text-muted-foreground">
-            Réservez un créneau dans l’agenda depuis la page Recommandation pour
+            Réserve un créneau dans l’agenda depuis la page Recommandation pour
             débloquer automatiquement la suite.
           </p>
         </div>
@@ -172,7 +172,7 @@ export function LockedPage({
           </div>
           <p className="mt-1 text-xs text-muted-foreground">
             {waitingText ??
-              "Terminez l'étape précédente du parcours : cette page se débloquera automatiquement."}
+              "Termine l'étape précédente du parcours : cette page se débloquera automatiquement."}
           </p>
         </div>
       )}

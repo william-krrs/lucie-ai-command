@@ -29,7 +29,7 @@ export const Route = createFileRoute("/d/$token")({
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { title: "Diagnostic partagé — Lucie" },
-      { name: "description", content: "Consultez le diagnostic Lucie partagé et téléchargez-le en PDF." },
+      { name: "description", content: "Consulte le diagnostic Lucie partagé et télécharge-le en PDF." },
       { name: "robots", content: "noindex, nofollow" },
       { property: "og:title", content: "Diagnostic partagé — Lucie" },
       { property: "og:description", content: "Diagnostic Lucie partagé : compatibilité et ROI estimé, sans garantie de résultat." },
@@ -44,7 +44,7 @@ export const Route = createFileRoute("/d/$token")({
   notFoundComponent: () => (
     <StateScreen
       title="Diagnostic introuvable"
-      body="Ce lien a expiré ou n'existe plus. Demandez un nouveau lien de partage."
+      body="Ce lien a expiré ou n'existe plus. Demande un nouveau lien de partage."
     />
   ),
   component: SharedDiagnosticPage,
@@ -167,7 +167,7 @@ function SharedDiagnosticPage() {
         { size: 10, color: BRAND.body, gap: 12 },
       );
 
-      writeText("Estimation basée sur vos réponses, non garantie", { size: 9, color: BRAND.muted, gap: 6 });
+      writeText("Estimation basée sur tes réponses, non garantie", { size: 9, color: BRAND.muted, gap: 6 });
 
       // KPIs
       writeText("Indicateurs clés", { size: 9, bold: true, color: BRAND.muted, gap: 2 });
@@ -374,7 +374,7 @@ function SharedDiagnosticPage() {
             <Kpi label="ROI mensuel estimé" value={fmtEUR(snap.recommendation.estimatedMonthlyRoi)} emphasize />
           </div>
 
-          <p className="mt-3 text-xs text-muted-foreground">Estimation basée sur vos réponses, non garantie</p>
+          <p className="mt-3 text-xs text-muted-foreground">Estimation basée sur tes réponses, non garantie</p>
 
           {snap.recommendation.justifications.length > 0 && (
             <ListBlock title="Pourquoi cette recommandation ?" items={snap.recommendation.justifications} />
@@ -406,7 +406,7 @@ function SharedDiagnosticPage() {
                 Envoyer ce diagnostic par email
               </h2>
               <p className="mt-1 text-xs text-muted-foreground">
-                Envoyez le lien privé à un associé, un décideur ou en test à
+                Envoie le lien privé à un associé, un décideur ou en test à
                 vous-même. Le lien reste valable jusqu'au {expires}.
               </p>
             </div>
@@ -420,7 +420,7 @@ function SharedDiagnosticPage() {
                 type="text"
                 value={senderName}
                 onChange={(e) => setSenderName(e.target.value.slice(0, 120))}
-                placeholder="Votre nom"
+                placeholder="Ton nom"
                 className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
                 disabled={sendState.status === "sending"}
               />
@@ -514,8 +514,8 @@ function SharedDiagnosticPage() {
             )}
           </div>
           <p className="mt-3 text-[11px] text-muted-foreground">
-            Astuce : entrez votre propre email pour recevoir un envoi test avant
-            de le transférer à votre associé.
+            Astuce : entre ton propre email pour recevoir un envoi test avant
+            de le transférer à ton associé.
           </p>
         </form>
       </main>

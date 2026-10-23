@@ -34,12 +34,12 @@ export const Route = createFileRoute("/connexion")({
       {
         name: "description",
         content:
-          "Accédez à votre parcours Lucie : création de compte avec confirmation par email, connexion et récupération de mot de passe.",
+          "Accède à ton parcours Lucie : création de compte avec confirmation par email, connexion et récupération de mot de passe.",
       },
-      { property: "og:title", content: "Mon compte — Lucie Command Center" },
+      { property: "og:title", content: "Mon compte — Ton diagnostic Lucie" },
       {
         property: "og:description",
-        content: "Créez votre compte Lucie pour suivre votre parcours personnalisé.",
+        content: "Crée ton compte Lucie pour suivre ton parcours personnalisé.",
       },
       { name: "robots", content: "noindex, nofollow" },
     ],
@@ -141,7 +141,7 @@ function ConnexionPage() {
     } catch (error) {
       const message =
         error instanceof Error && /email not confirmed/i.test(error.message)
-          ? "Votre adresse n'est pas encore confirmée : ouvrez le lien reçu par email."
+          ? "Ton adresse n'est pas encore confirmée : ouvre le lien reçu par email."
           : "Identifiants invalides.";
       toast.error(message);
     } finally {
@@ -151,7 +151,7 @@ function ConnexionPage() {
 
   async function handleReset() {
     if (!email) {
-      toast.error("Renseignez d'abord votre adresse email.");
+      toast.error("Renseigne d'abord ton adresse email.");
       return;
     }
     setBusy(true);
@@ -190,8 +190,8 @@ function ConnexionPage() {
       <div className="mx-auto w-full max-w-md space-y-6">
         <PageHeader
           eyebrow="Mon compte"
-          title="Confirmez votre adresse email"
-          description="Votre compte est créé mais pas encore actif."
+          title="Confirme ton adresse email"
+          description="Ton compte est créé mais pas encore actif."
         />
         <Card className="space-y-4 p-6 text-sm text-muted-foreground">
           <div className="flex items-center gap-2 text-foreground">
@@ -199,8 +199,8 @@ function ConnexionPage() {
             <span className="font-medium">Un email vient de partir vers {email}</span>
           </div>
           <p>
-            Ouvrez le lien de confirmation : vous serez ramené automatiquement à
-            l'étape que vous vouliez atteindre. Votre diagnostic déjà rempli sur ce
+            Ouvre le lien de confirmation : tu seras ramené automatiquement à
+            l'étape que tu voulais atteindre. Ton diagnostic déjà rempli sur ce
             navigateur est conservé.
           </p>
           <Button
@@ -220,8 +220,8 @@ function ConnexionPage() {
     <div className="mx-auto w-full max-w-md space-y-6">
       <PageHeader
         eyebrow="Mon compte"
-        title="Accédez à votre parcours"
-        description="Votre parcours (rendez-vous, paiement, configuration, installation) est rattaché à votre compte. Le diagnostic reste accessible sans compte."
+        title="Accède à ton parcours"
+        description="Ton parcours (rendez-vous, paiement, configuration, installation) est rattaché à ton compte. Le diagnostic reste accessible sans compte."
       />
       <Card className="p-6">
         <Tabs value={tab} onValueChange={(v) => setTab(v as "signin" | "signup")}>
@@ -298,7 +298,7 @@ function ConnexionPage() {
                 Créer mon compte
               </Button>
               <p className="text-center text-xs text-muted-foreground">
-                Un email de confirmation vous sera envoyé : votre compte est activé
+                Un email de confirmation te sera envoyé : ton compte est activé
                 après avoir cliqué sur le lien.
               </p>
             </form>

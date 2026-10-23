@@ -297,7 +297,7 @@ export function BookingEmbed({
             "[booking-token] emission failed with an active session",
             { bookingType, reason: error instanceof Error ? error.name : "unknown" },
           );
-          toast.error("Le lien de réservation n'a pas pu être sécurisé. Votre RDV sera rattaché via votre e-mail.");
+          toast.error("Le lien de réservation n'a pas pu être sécurisé. Ton RDV sera rattaché via ton e-mail.");
         } else {
           console.warn("[booking-token] no token issued", { bookingType, reason });
         }
@@ -538,9 +538,9 @@ export function BookingEmbed({
       addShareHistoryEntry({ url: link, token, companyName: state.companyName || "Récap RDV" });
       try {
         await navigator.clipboard.writeText(link);
-        toast.success("Lien récap copié — envoyez-le au prospect.");
+        toast.success("Lien récap copié — envoie-le au prospect.");
       } catch {
-        toast.info("Lien récap généré — copiez-le ci-dessous.");
+        toast.info("Lien récap généré — copie-le ci-dessous.");
       }
     } catch (err) {
       console.error(err);
@@ -556,13 +556,13 @@ export function BookingEmbed({
       await navigator.clipboard.writeText(recapUrl);
       toast.success("Lien copié dans le presse-papiers.");
     } catch {
-      toast.error("Copie impossible. Sélectionnez le lien manuellement.");
+      toast.error("Copie impossible. Sélectionne le lien manuellement.");
     }
   }
 
   async function confirm() {
     if (!manualDate) {
-      toast.error("Sélectionnez la date de votre rendez-vous.");
+      toast.error("Sélectionne la date de ton rendez-vous.");
       dateInputRef.current?.focus();
       return;
     }
@@ -628,7 +628,7 @@ export function BookingEmbed({
               </h2>
               <p className="mt-1 max-w-xl text-sm text-muted-foreground">
                 {bookedDescription ??
-                  "Votre rendez-vous est confirmé. La Démonstration sera accessible 15 minutes avant votre rendez-vous. Les étapes suivantes se débloqueront progressivement au fil de votre accompagnement."}
+                  "Ton rendez-vous est confirmé. La Démonstration sera accessible 15 minutes avant ton rendez-vous. Les étapes suivantes se débloqueront progressivement au fil de ton accompagnement."}
               </p>
             </div>
           </div>
@@ -640,7 +640,7 @@ export function BookingEmbed({
                 setRescheduling(true);
                 setManualDate(booking.date);
                 setManualTime(booking.time ?? "10:00");
-                toast.info("Choisissez un nouveau créneau ci-dessous.");
+                toast.info("Choisis un nouveau créneau ci-dessous.");
               }}
               aria-label="Reprogrammer mon rendez-vous"
             >
@@ -675,7 +675,7 @@ export function BookingEmbed({
             Lien récap partageable
           </div>
           <p className="mt-1 text-sm text-muted-foreground">
-            Générez un lien lecture seule (diagnostic + RDV confirmé) à envoyer au prospect
+            Génère un lien lecture seule (diagnostic + RDV confirmé) à envoyer au prospect
             juste après la prise de rendez-vous.
           </p>
           {recapUrl ? (
@@ -743,17 +743,17 @@ export function BookingEmbed({
         </span>
         <div className="min-w-0">
           <div className="text-[11px] font-medium uppercase tracking-widest text-primary">
-            {eyebrow ?? "Étape suivante · Réservez votre rendez-vous"}
+            {eyebrow ?? "Étape suivante · Réserve ton rendez-vous"}
           </div>
           <h2
             id="booking-title"
             className="mt-1 text-lg font-semibold tracking-tight text-foreground sm:text-xl"
           >
-            {title ?? "Choisissez un créneau avec l'équipe Lucie"}
+            {title ?? "Choisis un créneau avec l'équipe Lucie"}
           </h2>
           <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
             {description ??
-              "Sélectionnez directement votre horaire ci-dessous. La suite du parcours se débloque automatiquement dès que votre rendez-vous est confirmé."}
+              "Sélectionne directement ton horaire ci-dessous. La suite du parcours se débloque automatiquement dès que ton rendez-vous est confirmé."}
           </p>
         </div>
       </div>
@@ -792,8 +792,8 @@ export function BookingEmbed({
               </a>
             </div>
             <p className="mt-1 text-xs text-muted-foreground">
-              Vous pouvez aussi renseigner votre créneau manuellement ci-dessous une fois
-              votre RDV pris.
+              Tu peux aussi renseigner ton créneau manuellement ci-dessous une fois
+              ton RDV pris.
             </p>
           </div>
         )}
@@ -836,7 +836,7 @@ export function BookingEmbed({
           {awaitingConfirm ? (
             <>
               <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
-              Créneau réservé — confirmez pour débloquer la suite
+              Créneau réservé — confirme pour débloquer la suite
             </>
           ) : (
             "Saisie manuelle (mode admin)"
@@ -844,8 +844,8 @@ export function BookingEmbed({
         </div>
         <p className="mt-1 text-sm text-muted-foreground">
           {awaitingConfirm
-            ? "Vérifiez la date et l'heure prérenseignées, puis validez. La suite du parcours se débloquera automatiquement le jour J."
-            : "Réservé à l'équipe : renseignez un créneau de test pour débloquer la suite du parcours."}
+            ? "Vérifie la date et l'heure prérenseignées, puis valide. La suite du parcours se débloquera automatiquement le jour J."
+            : "Réservé à l'équipe : renseigne un créneau de test pour débloquer la suite du parcours."}
         </p>
         <div className="mt-3 grid gap-3 sm:grid-cols-[1fr_140px_auto]">
 
@@ -889,7 +889,7 @@ export function BookingEmbed({
       </div>
       ) : (
         <p className="mt-6 rounded-2xl border border-border bg-card p-4 text-sm text-muted-foreground sm:p-5">
-          Votre réservation est détectée automatiquement dès que le créneau est
+          Ta réservation est détectée automatiquement dès que le créneau est
           confirmé dans l'agenda ci-dessus — aucune saisie manuelle n'est nécessaire.
         </p>
       )}

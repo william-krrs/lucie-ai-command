@@ -43,10 +43,10 @@ const euros = (cents: number) =>
 export const Route = createFileRoute("/offres")({
   head: () => ({
     meta: [
-      { title: "Offres — Lucie Command Center" },
+      { title: "Offres — Ton diagnostic Lucie" },
       {
         name: "description",
-        content: "Trois formules simples : Essentiel, Pro et Premium. Choisissez celle qui correspond à votre volume.",
+        content: "Trois formules simples : Essentiel, Pro et Premium. Choisis celle qui correspond à ton volume.",
       },
       { property: "og:title", content: "Offres & tarifs — Lucie" },
       { property: "og:description", content: "Essentiel, Pro, Premium — 3 formules pour Lucie." },
@@ -151,7 +151,7 @@ function Offres() {
   return (
     <AccountGate
       step="Offres & paiement"
-      description="Le paiement et la suite du parcours sont rattachés à votre compte. Créez-le avant de choisir votre formule : votre diagnostic est conservé."
+      description="Le paiement et la suite du parcours sont rattachés à ton compte. Crée-le avant de choisir ta formule : ton diagnostic est conservé."
     >
       <OffresContent />
     </AccountGate>
@@ -192,10 +192,10 @@ function OffresContent() {
       const authIssue = /unauthor|401|session|jwt/i.test(raw);
       toast.error(
         authIssue
-          ? "Votre session a expiré. Rechargez la page puis relancez le paiement."
+          ? "Ta session a expiré. Recharge la page puis relance le paiement."
           : raw && raw.length < 160 && !/stripe_|sk_|secret/i.test(raw)
             ? raw
-            : "Impossible d'ouvrir le paiement. Réessayez dans un instant ou contactez-nous.",
+            : "Impossible d'ouvrir le paiement. Réessaie dans un instant ou contacte-nous.",
       );
       setCheckoutPlan(null);
     }
@@ -206,10 +206,10 @@ function OffresContent() {
       <LockedPage
         title="Offres verrouillées"
         step="Offres & pricing"
-        description="Votre diagnostic oriente vers la formule Premium : et vous décidez à plusieurs : réservez d'abord le rendez-vous, puis validez la démonstration."
+        description="Ton diagnostic oriente vers la formule Premium : et tu décides à plusieurs : réserve d'abord le rendez-vous, puis valide la démonstration."
         waitingFor="step"
         waitingTitle="Démonstration à valider"
-        waitingText="Rendez-vous sur la page Démonstration et validez « Continuer vers mes offres » pour débloquer cette étape."
+        waitingText="Rendez-vous sur la page Démonstration et valide « Continuer vers mes offres » pour débloquer cette étape."
         backTo="/demonstration"
         backLabel="Aller à la démonstration"
       />
@@ -225,7 +225,7 @@ function OffresContent() {
       <PageHeader
         eyebrow="Étape 3 · Démonstration & offre"
         title="Notre recommandation"
-        description="Trois formules, une même exigence. La formule mise en avant est déterminée automatiquement par votre diagnostic."
+        description="Trois formules, une même exigence. La formule mise en avant est déterminée automatiquement par ton diagnostic."
       />
 
       <section
@@ -261,7 +261,7 @@ function OffresContent() {
                 ? "Après analyse, Lucie n'apporterait pas suffisamment de valeur aujourd'hui. Nous préférons être transparents plutôt que de vendre une solution inadaptée."
                 : `${rec.planReason} ${cta.description}`}
             </p>
-            <p className="mt-3 text-xs text-muted-foreground">Estimation basée sur vos réponses, non garantie</p>
+            <p className="mt-3 text-xs text-muted-foreground">Estimation basée sur tes réponses, non garantie</p>
           </div>
           <Button asChild variant="outline" className="rounded-xl">
             <Link to="/recommandation">
@@ -273,7 +273,7 @@ function OffresContent() {
       </section>
 
       <fieldset className="rounded-3xl border border-border bg-card p-4 sm:p-5">
-        <legend className="px-1 text-sm font-semibold text-foreground">Votre engagement</legend>
+        <legend className="px-1 text-sm font-semibold text-foreground">Ton engagement</legend>
         <div className="mt-2 grid gap-3 sm:grid-cols-2">
           {[
             { value: true, title: "Engagement 3 mois", text: "Mise en place offerte (0 €)." },
@@ -470,7 +470,7 @@ function OffresContent() {
                 Mise en place offerte avec engagement 3 mois
               </h2>
               <p className="mt-1.5 max-w-xl text-sm text-muted-foreground">
-                Le paramétrage complet de Lucie, la connexion à vos outils et la mise en production. {SETUP_FEE_RULE} Les renouvellements mensuels ne comprennent que votre abonnement. Mise en place en 96 h.
+                Le paramétrage complet de Lucie, la connexion à tes outils et la mise en production. {SETUP_FEE_RULE} Les renouvellements mensuels ne comprennent que ton abonnement. Mise en place en 96 h.
               </p>
               {launchText && (
                 <p className="mt-3 max-w-xl text-sm font-medium text-foreground">{launchText}</p>
@@ -507,10 +507,10 @@ function OffresContent() {
                 id="rdv-test-title"
                 className="mt-1 text-lg font-semibold tracking-tight text-foreground sm:text-xl"
               >
-                Vous préférez être accompagné avant de choisir ?
+                Tu préfères être accompagné avant de choisir ?
               </h2>
               <p className="mt-1.5 max-w-xl text-sm text-muted-foreground">
-                Réservez un rendez-vous test gratuit avec l'équipe Lucie. On vous présente la solution, on répond à vos questions et on valide ensemble la formule adaptée.
+                Réserve un rendez-vous test gratuit avec l'équipe Lucie. On te présente la solution, on répond à tes questions et on valide ensemble la formule adaptée.
               </p>
             </div>
           </div>
@@ -538,7 +538,7 @@ function OffresContent() {
               Comparateur
             </div>
             <h2 className="mt-1 text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
-              Comparez les fonctionnalités
+              Compare les fonctionnalités
             </h2>
             <div className="mt-1 text-xs text-muted-foreground sm:hidden">
               Formule sélectionnée :{" "}

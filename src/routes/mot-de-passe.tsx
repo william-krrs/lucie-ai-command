@@ -18,12 +18,12 @@ export const Route = createFileRoute("/mot-de-passe")({
       { title: "Définir mon mot de passe — Lucie" },
       {
         name: "description",
-        content: "Définissez un nouveau mot de passe pour votre compte Lucie Command Center.",
+        content: "Définis un nouveau mot de passe pour ton compte Ton diagnostic Lucie.",
       },
       { property: "og:title", content: "Définir mon mot de passe — Lucie" },
       {
         property: "og:description",
-        content: "Choisissez un nouveau mot de passe pour accéder à votre parcours.",
+        content: "Choisis un nouveau mot de passe pour accéder à ton parcours.",
       },
       { name: "robots", content: "noindex, nofollow" },
     ],
@@ -71,13 +71,13 @@ function MotDePassePage() {
       <PageHeader
         eyebrow="Mon compte"
         title="Définir mon mot de passe"
-        description="Ce lien est valable une seule fois. Choisissez un mot de passe d'au moins 8 caractères."
+        description="Ce lien est valable une seule fois. Choisis un mot de passe d'au moins 8 caractères."
       />
       <Card className="p-6">
         {!ready ? (
           <p className="text-sm text-muted-foreground">
             Lien de récupération en cours de vérification. S'il a expiré,
-            demandez-en un nouveau depuis la page de connexion.
+            demande-en un nouveau depuis la page de connexion.
           </p>
         ) : (
           <form className="space-y-4" onSubmit={handleSubmit}>

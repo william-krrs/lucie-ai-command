@@ -60,7 +60,7 @@ export const Route = createFileRoute("/recommandation")({
       {
         property: "og:description",
         content:
-          "Le récapitulatif de votre compatibilité avec Lucie, basé sur vos réponses.",
+          "Le récapitulatif de ta compatibilité avec Lucie, basé sur tes réponses.",
       },
       {
         property: "og:url",
@@ -177,8 +177,8 @@ function RecommandationPage() {
   const partnerCountError = useMemo(() => {
     if (!state.hasPartner) return null;
     const n = state.partnerCount;
-    if (!Number.isFinite(n) || !Number.isInteger(n)) return "Entrez un nombre entier.";
-    if (n < 2) return "Vous devez être au moins 2.";
+    if (!Number.isFinite(n) || !Number.isInteger(n)) return "Entre un nombre entier.";
+    if (n < 2) return "Tu dois être au moins 2.";
     if (n > 20) return "Maximum 20 décideurs.";
     return null;
   }, [state.hasPartner, state.partnerCount]);
@@ -188,7 +188,7 @@ function RecommandationPage() {
     if (!partner) return;
     setTouchedFields((prev) => ({ ...prev, [id]: { name: true, email: true } }));
     if (!isPartnerValid(id)) {
-      toast.error("Corrigez les erreurs avant d'envoyer.");
+      toast.error("Corrige les erreurs avant d'envoyer.");
       return;
     }
     const email = partner.email.trim();
@@ -208,13 +208,13 @@ function RecommandationPage() {
         );
       }
       updatePartner(id, { shareUrl: url, sentAt: new Date().toISOString() });
-      const company = state.companyName || "votre entreprise";
+      const company = state.companyName || "ton entreprise";
       const who = partner.name.trim();
       const hello = who ? `Bonjour ${who},` : "Bonjour,";
       const subject = `Récap diagnostic Lucie — ${company}`;
       const body = `${hello}\n\nVoici le récapitulatif du diagnostic Lucie pour ${company} :\n${url}\n\nCe lien sécurisé personnel est valable 30 jours.\n\nBien à vous,`;
       window.location.href = `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-      toast.success("Lien généré — ouverture de votre email…");
+      toast.success("Lien généré — ouverture de ton email…");
     } catch (err) {
       toast.error("Impossible de générer le lien", {
         description: err instanceof Error ? err.message : undefined,
@@ -287,7 +287,7 @@ function RecommandationPage() {
           });
         } catch {
           toast.error("Presse-papiers bloqué", {
-            description: "Copiez le lien affiché ci-dessous manuellement.",
+            description: "Copie le lien affiché ci-dessous manuellement.",
           });
         }
       }
@@ -309,7 +309,7 @@ function RecommandationPage() {
       toast.success("Lien copié dans le presse-papiers");
     } catch {
       toast.error("Impossible de copier le lien", {
-        description: "Autorisez l’accès au presse-papiers puis réessayez.",
+        description: "Autorise l’accès au presse-papiers puis réessaie.",
       });
     }
   };
@@ -406,8 +406,8 @@ function RecommandationPage() {
     <div className="space-y-10">
       <PageHeader
         eyebrow="Étape 2 · Résultats"
-        title="Votre diagnostic est terminé"
-        description="Voici la synthèse basée sur vos réponses, la formule recommandée — ou pas — et les prochaines étapes."
+        title="Ton diagnostic est terminé"
+        description="Voici la synthèse basée sur tes réponses, la formule recommandée — ou pas — et les prochaines étapes."
         actions={
           <div className="flex flex-wrap gap-2">
             <Button
@@ -457,7 +457,7 @@ function RecommandationPage() {
             Prise de décision
           </h2>
           <p className="text-sm text-muted-foreground">
-            Êtes-vous seul(e) à décider, ou souhaitez-vous partager le récap avec un(e) associé(e) ?
+            Es-tu seul(e) à décider, ou souhaites-tu partager le récap avec un(e) associé(e) ?
           </p>
         </div>
 
@@ -505,7 +505,7 @@ function RecommandationPage() {
 
             <label className="flex flex-col gap-1 rounded-xl border border-border bg-background/60 p-3 text-sm sm:flex-row sm:items-center sm:justify-between">
               <span className="text-muted-foreground">
-                Nombre total de décideurs (vous compris)
+                Nombre total de décideurs (toi compris)
               </span>
               <div className="flex flex-col items-end gap-1">
                 <Input
@@ -540,7 +540,7 @@ function RecommandationPage() {
 
             {state.partners.length === 0 ? (
               <p className="rounded-xl border border-dashed border-border bg-background/40 p-4 text-sm text-muted-foreground">
-                Ajoutez chaque associé pour lui envoyer un lien sécurisé personnel (unique et traçable).
+                Ajoute chaque associé pour lui envoyer un lien sécurisé personnel (unique et traçable).
               </p>
             ) : (
               <ul className="space-y-3">
@@ -653,7 +653,7 @@ function RecommandationPage() {
                           className="rounded-xl"
                           disabled={!canSend}
                           aria-disabled={!canSend}
-                          title={!isPartnerValid(p.id) ? "Complétez le nom et un email valide." : undefined}
+                          title={!isPartnerValid(p.id) ? "Complète le nom et un email valide." : undefined}
                           onClick={() => generateAndSendForPartner(p.id)}
                         >
                           {busy ? (
@@ -745,11 +745,11 @@ function RecommandationPage() {
                       toast.error("Adresse email invalide.");
                       return;
                     }
-                    const company = state.companyName || "votre entreprise";
-                    const subject = `Votre diagnostic Lucie — ${company}`;
-                    const body = `Bonjour,\n\nVoici le lien vers votre diagnostic Lucie personnalisé pour ${company} :\n${shareUrl}\n\nCe lien est valable 30 jours. N'hésitez pas à revenir vers moi pour en discuter.\n\nBien à vous,`;
+                    const company = state.companyName || "ton entreprise";
+                    const subject = `Ton diagnostic Lucie — ${company}`;
+                    const body = `Bonjour,\n\nVoici le lien vers ton diagnostic Lucie personnalisé pour ${company} :\n${shareUrl}\n\nCe lien est valable 30 jours. N'hésite pas à revenir vers moi pour en discuter.\n\nBien à vous,`;
                     window.location.href = `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-                    toast.success("Ouverture de votre client email…");
+                    toast.success("Ouverture de ton client email…");
                   }}
                 >
                   <label htmlFor="prospect-email" className="sr-only">
@@ -915,7 +915,7 @@ function RecommandationPage() {
               value={formatEUR(m.monthlyLostRevenue)}
             />
           </dl>
-          <p className="mt-3 text-xs text-muted-foreground">Estimation basée sur vos réponses, non garantie</p>
+          <p className="mt-3 text-xs text-muted-foreground">Estimation basée sur tes réponses, non garantie</p>
 
           <div className="mt-6 rounded-2xl border border-border bg-background p-4">
             <div className="text-[11px] uppercase tracking-widest text-muted-foreground">
@@ -948,10 +948,10 @@ function RecommandationPage() {
               <h2 className="text-base font-semibold tracking-tight text-foreground sm:text-lg">
                 {!needsDemo(rec.plan, state.hasPartner) && rec.plan
                   ? `Pas besoin de rendez-vous pour la formule ${PLAN_LABELS[rec.plan]}`
-                  : "Décision à plusieurs : réservez une démonstration avec toutes les personnes concernées"}
+                  : "Décision à plusieurs : réserve une démonstration avec toutes les personnes concernées"}
               </h2>
               <p className="mt-1 text-sm text-muted-foreground">
-                Essentiel et Pro se choisissent et se paient directement en ligne. Premium aussi si vous décidez seul(e) ; si la décision se prend à plusieurs (associé…), une démonstration avec toutes les personnes concernées est nécessaire.
+                Essentiel et Pro se choisissent et se paient directement en ligne. Premium aussi si tu décides seul(e) ; si la décision se prend à plusieurs (associé…), une démonstration avec toutes les personnes concernées est nécessaire.
               </p>
             </div>
             <Button asChild className="min-h-11 rounded-xl">
@@ -967,7 +967,7 @@ function RecommandationPage() {
         {!needsDemo(rec.plan, state.hasPartner) ? (
           <details className="rounded-3xl border border-border bg-card/40 p-5 sm:p-6">
             <summary className="min-h-11 cursor-pointer text-sm font-medium text-foreground">
-              Vous préférez échanger avec nous avant ? Réserver un rendez-vous (facultatif)
+              Tu préfères échanger avec nous avant ? Réserver un rendez-vous (facultatif)
             </summary>
             <div className="mt-4">
               <RdvBlock journey={journey} />
@@ -1072,8 +1072,8 @@ function RdvBlock({ journey }: { journey: ReturnType<typeof useJourneyAccess> })
     <>
         <AccountGate
           step="Réservation de la démonstration"
-          title="Créez votre compte pour réserver"
-          description="Le rendez-vous de démonstration est rattaché à votre compte client. Créez-le ou connectez-vous : votre diagnostic et votre recommandation restent exactement en l'état."
+          title="Crée ton compte pour réserver"
+          description="Le rendez-vous de démonstration est rattaché à ton compte client. Crée-le ou connecte-toi : ton diagnostic et ta recommandation restent exactement en l'état."
         >
         <BookingEmbed
           bookingType="r2_demo"

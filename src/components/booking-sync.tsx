@@ -197,7 +197,7 @@ export function BookingSync() {
       setConflict(null);
     } catch (e) {
       console.error("[booking-sync] resolve failed", e);
-      toast.error("La synchronisation a échoué. Réessayez.");
+      toast.error("La synchronisation a échoué. Réessaie.");
     } finally {
       setApplying(null);
     }
@@ -222,7 +222,7 @@ export function BookingSync() {
           <DialogTitle>Conflit de rendez-vous détecté</DialogTitle>
           <DialogDescription>
             Cet appareil et notre serveur n'ont pas la même information sur votre
-            rendez-vous. Choisissez la version à conserver.
+            rendez-vous. Choisis la version à conserver.
           </DialogDescription>
         </DialogHeader>
 
@@ -249,8 +249,8 @@ export function BookingSync() {
         </div>
 
         <p className="mt-1 text-xs text-muted-foreground">
-          Astuce : le serveur est mis à jour par l’agenda de réservation et par vos autres
-          appareils. Choisissez « Serveur » sauf si vous venez de modifier le
+          Astuce : le serveur est mis à jour par l’agenda de réservation et par tes autres
+          appareils. Choisis « Serveur » sauf si tu viens de modifier le
           RDV sur cet appareil sans connexion.
         </p>
       </DialogContent>

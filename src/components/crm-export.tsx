@@ -15,12 +15,12 @@ export function CrmExport({ plan }: { plan?: "essential" | "pro" | "premium" }) 
       const result = exportCrmCsv({ booking, plan });
       if (!result.ok) {
         toast.error("Aucune donnée à exporter pour le moment.", {
-          description: "Remplissez la configuration ou prenez un RDV avant l'export.",
+          description: "Remplis la configuration ou prends un RDV avant l'export.",
         });
         return;
       }
       toast.success("Export CSV téléchargé.", {
-        description: "Fichier prêt à être importé dans votre CRM.",
+        description: "Fichier prêt à être importé dans ton CRM.",
       });
     } finally {
       setBusy(false);
@@ -44,10 +44,10 @@ export function CrmExport({ plan }: { plan?: "essential" | "pro" | "premium" }) 
             id="crm-export-title"
             className="mt-1 text-lg font-semibold tracking-tight text-foreground"
           >
-            Exportez vos données au format CSV
+            Exporte tes données au format CSV
           </h3>
           <p className="mt-1 max-w-xl text-sm text-muted-foreground">
-            Téléchargez en un clic les réponses de la configuration et le
+            Télécharge en un clic les réponses de la configuration et le
             rendez-vous confirmé, prêts à être importés dans HubSpot, Pipedrive,
             Salesforce, Notion ou tout CRM compatible CSV (UTF-8).
           </p>

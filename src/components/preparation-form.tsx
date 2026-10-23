@@ -689,7 +689,7 @@ export function PreparationForm({
       }
     } catch (err) {
       console.error(err);
-      toast.error(`Envoi impossible. Réessayez ou écrivez-nous à ${CONTACT_EMAIL}.`);
+      toast.error(`Envoi impossible. Réessaie ou écris-nous à ${CONTACT_EMAIL}.`);
     } finally {
       setSubmitting(false);
     }
@@ -718,7 +718,7 @@ export function PreparationForm({
                 Configuration personnalisée — 5 minutes
               </p>
               <p className="text-muted-foreground">
-                Renseignez vos informations pour que Lucie soit opérationnelle
+                Renseigne tes informations pour que Lucie soit opérationnelle
                 en 96 h. En cas d'urgence :{" "}
                 <a href="tel:+33637055980" className="underline">
                   +33 6 37 05 59 80
@@ -782,7 +782,7 @@ export function PreparationForm({
               <>
                 <Save className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
                 <span className="text-muted-foreground">
-                  Vos réponses sont sauvegardées à chaque frappe
+                  Tes réponses sont sauvegardées à chaque frappe
                 </span>
               </>
             )}
@@ -830,8 +830,8 @@ export function PreparationForm({
                 </DialogTitle>
                 <DialogDescription>
                   Chaque enregistrement automatique crée un point de restauration
-                  horodaté. Sélectionnez une version pour la recharger dans le
-                  formulaire — vos réponses actuelles seront remplacées.
+                  horodaté. Sélectionne une version pour la recharger dans le
+                  formulaire — tes réponses actuelles seront remplacées.
                 </DialogDescription>
               </DialogHeader>
               {history.length === 0 ? (
@@ -859,7 +859,7 @@ export function PreparationForm({
                               {snapshot.remote && (
                                 <span
                                   className="ml-2 inline-flex items-center gap-1 rounded-full bg-success/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-success"
-                                  title="Synchronisé sur tous vos appareils"
+                                  title="Synchronisé sur tous tes appareils"
                                 >
                                   <CloudUpload className="h-2.5 w-2.5" aria-hidden="true" />
                                   Cloud
@@ -923,7 +923,7 @@ export function PreparationForm({
               <AlertDialogDescription asChild>
                 <div className="space-y-2">
                   <p>
-                    Vous allez remplacer votre brouillon actuel par la version
+                    Tu vas remplacer ton brouillon actuel par la version
                     du{" "}
                     <strong>{formatWhen(confirmRestore?.at ?? "")}</strong>.
                   </p>
@@ -969,8 +969,8 @@ export function PreparationForm({
                   </p>
                   <p className="mt-0.5 text-xs text-muted-foreground">
                     {resumed.submissionId
-                      ? "Vous aviez déjà envoyé une première configuration. Ajustez vos réponses et renvoyez si besoin."
-                      : "Vos réponses précédentes ont été rechargées depuis le brouillon local. Continuez là où vous vous étiez arrêté."}
+                      ? "Tu avais déjà envoyé une première configuration. Ajuste tes réponses et renvoie si besoin."
+                      : "Tes réponses précédentes ont été rechargées depuis le brouillon local. Continue là où tu te étiez arrêté."}
                     {resumed.at && (
                       <>
                         {" "}Dernière sauvegarde&nbsp;: {formatWhen(resumed.at)}.
@@ -1066,7 +1066,7 @@ export function PreparationForm({
         <div className={reviewing ? "hidden" : "space-y-8"}>
         <Section n="1" title="Informations générales">
           <Grid>
-            <Field label="Votre nom et prénom" required>
+            <Field label="Ton nom et prénom" required>
               <Input
                 value={form.contactName}
                 onChange={(e) => update("contactName", e.target.value)}
@@ -1074,7 +1074,7 @@ export function PreparationForm({
                 maxLength={120}
               />
             </Field>
-            <Field label="Votre email" required>
+            <Field label="Ton email" required>
               <Input
                 type="email"
                 value={form.contactEmail}
@@ -1109,7 +1109,7 @@ export function PreparationForm({
             </Field>
             <Field
               label="Numéro de téléphone de l'entreprise"
-              hint="Numéro appelé par vos clients."
+              hint="Numéro appelé par tes clients."
               required
             >
               <Input
@@ -1148,7 +1148,7 @@ export function PreparationForm({
           <Grid>
             <Field
               label="Phrase d'accroche souhaitée"
-              hint={`Ex : "Bonjour et bienvenue chez [Entreprise], je suis votre assistante virtuelle. Comment puis-je vous aider ?"`}
+              hint={`Ex : "Bonjour et bienvenue chez [Entreprise], je suis ton assistante virtuelle. Comment puis-je t’aider ?"`}
               required
               full
             >
@@ -1205,7 +1205,7 @@ export function PreparationForm({
 
         <Section n="3" title="Expertise et services">
           <Field
-            label="Vos 3 à 5 services principaux"
+            label="Tes 3 à 5 services principaux"
             hint="Service 1 (Ex : Dépannage d'urgence), Service 2 (Ex : Installation pompes à chaleur), Service 3, etc."
             required
             full
@@ -1237,7 +1237,7 @@ export function PreparationForm({
             </Field>
             <Field
               label="Horaires d'ouverture"
-              hint="Lundi au vendredi, samedi ? Précisez les créneaux."
+              hint="Lundi au vendredi, samedi ? Précise les créneaux."
               required
             >
               <Input
@@ -1299,7 +1299,7 @@ export function PreparationForm({
         <Section n="6" title="Accès technique (optionnel)">
           <Field
             label="Outils à intégrer"
-            hint="Logiciel métier, CRM, agenda Google… Précisez si vous souhaitez une intégration."
+            hint="Logiciel métier, CRM, agenda Google… Précise si tu souhaites une intégration."
             full
           >
             <Textarea
@@ -1341,7 +1341,7 @@ export function PreparationForm({
 
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-xs text-muted-foreground">
-            À l'étape suivante, votre configuration sera enregistrée puis envoyée
+            À l'étape suivante, ta configuration sera enregistrée puis envoyée
             <strong> automatiquement en PDF</strong> à{" "}
             <strong>{CONTACT_EMAIL}</strong>.
           </p>
@@ -1403,12 +1403,12 @@ function SubmittedConfirmation({
     invalid_email: "Adresse email invalide ou refusée.",
     recipient_suppressed:
       "Ce destinataire est bloqué (désinscription ou plainte antérieure).",
-    domain_not_verified: "Domaine expéditeur non vérifié. Contactez l'admin.",
+    domain_not_verified: "Domaine expéditeur non vérifié. Contacte l'admin.",
     emails_disabled: "L'envoi d'emails est actuellement désactivé.",
-    rate_limited: "Trop d'envois : réessayez dans quelques instants.",
+    rate_limited: "Trop d'envois : réessaie dans quelques instants.",
     unauthorized: "Clé API invalide côté serveur.",
-    server_error: "Erreur temporaire du service d'envoi. Réessayez.",
-    network_error: "Problème réseau lors de l'envoi. Vérifiez votre connexion.",
+    server_error: "Erreur temporaire du service d'envoi. Réessaie.",
+    network_error: "Problème réseau lors de l'envoi. Vérifie ta connexion.",
     unknown_error: "Erreur inconnue lors de l'envoi.",
   };
   const errorLabel = (code?: string, fallback?: string) =>
@@ -1447,8 +1447,8 @@ function SubmittedConfirmation({
   const [sendCopyToProspect, setSendCopyToProspect] = useState(hasProspectEmail);
 
   // Personnalisation de l'email envoyé au prospect
-  const defaultProspectSubject = "Votre récapitulatif Lucie";
-  const defaultProspectMessage = `Bonjour ${form.contactName?.trim() || "{prénom}"},\n\nMerci pour votre confiance ! Vous trouverez ci-dessous le récapitulatif de votre configuration Lucie ainsi que le PDF détaillé.\n\nNotre équipe revient vers vous très vite pour lancer l'installation.\n\nÀ très vite,\nL'équipe Lucie`;
+  const defaultProspectSubject = "Ton récapitulatif Lucie";
+  const defaultProspectMessage = `Bonjour ${form.contactName?.trim() || "{prénom}"},\n\nMerci pour ta confiance ! Tu trouveras ci-dessous le récapitulatif de ta configuration Lucie ainsi que le PDF détaillé.\n\nNotre équipe revient vers vous très vite pour lancer l'installation.\n\nÀ très vite,\nL'équipe Lucie`;
   const [prospectSubject, setProspectSubject] = useState<string>(defaultProspectSubject);
   const [prospectMessage, setProspectMessage] = useState<string>(defaultProspectMessage);
   const [prospectCustomOpen, setProspectCustomOpen] = useState(false);
@@ -1653,7 +1653,7 @@ function SubmittedConfirmation({
 
       // ---- Diagnostic ----
       startSection("Diagnostic", 2);
-      writeParagraph("Estimation basée sur vos réponses, non garantie", { size: 9 });
+      writeParagraph("Estimation basée sur tes réponses, non garantie", { size: 9 });
       // Big score highlight
       ensureSpace(70);
       doc.setFillColor(...BRAND.primaryDark);
@@ -1740,7 +1740,7 @@ function SubmittedConfirmation({
       doc.setTextColor(255, 255, 255);
       doc.setFont("helvetica", "bold");
       doc.setFontSize(30);
-      doc.text("Lucie Command Center", margin, 155);
+      doc.text("Ton diagnostic Lucie", margin, 155);
       doc.setFont("helvetica", "normal");
       doc.setFontSize(14);
       doc.setTextColor(200, 195, 220);
@@ -1831,7 +1831,7 @@ function SubmittedConfirmation({
       doc.setFont("helvetica", "italic");
       doc.setFontSize(9);
       doc.text(
-        "Document confidentiel — Cliquez sur une entrée du sommaire pour accéder à la section.",
+        "Document confidentiel — Clique sur une entrée du sommaire pour accéder à la section.",
         margin,
         pageH - margin - 22,
       );
@@ -2004,7 +2004,7 @@ function SubmittedConfirmation({
       }
     } catch (err) {
       console.error(err);
-      if (shouldDownload) toast.error("Export PDF impossible. Réessayez.");
+      if (shouldDownload) toast.error("Export PDF impossible. Réessaie.");
       if (shouldEmail)
         setEmailState((s) => ({
           ...s,
@@ -2043,8 +2043,8 @@ function SubmittedConfirmation({
           Configuration enregistrée ✅
         </h2>
         <p className="mt-3 max-w-xl text-sm text-muted-foreground sm:text-base">
-          Merci ! Votre configuration <strong>{planLabel}</strong> est bien reçue.
-          L'équipe Lucie planifie votre cadrage et la mise en place en 96 h.
+          Merci ! Ta configuration <strong>{planLabel}</strong> est bien reçue.
+          L'équipe Lucie planifie ton cadrage et la mise en place en 96 h.
         </p>
         <p className="mt-2 text-xs text-muted-foreground">
           Référence : <span className="font-mono font-medium text-foreground">#{reference}</span>
@@ -2093,7 +2093,7 @@ function SubmittedConfirmation({
                 : emailState.status === "sending"
                   ? `Envoi de l'email en cours vers ${CONTACT_EMAIL}…`
                   : emailState.status === "error"
-                    ? "Envoi impossible — réessayez ci-dessous"
+                    ? "Envoi impossible — réessaie ci-dessous"
                     : `Email en préparation vers ${CONTACT_EMAIL}`}
             </div>
             <div className="mt-2 flex flex-wrap gap-2">
@@ -2405,7 +2405,7 @@ function SubmittedConfirmation({
           <div>
             <div className="text-sm font-semibold text-foreground">Sauvegarde sécurisée</div>
             <p className="mt-1 text-xs text-muted-foreground">
-              Vos réponses sont chiffrées et stockées côté Lucie — reprises
+              Tes réponses sont chiffrées et stockées côté Lucie — reprises
               immédiatement par notre équipe de setup.
             </p>
           </div>
@@ -2430,7 +2430,7 @@ function SubmittedConfirmation({
                 : emailState.status === "sending"
                   ? `Génération et envoi du PDF vers ${CONTACT_EMAIL}…`
                   : emailState.status === "error"
-                    ? `${emailState.message ?? "Erreur inconnue."} Vous pouvez réessayer ci-dessous.`
+                    ? `${emailState.message ?? "Erreur inconnue."} Tu peux réessayer ci-dessous.`
                     : `Le récapitulatif PDF sera transmis à ${CONTACT_EMAIL}.`}
             </p>
             {emailState.status === "error" && (
@@ -2626,10 +2626,10 @@ function ReviewPanel({
               Dernière étape · Vérification
             </div>
             <h2 id="review-title" className="mt-1 text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
-              Récapitulatif de vos réponses
+              Récapitulatif de tes réponses
             </h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              Vérifiez que tout est correct avant l'envoi à l'équipe Lucie. Vous pouvez encore modifier vos réponses.
+              Vérifie que tout est correct avant l'envoi à l'équipe Lucie. Tu peux encore modifier tes réponses.
             </p>
           </div>
         </div>

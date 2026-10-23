@@ -31,7 +31,7 @@ const TIER_STYLES: Record<
     badge: "bg-[oklch(0.65_0.17_155)]/15 text-[oklch(0.45_0.17_155)]",
     icon: CheckCircle2,
     message:
-      "Votre entreprise correspond parfaitement aux critères de Lucie. Notre équipe recommande de poursuivre le projet.",
+      "Ton entreprise correspond parfaitement aux critères de Lucie. Notre équipe recommande de poursuivre le projet.",
   },
   compatible: {
     ring: "border-primary/30 bg-primary/[0.05]",
@@ -39,7 +39,7 @@ const TIER_STYLES: Record<
     badge: "bg-primary/10 text-primary",
     icon: ShieldCheck,
     message:
-      "Votre entreprise peut être accompagnée. Quelques adaptations seront nécessaires pour maximiser l'impact.",
+      "Ton entreprise peut être accompagnée. Quelques adaptations seront nécessaires pour maximiser l'impact.",
   },
   limited: {
     ring: "border-[oklch(0.75_0.15_60)]/40 bg-[oklch(0.75_0.15_60)]/[0.08]",
@@ -47,7 +47,7 @@ const TIER_STYLES: Record<
     badge: "bg-[oklch(0.75_0.15_60)]/15 text-[oklch(0.82_0.15_60)]",
     icon: AlertTriangle,
     message:
-      "Lucie peut apporter de la valeur, mais l'impact dépendra fortement de vos objectifs à court terme.",
+      "Lucie peut apporter de la valeur, mais l'impact dépendra fortement de tes objectifs à court terme.",
   },
   refuse: {
     ring: "border-[oklch(0.75_0.15_60)]/50 bg-[oklch(0.75_0.15_60)]/[0.08]",
@@ -55,7 +55,7 @@ const TIER_STYLES: Record<
     badge: "bg-[oklch(0.75_0.15_60)]/15 text-[oklch(0.82_0.15_60)]",
     icon: XCircle,
     message:
-      "Après analyse de votre situation actuelle, nous pensons que Lucie ne vous apporterait pas suffisamment de valeur. Nous préférons être transparents plutôt que de vendre une solution inadaptée. Lorsque votre activité évoluera, nous serons ravis de refaire un diagnostic.",
+      "Après analyse de ta situation actuelle, nous pensons que Lucie ne t’apporterait pas suffisamment de valeur. Nous préférons être transparents plutôt que de vendre une solution inadaptée. Lorsque ton activité évoluera, nous serons ravis de refaire un diagnostic.",
   },
 };
 
@@ -219,7 +219,7 @@ export function RecommendationCard({
         </div>
       </div>
 
-      <p className="mt-3 text-xs text-muted-foreground">Estimation basée sur vos réponses, non garantie</p>
+      <p className="mt-3 text-xs text-muted-foreground">Estimation basée sur tes réponses, non garantie</p>
 
       {showCta && (
         <div className="mt-5 flex flex-wrap gap-2">

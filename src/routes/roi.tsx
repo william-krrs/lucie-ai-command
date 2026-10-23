@@ -13,13 +13,13 @@ export const Route = createFileRoute("/roi")({
     meta: [
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { title: "Calculateur ROI — Lucie Command Center" },
+      { title: "Calculateur ROI — Ton diagnostic Lucie" },
       {
         name: "description",
-        content: "Estimez le chiffre d'affaires potentiellement perdu à partir de vos réponses, sans garantie de résultat.",
+        content: "Estime le chiffre d'affaires potentiellement perdu à partir de tes réponses, sans garantie de résultat.",
       },
       { property: "og:title", content: "Calculateur ROI — Lucie" },
-      { property: "og:description", content: "Estimation du coût potentiel de vos appels manqués, basée sur vos réponses." },
+      { property: "og:description", content: "Estimation du coût potentiel de tes appels manqués, basée sur tes réponses." },
       { property: "og:url", content: "https://lucie-ai-command.lovable.app/roi" },
     ],
     links: [{ rel: "canonical", href: "https://lucie-ai-command.lovable.app/roi" }],
@@ -36,7 +36,7 @@ function Roi() {
       <PageHeader
         eyebrow="Étape 2 · Résultats"
         title="Calculateur de ROI"
-        description="Ajustez les hypothèses pour estimer le chiffre d'affaires potentiellement récupérable avec Lucie."
+        description="Ajuste les hypothèses pour estimer le chiffre d'affaires potentiellement récupérable avec Lucie."
       />
 
       <div className="grid gap-8 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
@@ -104,7 +104,7 @@ function Roi() {
                 Seuil de rentabilité non atteint
               </div>
               <p className="mt-3 text-sm text-foreground">
-                Vos pertes financières actuelles ({formatEUR(computeVolumes(state).pertesMensuelles)}/mois) sont trop faibles pour amortir efficacement un abonnement professionnel.
+                Tes pertes financières actuelles ({formatEUR(computeVolumes(state).pertesMensuelles)}/mois) sont trop faibles pour amortir efficacement un abonnement professionnel.
               </p>
             </div>
           )}
@@ -117,7 +117,7 @@ function Roi() {
                 Manque à gagner
               </div>
               <p className="mt-4 text-base sm:text-xl leading-snug text-foreground md:text-2xl">
-                Vous laissez potentiellement
+                Tu laisses potentiellement
               </p>
               <p className="mt-2 kpi-value-xl text-primary sm:text-5xl md:text-6xl break-words">
                 {formatEUR(m.monthlyLostRevenue)}
@@ -142,7 +142,7 @@ function Roi() {
               </div>
             </div>
           </div>
-          <p className="mt-3 text-xs text-muted-foreground">Estimation basée sur vos réponses, non garantie</p>
+          <p className="mt-3 text-xs text-muted-foreground">Estimation basée sur tes réponses, non garantie</p>
           <p className="text-xs text-muted-foreground">Chiffre d'affaires récupérable estimé, avant abonnement, frais de mise en place et éventuels dépassements de minutes.</p>
           <p className="text-xs text-muted-foreground">Hypothèse de simulation : récupération de 75 % du CA potentiellement perdu, non fondée sur des résultats clients.</p>
         </div>

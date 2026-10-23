@@ -192,7 +192,7 @@ export function SidebarProgress({ onNavigate }: { onNavigate?: () => void }) {
         </p>
       ) : (
         <p className="mt-3 text-[11px] leading-relaxed text-muted-foreground">
-          Continuez là où vous vous êtes arrêté pour débloquer la suite.
+          Continue là où tu te êtes arrêté pour débloquer la suite.
         </p>
       )}
     </section>

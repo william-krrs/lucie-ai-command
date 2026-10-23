@@ -20,7 +20,7 @@ export const Route = createFileRoute("/installation")({
     meta: [
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { title: "Installation — Lucie Command Center" },
+      { title: "Installation — Ton diagnostic Lucie" },
       {
         name: "description",
         content: "Le déploiement de Lucie en 7 étapes, de l'analyse à l'optimisation continue.",
@@ -35,11 +35,11 @@ export const Route = createFileRoute("/installation")({
 });
 
 const STEPS = [
-  { icon: ScanSearch, title: "Analyse", desc: "Audit de vos flux d'appels, de vos scripts et de vos objectifs commerciaux.", duration: "Phase 1" },
+  { icon: ScanSearch, title: "Analyse", desc: "Audit de tes flux d'appels, de tes scripts et de tes objectifs commerciaux.", duration: "Phase 1" },
   { icon: Settings2, title: "Paramétrage Lucie", desc: "Configuration de sa voix, ses réponses, ses règles de qualification.", duration: "Phase 2" },
   { icon: FlaskConical, title: "Tests", desc: "Simulations d'appels réels pour valider le comportement de Lucie.", duration: "Phase 3" },
   { icon: Calendar, title: "Connexion agenda", desc: "Synchronisation Google / Outlook / agenda en ligne avec règles de disponibilité.", duration: "Phase 4" },
-  { icon: PhoneCall, title: "Connexion téléphone", desc: "Portage ou renvoi de votre numéro professionnel, sans coupure.", duration: "Phase 5" },
+  { icon: PhoneCall, title: "Connexion téléphone", desc: "Portage ou renvoi de ton numéro professionnel, sans coupure.", duration: "Phase 5" },
   { icon: Rocket, title: "Mise en production", desc: "Lucie prend ses premiers appels réels, monitoring 24/7 activé.", duration: "96 h" },
   { icon: Repeat, title: "Optimisation continue", desc: "Suivi hebdomadaire des performances et ajustements précis.", duration: "En continu" },
 ];
@@ -59,10 +59,10 @@ function InstallationContent() {
       <LockedPage
         title="Installation verrouillée"
         step="Installation"
-        description="L'installation se débloque une fois votre configuration personnalisée envoyée et validée."
+        description="L'installation se débloque une fois ta configuration personnalisée envoyée et validée."
         waitingFor="step"
         waitingTitle="Configuration à envoyer"
-        waitingText="Complétez et envoyez le formulaire de configuration personnalisée : le suivi d'installation s'ouvrira automatiquement."
+        waitingText="Complète et envoie le formulaire de configuration personnalisée : le suivi d'installation s'ouvrira automatiquement."
         backTo="/preparation"
         backLabel="Ouvrir la configuration personnalisée"
       />
